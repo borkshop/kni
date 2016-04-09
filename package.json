@@ -1,0 +1,29 @@
+{
+  "name": "inkblot",
+  "version": "0.0.0",
+  "description": "A text adventure language and runtime inspired by inkle/ink",
+  "main": "index.js",
+  "dependencies": {
+    "pop-equals": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kriskowal/inkblot.git"
+  },
+  "keywords": [
+    "text",
+    "adventure",
+    "language",
+    "ink"
+  ],
+  "author": "Kris Kowal <kris@cixar.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kriskowal/inkblot/issues"
+  },
+  "homepage": "https://github.com/kriskowal/inkblot#readme"
+}

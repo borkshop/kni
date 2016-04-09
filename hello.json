@@ -1,0 +1,25 @@
+{
+    "start": {
+        "type": "text",
+        "text": "Hello, World!",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "option",
+        "keywords": ["hello"],
+        "label": "Say, \"Hello\".",
+        "branch": "hello",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "hello": {
+        "type": "text",
+        "text": "You say, \"Hello\".",
+        "next": "end"
+    },
+    "end": {
+        "type": "end"
+    }
+}
