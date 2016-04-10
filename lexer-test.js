@@ -14,6 +14,7 @@ function test(input, output) {
     var scanner = new Scanner(lexer);
     scanner.next(text);
     scanner.return();
+    // istanbul ignore if
     if (!equals(lister.list, output)) {
         console.error('ERROR');
         process.stderr.write(text);

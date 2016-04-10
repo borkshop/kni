@@ -6,9 +6,15 @@
   "dependencies": {
     "pop-equals": "^1.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "istanbul": "^0.4.3",
+    "opn": "^1.0.1"
+  },
   "scripts": {
-    "test": "node test"
+    "test": "npm run cover -s",
+    "cover": "istanbul cover --report html --print node -- test.js && istanbul report text && npm run check-cover -s",
+    "check-cover": "istanbul check-coverage",
+    "view-cover": "opn ./coverage/index.html"
   },
   "repository": {
     "type": "git",
