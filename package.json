@@ -7,11 +7,13 @@
     "pop-equals": "^1.0.0"
   },
   "devDependencies": {
+    "eslint": "^2.7.0",
     "istanbul": "^0.4.3",
     "opn": "^1.0.1"
   },
   "scripts": {
-    "test": "npm run cover -s",
+    "test": "npm ls -s && npm run lint && npm run cover -s",
+    "lint": "eslint .",
     "cover": "istanbul cover --report html --print node -- test.js && istanbul report text && npm run check-cover -s",
     "check-cover": "istanbul check-coverage",
     "view-cover": "opn ./coverage/index.html"
