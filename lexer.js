@@ -8,6 +8,7 @@ function Lexer(generator) {
     this.generator = generator;
     this.top = 0;
     this.stack = [this.top];
+    this.broken = false;
 }
 
 Lexer.prototype.next = function next(line, scanner) {
@@ -23,15 +24,18 @@ Lexer.prototype.next = function next(line, scanner) {
         this.generator = this.generator.next('start', scanner.leader, scanner);
         this.stack.push(scanner.indent);
         this.top = scanner.indent;
+        this.broken = false;
     } else if (scanner.leader.length !== 0 && scanner.indent === this.top) {
         this.generator = this.generator.next('stop', '', scanner);
         this.generator = this.generator.next('start', scanner.leader, scanner);
         this.stack.push(scanner.indent);
         this.top = scanner.indent;
+        this.broken = false;
     }
     if (line.length) {
         this.generator = this.generator.next('text', line, scanner);
-    } else {
+    } else if (!this.broken) {
+        this.broken = true;
         this.generator = this.generator.next('break', '', scanner);
     }
     return this;
