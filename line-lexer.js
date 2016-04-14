@@ -1,15 +1,20 @@
 'use strict';
 
-module.exports = LineScanner;
+module.exports = LineLexer;
 
-function LineScanner(generator) {
+var debug = process.env.DEBUG_INLINE_LEXER;
+
+function LineLexer(generator) {
     this.generator = generator;
     this.spaced = false;
     this.skipping = false;
     this.accumulator = '';
 }
 
-LineScanner.prototype.next = function next(type, text) {
+LineLexer.prototype.next = function next(type, text, scanner) {
+    if (debug) {
+        console.error('INLINE', type, JSON.stringify(text), this.spaced ? 'spaced' : '');
+    }
     if (type !== 'text') {
         this.flush();
         this.generator = this.generator.next(type, text);

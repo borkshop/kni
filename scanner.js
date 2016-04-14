@@ -4,6 +4,7 @@
 // level of indentation.
 
 var tabWidth = 4;
+var debug = process.env.DEBUG_SCANNER;
 
 module.exports = Scanner;
 
@@ -22,6 +23,9 @@ function Scanner(generator) {
 Scanner.prototype.next = function next(text) {
     for (var i = 0; i < text.length; i++) {
         var c = text[i];
+        if (debug) {
+            console.error('SCAN', i, JSON.stringify(c));
+        }
         if (c === '\t') {
             this.columnNo = nextTabStop(this.columnNo);
         } else if (c === '\n') {

@@ -2,6 +2,8 @@
 
 module.exports = Lexer;
 
+var debug = process.env.DEBUG_OUTLINE_LEXER;
+
 function Lexer(generator) {
     this.generator = generator;
     this.top = 0;
@@ -9,6 +11,9 @@ function Lexer(generator) {
 }
 
 Lexer.prototype.next = function next(line, scanner) {
+    if (debug) {
+        console.error('OUTLINE', JSON.stringify(line), scanner.indent, JSON.stringify(scanner.leader));
+    }
     while (scanner.indent < this.top) {
         this.generator = this.generator.next('stop', '', scanner);
         this.stack.pop();
