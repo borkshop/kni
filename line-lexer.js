@@ -16,9 +16,9 @@ LineLexer.prototype.next = function next(type, text, scanner) {
         console.error('INLINE', type, JSON.stringify(text), this.spaced ? 'spaced' : '');
     }
     if (type !== 'text') {
-        this.flush();
+        this.flush(scanner);
         this.generator = this.generator.next(type, text);
-        return;
+        return this;
     }
     for (var i = 0; i < text.length; i++) {
         var c = text[i];
@@ -30,7 +30,7 @@ LineLexer.prototype.next = function next(type, text, scanner) {
         } else {
             this.skipping = false;
             if (c === '-' && d === '>') {
-                this.flush();
+                this.flush(scanner);
                 this.generator = this.generator.next('token', '->');
                 this.spaced = false;
                 this.skipping = true;
@@ -41,7 +41,7 @@ LineLexer.prototype.next = function next(type, text, scanner) {
                 // TODO c === '`' || // keyword
                 // TODO c === '*' || c === '_' // strength / emphasis
             ) {
-                this.flush();
+                this.flush(scanner);
                 this.generator = this.generator.next('token', c);
             } else if (this.spaced) {
                 this.spaced = false;
@@ -52,11 +52,14 @@ LineLexer.prototype.next = function next(type, text, scanner) {
         }
     }
     this.spaced = true;
+    return this;
 };
 
-LineScanner.prototype.flush = function flush() {
+LineLexer.prototype.flush = function flush(scanner) {
     if (this.accumulator) {
-        this.generator = this.generator.next('text', this.accumulator);
+        this.generator = this.generator.next('text', this.accumulator, scanner);
         this.accumulator = '';
     }
+    this.spaced = false;
+    this.skipping = false;
 };

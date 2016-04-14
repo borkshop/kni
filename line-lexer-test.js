@@ -1,17 +1,20 @@
 'use strict';
 
 var equals = require('pop-equals');
+var Lexer = require('./lexer');
+var Scanner = require('./scanner');
 var LineLexer = require('./line-lexer');
 var LexLister = require('./lex-lister');
 
 function test(input, output) {
+    var text = input.map(enline).join('');
     var lister = new LexLister();
-    var scanner = new LineLexer(lister);
-    for (var i = 0; i < input.length; i++) {
-        scanner.next('text', input[i]);
-    }
-    scanner.next('stop', '');
-    scanner.next('stop', ''); // the second induces another flush
+    var lineLexer = new LineLexer(lister);
+    var lexer = new Lexer(lineLexer);
+    var scanner = new Scanner(lexer);
+    scanner.next(text);
+    scanner.return();
+    lineLexer.next('stop', ''); // induce second flush for coverage
 
     // istanbul ignore if
     if (!equals(lister.list, output)) {
@@ -21,6 +24,10 @@ function test(input, output) {
         console.error('actual  ', lister.list);
         global.fail = true;
     }
+}
+
+function enline(line) {
+    return line + '\n';
 }
 
 test([
@@ -38,3 +45,15 @@ test([
     'STOP'
 ])
 
+test([
+    'And they lived happily ever after.',
+    '',
+    '',
+    'The End'
+], [
+    'And they lived happily ever after.',
+    'BREAK',
+    'The End',
+    'STOP',
+    'STOP'
+])

@@ -43,7 +43,7 @@ Scanner.prototype.next = function next(text) {
         } else if (this.leading && (c === '-' || c === '+' || c === '*')) {
             this.leader += c;
             this.columnNo++;
-        } else {
+        } else if (this.leading) {
             this.indent = this.columnNo;
             this.indentStart = i;
             this.columnNo++;
