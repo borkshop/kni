@@ -25,7 +25,7 @@ ReadlineEngine.prototype.continue = function _continue() {
     var _continue;
     do {
         if (!this['$' + this.instruction.type]) {
-            throw new Error('Unexpected instruction type');
+            throw new Error('Unexpected instruction type: ' + this.instruction.type);
         }
         _continue = this['$' + this.instruction.type](this.instruction);
     } while (_continue);
@@ -41,6 +41,12 @@ ReadlineEngine.prototype.$text = function text() {
     this.next();
     return true;
 };
+
+ReadlineEngine.prototype.$break = function $break() {
+    console.log();
+    this.next();
+    return true;
+}
 
 ReadlineEngine.prototype.$option = function option() {
     this.options.push(this.instruction);
@@ -75,7 +81,11 @@ ReadlineEngine.prototype.$branch = function branch() {
 };
 
 ReadlineEngine.prototype.next = function next() {
-    this.instruction = this.story[this.instruction.next];
+    var next = this.story[this.instruction.next];
+    if (!next) {
+        throw new Error('Story missing knot for label: ' + this.instruction.next);
+    }
+    this.instruction = next;
 };
 
 ReadlineEngine.prototype.command = function command(command) {
