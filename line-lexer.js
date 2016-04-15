@@ -12,6 +12,7 @@ function LineLexer(generator) {
 }
 
 LineLexer.prototype.next = function next(type, text, scanner) {
+    // istanbul ignore if
     if (debug) {
         console.error('INLINE', type, JSON.stringify(text), this.spaced ? 'spaced' : '');
     }

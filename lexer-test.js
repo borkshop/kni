@@ -116,7 +116,6 @@ test([
     'START', '-',
     'c',
     'STOP',
-    'STOP',
     'STOP'
 ]);
 
@@ -187,5 +186,30 @@ test([
     'd',
     'STOP',
     'e',
+    'STOP'
+]);
+
+test([
+    'Alpha',
+    '+ Bravo',
+    '',
+    '  Charlie',
+    '+ Delta',
+    '',
+    '  Echo',
+    'Foxtrot'
+], [
+    'Alpha',
+    'START', '+',
+    'Bravo',
+    'BREAK',
+    'Charlie',
+    'STOP',
+    'START', '+',
+    'Delta',
+    'BREAK',
+    'Echo',
+    'STOP',
+    'Foxtrot',
     'STOP'
 ]);

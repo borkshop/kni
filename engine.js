@@ -48,7 +48,7 @@ ReadlineEngine.prototype.$break = function $break() {
     this.blocks.push([]);
     this.next();
     return true;
-}
+};
 
 ReadlineEngine.prototype.$option = function option() {
     this.options.push(this.instruction);

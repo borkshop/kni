@@ -12,8 +12,9 @@ function Lexer(generator) {
 }
 
 Lexer.prototype.next = function next(line, scanner) {
+    // istanbul ignore if
     if (debug) {
-        console.error('OUTLINE', JSON.stringify(line), scanner.indent, JSON.stringify(scanner.leader));
+        console.error('OUTLINE', JSON.stringify(line), scanner.indent, JSON.stringify(scanner.leader), this.stack, this.top);
     }
     while (scanner.indent < this.top) {
         this.generator = this.generator.next('stop', '', scanner);
@@ -28,7 +29,6 @@ Lexer.prototype.next = function next(line, scanner) {
     } else if (scanner.leader.length !== 0 && scanner.indent === this.top) {
         this.generator = this.generator.next('stop', '', scanner);
         this.generator = this.generator.next('start', scanner.leader, scanner);
-        this.stack.push(scanner.indent);
         this.top = scanner.indent;
         this.broken = false;
     }

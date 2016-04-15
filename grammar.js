@@ -1,5 +1,6 @@
 'use strict';
 
+var Path = require('./path');
 var story = require('./story');
 
 exports.start = start;
@@ -24,8 +25,9 @@ function End(parent, prev) {
     this.prev = prev;
 }
 
+// istanbul ignore next
 End.prototype.next = function next(type, text) {
-    throw new Error('nodes beyond root');
+    throw new Error('nodes beyond root ' + type + ' ' + JSON.stringify(text));
 };
 
 function Knot(path, parent, prev) {
@@ -38,22 +40,26 @@ function Knot(path, parent, prev) {
 Knot.prototype.next = function next(type, text) {
     if (type === 'stop') {
         return this.parent.return(this.prev);
-    } else if (type === 'start') {
-        return new MaybeOption(firstChildPath(this.path), this, this.prev, []).next(type, text);
+    } else if (type === 'start' && text === '') {
+        return new Knot(this.path, this, this.prev);
+    } else if (type === 'start' && text === '+') {
+        return new Option(this.path, this, this.prev, []);
     } else if (type === 'break') {
-        return new Knot(nextPath(this.path), this.parent, new story.Break(pathToName(this.path), this.prev));
+        return this;
+    // istanbul ignore else
     } else if (type === 'text') {
-        return new Knot(nextPath(this.path), this.parent, new story.Text(pathToName(this.path), text, this.prev));
+        return new Knot(Path.next(this.path), this.parent, new story.Text(this.path, text, this.prev));
     } else {
-        throw new Error('nope ' + type);
+        throw new Error('no support for type in knot state ' + type);
     }
 };
 
 Knot.prototype.return = function _return(prev) {
-    return new Knot(nextPath(this.path), this.parent, prev);
+    return new Knot(Path.next(prev.path), this.parent, prev);
 };
 
 function Option(path, parent, prev, ends) {
+    this.type = 'option';
     this.path = path;
     this.parent = parent;
     this.prev = prev;
@@ -62,19 +68,21 @@ function Option(path, parent, prev, ends) {
 }
 
 Option.prototype.next = function next(type, text) {
+    // istanbul ignore else
     if (type === 'text') {
-        this.option = new story.Option(pathToName(this.path), text, this.prev, this.ends);
-        return new Knot(firstChildPath(this.path), this);
+        this.option = new story.Option(this.path, text, this.prev, this.ends);
+        return new Knot(Path.firstChild(this.path), this, this.option);
     } else {
-        throw new Error('nope');
+        throw new Error('TODO'); // TODO
     }
 };
 
 Option.prototype.return = function _return(prev) {
-    return new MaybeOption(nextPath(this.path), this.parent, this.option, this.ends.concat([prev]));
+    return new MaybeOption(Path.next(this.path), this.parent, this.option, this.ends.concat([prev]));
 };
 
 function MaybeOption(path, parent, prev, ends) {
+    this.type = 'maybe-option';
     this.parent = parent;
     this.prev = prev;
     this.ends = ends;
@@ -82,38 +90,16 @@ function MaybeOption(path, parent, prev, ends) {
 }
 
 MaybeOption.prototype.next = function next(type, text) {
-    if (type === 'start') {
-        return new Option(this.path, this.parent, this.prev, this.ends);
+    if (type === 'start' && text === '+') {
+        var returnKnot = new Knot(Path.next(this.path), this, this.prev);
+        return new Option(this.path, returnKnot, this.prev, this.ends);
     } else {
-        return this.parent.return(new story.Options(pathToName(this.path), this.ends, this.prev));
+        var options = new story.Options(this.path, this.ends, this.prev);
+        return this.parent.return(options).next(type, text);
     }
 };
 
 MaybeOption.prototype.return = function _return(prev) {
-    return new Knot(nextPath(this.path), this.parent, prev);
+    return new Knot(Path.next(this.path), this.parent, prev);
 };
 
-function pathToName(path) {
-    var name = path[0];
-    var i;
-    for (i = 1; i < path.length - 1; i++) {
-        name += '.' + path[i];
-    }
-    var last = path[i];
-    if (last !== 0) {
-        name += '.' + last;
-    }
-    return name;
-}
-
-function nextPath(path) {
-    path = path.slice();
-    path[path.length - 1]++;
-    return path;
-}
-
-function firstChildPath(path) {
-    path = path.slice();
-    path.push(1);
-    return path;
-}

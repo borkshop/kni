@@ -23,6 +23,7 @@ function Scanner(generator) {
 Scanner.prototype.next = function next(text) {
     for (var i = 0; i < text.length; i++) {
         var c = text[i];
+        // istanbul ignore if
         if (debug) {
             console.error('SCAN', i, JSON.stringify(c));
         }
