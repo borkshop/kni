@@ -11,7 +11,7 @@ function ReadlineEngine(story, state) {
     this.blocks = [[]];
     this.options = [];
     this.keywords = {};
-    this.instruction = this.story.start;
+    this.instruction = {type: 'goto', label: 'start'};
     this.readline = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -51,7 +51,7 @@ ReadlineEngine.prototype.$break = function $break() {
 };
 
 ReadlineEngine.prototype.$goto = function $goto() {
-    this.instruction = this.story[this.instruction.label];
+    this.goto(this.instruction.label);
     return true;
 };
 
@@ -80,7 +80,11 @@ ReadlineEngine.prototype.$inc = function inc() {
 
 ReadlineEngine.prototype.$branch = function branch() {
     if (this.state[this.instruction.name]) {
-        this.instruction = this.story[this.instruction.branch];
+        var label = this.instruction.branch;
+        this.instruction = this.story[label];
+        if (!this.instruction) {
+            throw new Error('Branched to non-existant instruction' + label);
+        }
     } else {
         this.next();
     }
@@ -88,9 +92,13 @@ ReadlineEngine.prototype.$branch = function branch() {
 };
 
 ReadlineEngine.prototype.next = function next() {
-    var next = this.story[this.instruction.next];
+    this.goto(this.instruction.next);
+};
+
+ReadlineEngine.prototype.goto = function _goto(label) {
+    var next = this.story[label];
     if (!next) {
-        throw new Error('Story missing knot for label: ' + this.instruction.next);
+        throw new Error('Story missing knot for label: ' + label);
     }
     this.instruction = next;
 };
