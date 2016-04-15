@@ -23,6 +23,7 @@ function Scanner(generator) {
 Scanner.prototype.next = function next(text) {
     for (var i = 0; i < text.length; i++) {
         var c = text[i];
+        var d = text[i + 1];
         // istanbul ignore if
         if (debug) {
             console.error('SCAN', i, JSON.stringify(c));
@@ -41,7 +42,11 @@ Scanner.prototype.next = function next(text) {
             this.leader = '';
         } else if (c === ' ') {
             this.columnNo++;
-        } else if (this.leading && (c === '-' || c === '+' || c === '*')) {
+        } else if (
+            this.leading &&
+            (c === '-' || c === '+' || c === '*') &&
+            (d === ' ' || d === '\t')
+        ) {
             this.leader += c;
             this.columnNo++;
         } else if (this.leading) {

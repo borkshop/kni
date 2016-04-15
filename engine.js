@@ -50,6 +50,11 @@ ReadlineEngine.prototype.$break = function $break() {
     return true;
 };
 
+ReadlineEngine.prototype.$goto = function $goto() {
+    this.instruction = this.story[this.instruction.label];
+    return true;
+};
+
 ReadlineEngine.prototype.$option = function option() {
     this.options.push(this.instruction);
     for (var i = 0; i < this.instruction.keywords.length; i++) {

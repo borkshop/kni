@@ -351,3 +351,49 @@ test([
         "type": "end"
     }
 });
+
+test([
+    '= hi\n',
+    'Hello, World!\n',
+], {
+    "hi": {
+        "type": "text",
+        "text": "Hello, World!",
+        "next": "end"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    '= hi Hello, World!\n',
+], {
+    "hi": {
+        "type": "text",
+        "text": "Hello, World!",
+        "next": "end"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    '-> hi\n',
+    '= hi\n',
+    'Hello, World!\n',
+], {
+    "start": {
+        "type": "goto",
+        "label": "hi"
+    },
+    "hi": {
+        "type": "text",
+        "text": "Hello, World!",
+        "next": "end"
+    },
+    "end": {
+        "type": "end"
+    }
+});

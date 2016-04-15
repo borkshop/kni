@@ -38,7 +38,9 @@ function Knot(path, parent, prev) {
 }
 
 Knot.prototype.next = function next(type, text) {
-    if (type === 'stop') {
+    if (type === 'text') {
+        return new Knot(Path.next(this.path), this.parent, new story.Text(this.path, text, this.prev));
+    } else if (type === 'stop') {
         return this.parent.return(this.prev);
     } else if (type === 'start' && text === '') {
         return new Knot(this.path, this, this.prev);
@@ -46,11 +48,13 @@ Knot.prototype.next = function next(type, text) {
         return new Option(this.path, this, this.prev, []);
     } else if (type === 'break') {
         return this;
+    } else if (type === 'token' && text === '=') {
+        return new Label(this.path, this.parent, this.prev);
+    } else if (type === 'token' && text === '->') {
+        return new Goto(this.path, this.parent, this.prev);
     // istanbul ignore else
-    } else if (type === 'text') {
-        return new Knot(Path.next(this.path), this.parent, new story.Text(this.path, text, this.prev));
     } else {
-        throw new Error('no support for type in knot state ' + type);
+        throw new Error('no support for type in knot state: ' + type + ' ' + JSON.stringify(text));
     }
 };
 
@@ -102,4 +106,61 @@ MaybeOption.prototype.next = function next(type, text) {
 MaybeOption.prototype.return = function _return(prev) {
     return new Knot(Path.next(this.path), this.parent, prev);
 };
+
+function Label(path, parent, prev) {
+    this.type = 'label';
+    this.path = path;
+    this.parent = parent;
+    this.prev = prev;
+}
+
+Label.prototype.next = function next(type, text) {
+    if (type === 'text') {
+        return readIdentifier(text, this);
+    } else if (type === 'identifier') {
+        return new Knot([text, 0], this.parent, this.prev);
+    } else {
+        throw new Error('expected label after =');
+    }
+};
+
+function Goto(path, parent, prev) {
+    this.type = 'goto';
+    this.path = path;
+    this.parent = parent;
+    this.prev = prev;
+}
+
+Goto.prototype.next = function next(type, text) {
+    if (type === 'text') {
+        return readIdentifier(text, this);
+    } else if (type === 'identifier') {
+        return new Knot(Path.next(this.path), this.parent, new story.Goto(this.path, text, this.prev));
+    } else {
+        throw new Error('expected label after ->');
+    }
+};
+
+function readIdentifier(text, node) {
+    var i = 0, c;
+    // eat leading whitespace
+    while (c = text[i], i < text.length && (c === ' ' || c === '\t')) {
+        i++;
+    }
+    var start = i;
+    while (c = text[i], i < text.length && c !== ' ' && c !== '\t') {
+        i++;
+    }
+    var end = i;
+    while (c = text[i], i < text.length && (c === ' ' || c === '\t')) {
+        i++;
+    }
+    if (start < end) {
+        node = node.next('identifier', text.slice(start, end));
+    }
+    if (end < text.length) {
+        node = node.next('text', text.slice(end + 1));
+    }
+    return node;
+}
 

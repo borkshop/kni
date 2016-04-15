@@ -37,6 +37,7 @@ LineLexer.prototype.next = function next(type, text, scanner) {
                 this.skipping = true;
                 i++;
             } else if (
+                c === '=' || // named label
                 c === '[' || c === ']' // You a[Ask] a question.
                 // TODO c === '{' || c === '}' || // logic
                 // TODO c === '`' || // keyword

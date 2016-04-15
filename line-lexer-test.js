@@ -31,6 +31,15 @@ function enline(line) {
 }
 
 test([
+    'x',
+    'y'
+], [
+    'x y',
+    'STOP',
+    'STOP'
+]);
+
+test([
     'You s[S]ay,', // the line break implies a single space
     '"Hello." -> bye',
 ], [
@@ -57,3 +66,12 @@ test([
     'STOP',
     'STOP'
 ])
+
+test([
+    '-> hi',
+], [
+    'TOKEN', '->',
+    'hi',
+    'STOP',
+    'STOP'
+]);

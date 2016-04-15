@@ -74,3 +74,24 @@ Options.prototype.write = function write(story, next) {
         type: 'prompt'
     };
 };
+
+exports.Goto = Goto;
+
+function Goto(path, label, prev) {
+    this.type = 'goto';
+    this.path = path;
+    this.name = Path.toName(path);
+    this.label = label;
+    this.prev = prev;
+}
+
+Goto.prototype.write = function write(story, next) {
+    if (this.prev) {
+        this.prev.write(story, this.name);
+    }
+
+    story[this.name] = {
+        type: 'goto',
+        label: this.label
+    };
+}
