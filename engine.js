@@ -8,6 +8,7 @@ function ReadlineEngine(story, state) {
     var self = this;
     this.story = story;
     this.state = state || {};
+    this.blocks = [[]];
     this.options = [];
     this.keywords = {};
     this.instruction = this.story.start;
@@ -32,18 +33,19 @@ ReadlineEngine.prototype.continue = function _continue() {
 };
 
 ReadlineEngine.prototype.$end = function end() {
+    this.display();
     this.readline.close();
     return false;
 };
 
 ReadlineEngine.prototype.$text = function text() {
-    console.log(this.instruction.text);
+    this.blocks[this.blocks.length - 1].push(this.instruction.text);
     this.next();
     return true;
 };
 
 ReadlineEngine.prototype.$break = function $break() {
-    console.log();
+    this.blocks.push([]);
     this.next();
     return true;
 }
@@ -105,7 +107,21 @@ ReadlineEngine.prototype.command = function command(command) {
     }
 };
 
+ReadlineEngine.prototype.display = function display() {
+    var blocks = this.blocks.filter(getLength);
+    for (var i = 0; i < blocks.length; i++) {
+        var block = blocks[i];
+        // TODO line wrap at min of termios width or 60
+        console.log(block.join(' '));
+    }
+};
+
+function getLength(array) {
+    return array.length;
+}
+
 ReadlineEngine.prototype.prompt = function prompt() {
+    this.display();
     for (var i = 0; i < this.options.length; i++) {
         var option = this.options[i];
         console.log(i + '. ' + option.label);
@@ -116,6 +132,7 @@ ReadlineEngine.prototype.prompt = function prompt() {
 ReadlineEngine.prototype.flush = function flush() {
     this.options.length = 0;
     this.keywords = {};
+    this.blocks = [[]];
     this.continue();
 };
 
