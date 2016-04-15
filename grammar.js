@@ -50,9 +50,9 @@ Knot.prototype.next = function next(type, text) {
         return this;
     } else if (type === 'token' && text === '=') {
         return new Label(this.path, this.parent, this.prev);
+    // istanbul ignore else
     } else if (type === 'token' && text === '->') {
         return new Goto(this.path, this.parent, this.prev);
-    // istanbul ignore else
     } else {
         throw new Error('no support for type in knot state: ' + type + ' ' + JSON.stringify(text));
     }
@@ -117,6 +117,7 @@ function Label(path, parent, prev) {
 Label.prototype.next = function next(type, text) {
     if (type === 'text') {
         return readIdentifier(text, this);
+    // istanbul ignore else
     } else if (type === 'identifier') {
         return new Knot([text, 0], this.parent, this.prev);
     } else {
@@ -134,6 +135,7 @@ function Goto(path, parent, prev) {
 Goto.prototype.next = function next(type, text) {
     if (type === 'text') {
         return readIdentifier(text, this);
+    // istanbul ignore else
     } else if (type === 'identifier') {
         return new Knot(Path.next(this.path), this.parent, new story.Goto(this.path, text, this.prev));
     } else {
@@ -155,6 +157,7 @@ function readIdentifier(text, node) {
     while (c = text[i], i < text.length && (c === ' ' || c === '\t')) {
         i++;
     }
+    // istanbul ignore else
     if (start < end) {
         node = node.next('identifier', text.slice(start, end));
     }

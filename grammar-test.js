@@ -383,6 +383,7 @@ test([
     '-> hi\n',
     '= hi\n',
     'Hello, World!\n',
+    '-> hi\n'
 ], {
     "start": {
         "type": "goto",
@@ -391,7 +392,11 @@ test([
     "hi": {
         "type": "text",
         "text": "Hello, World!",
-        "next": "end"
+        "next": "hi.1"
+    },
+    "hi.1": {
+        "type": "goto",
+        "label": "hi",
     },
     "end": {
         "type": "end"
