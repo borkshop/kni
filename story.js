@@ -2,6 +2,25 @@
 
 var Path = require('./path');
 
+exports.Break = Break;
+
+function Break(path, prev) {
+    this.type = 'break';
+    this.path = path;
+    this.name = Path.toName(path);
+    this.prev = prev;
+}
+
+Break.prototype.write = function write(story, next) {
+    if (this.prev) {
+        this.prev.write(story, this.name);
+    }
+    story[this.name] = {
+        type: 'break',
+        next: next
+    };
+};
+
 exports.Text = Text;
 
 function Text(path, text, prev) {

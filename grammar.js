@@ -11,6 +11,7 @@ function start() {
 
 function Start() {
     this.type = 'start';
+    this.path = ['start'];
     this.parent = null;
     this.prev = null;
 }
@@ -46,6 +47,9 @@ Knot.prototype.next = function next(type, text) {
         return new Knot(this.path, this, this.prev);
     } else if (type === 'start' && text === '+') {
         return new Option(this.path, this, this.prev, []);
+    } else if (type === 'start' && text === '-') {
+        var prev = new story.Break(this.path, this.prev);
+        return new Knot(Path.next(this.path), this, prev);
     } else if (type === 'break') {
         return this;
     } else if (type === 'token' && text === '=') {

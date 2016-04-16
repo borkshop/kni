@@ -56,6 +56,24 @@ test([
 
 test([
     'Hello, World!\n',
+    '- Farewell.\n'
+], {
+    "start": {"type": "text", "text": "Hello, World!", "next": "start.1"},
+    "start.1": {"type": "break", "next": "start.2"},
+    "start.2": {"type": "text", "text": "Farewell.", "next": "end"},
+    "end": {"type": "end"}
+});
+
+test([
+    '- Farewell.\n'
+], {
+    "start": {"type": "break", "next": "start.1"},
+    "start.1": {"type": "text", "text": "Farewell.", "next": "end"},
+    "end": {"type": "end"}
+});
+
+test([
+    'Hello, World!\n',
     '\n',
     'Farewell, World!\n'
 ], {
