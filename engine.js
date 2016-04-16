@@ -4,14 +4,13 @@ var readline = require('readline');
 
 module.exports = ReadlineEngine;
 
-function ReadlineEngine(story, state) {
+function ReadlineEngine(story, start) {
     var self = this;
     this.story = story;
-    this.state = state || {};
     this.blocks = [[]];
     this.options = [];
     this.keywords = {};
-    this.instruction = {type: 'goto', label: 'start'};
+    this.instruction = {type: 'goto', label: start || 'start'};
     this.readline = readline.createInterface({
         input: process.stdin,
         output: process.stdout

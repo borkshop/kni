@@ -1,0 +1,64 @@
+{
+  "name": "inkblot",
+  "description": [
+    "inkblot [-j] [-s label] script.ink "
+  ],
+  "usage": [
+    "<script> :input  Script file name",
+    "[-s <start>]     Start script at this label",
+    "[-j|--json]      Dump compiled script as JSON instead of running interactively."
+  ],
+  "terms": {
+    "script": {
+      "flags": [],
+      "arg": "script",
+      "command": null,
+      "collectorType": null,
+      "type": "input",
+      "required": true,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Script file name"
+    },
+    "start": {
+      "flags": [
+        {
+          "flag": "-s",
+          "short": true
+        }
+      ],
+      "arg": "start",
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Start script at this label"
+    },
+    "json": {
+      "flags": [
+        {
+          "flag": "-j",
+          "short": true
+        },
+        {
+          "flag": "--json",
+          "long": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Dump compiled script as JSON instead of running interactively."
+    }
+  },
+  "parsers": {},
+  "converters": {},
+  "validators": {},
+  "collectors": {}
+}

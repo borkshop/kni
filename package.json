@@ -3,8 +3,12 @@
   "version": "0.0.0",
   "description": "A text adventure language and runtime inspired by inkle/ink",
   "main": "index.js",
+  "bin": {
+    "inkblot": "./inkblot.js"
+  },
   "dependencies": {
-    "pop-equals": "^1.0.0"
+    "pop-equals": "^1.0.0",
+    "shon": "^3.0.5"
   },
   "devDependencies": {
     "eslint": "^2.7.0",
@@ -16,7 +20,8 @@
     "lint": "eslint .",
     "cover": "istanbul cover --report html --print node -- test.js && istanbul report text && npm run check-cover -s",
     "check-cover": "istanbul check-coverage",
-    "view-cover": "opn ./coverage/index.html"
+    "view-cover": "opn ./coverage/index.html",
+    "usage": "usage2json inkblot.usage > inkblot.json"
   },
   "repository": {
     "type": "git",

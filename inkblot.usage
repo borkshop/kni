@@ -1,0 +1,5 @@
+usage: inkblot [-j] [-s label] script.ink
+
+script:      <script> :input  Script file name
+start:       [-s <start>]     Start script at this label
+json:        [-j|--json]      Dump compiled script as JSON instead of running interactively.
