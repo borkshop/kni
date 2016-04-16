@@ -107,8 +107,8 @@ ReadlineEngine.prototype.command = function command(command) {
         this.readline.close();
     }
     var n = +command;
-    if (n >= 0 && n < this.options.length) {
-        this.instruction = this.story[this.options[n].branch];
+    if (n >= 1 && n <= this.options.length) {
+        this.instruction = this.story[this.options[n - 1].branch];
         this.flush();
     } else if (this.keywords[command]) {
         this.instruction = this.story[this.keywords[command]];
@@ -136,7 +136,7 @@ ReadlineEngine.prototype.prompt = function prompt() {
     this.display();
     for (var i = 0; i < this.options.length; i++) {
         var option = this.options[i];
-        console.log(i + '. ' + option.label);
+        console.log((i + 1) + '. ' + option.label);
     }
     this.readline.question('> ', this.boundCommand);
 };
