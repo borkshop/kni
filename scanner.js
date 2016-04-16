@@ -3,6 +3,8 @@
 // Transforms a stream of text into a sequence of 'lines', tracking each line's
 // level of indentation.
 
+// The scanner feeds into an outline lexer.
+
 var tabWidth = 4;
 var debug = process.env.DEBUG_SCANNER;
 

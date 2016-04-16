@@ -1,5 +1,15 @@
 'use strict';
 
+// Transforms a stream of lines with known indentation levels and leaders like
+// bullets, and transforms these into a stream of lines with start and stop
+// tokens around changes in indentation depth.
+//
+// The outline lexer receives lines from a scanner and sends start, stop, and
+// text lines to an inline lexer.
+
+// TODO remove the break emission feature
+// TODO rename as OutlineLexer outline-lexer.js
+
 module.exports = Lexer;
 
 var debug = process.env.DEBUG_OUTLINE_LEXER;

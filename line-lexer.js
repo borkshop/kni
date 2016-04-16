@@ -1,5 +1,24 @@
 'use strict';
 
+// Receives a stream of start, stop, and text tokens from an outline lexer and
+// produces a more comprehensive stream of tokens by breaking text tokens into
+// constituent text and operator tokens.
+// For example, "= hi -> hi" would break into four tokens.
+//
+// The token stream ultimately drives a parser state machine.
+// The `next` method of the parse state must return another parse state.
+// Each parse state must capture the syntax tree and graph of incomplete parse
+// states.
+// The final parse state captures the entire syntax tree.
+
+// TODO rename InlineLexer inline-lexer.js
+// TODO stop merging line tokens with the accumulator (merging text tokens
+// should occur during parsing or runtime). This will require passing forward
+// a flag indicating whether the token was preceeded by whitespace.
+// TODO create a Parser that just drives the generator state machine (instead
+// of doing the state monad here), and expose an API for capturing the AST from
+// a parse state, so this API can be proxied by the debug parser.
+
 module.exports = LineLexer;
 
 var debug = process.env.DEBUG_INLINE_LEXER;
