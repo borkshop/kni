@@ -420,3 +420,62 @@ test([
         "type": "end"
     }
 });
+
+test([
+    '+ You s[S]ay, "Hello, World!"\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Say, \"Hello, World!\"",
+        "keywords": [],
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "You say, \"Hello, World!\"",
+        "next": "end"
+    },
+    "start.1": {
+        "type": "prompt"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    '+ You s[S]ay, "Hello, World!"\n',
+    '+ You s[S]ay, "Good bye."\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Say, \"Hello, World!\"",
+        "keywords": [],
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "You say, \"Hello, World!\"",
+        "next": "end"
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Say, \"Good bye.\"",
+        "keywords": [],
+        "branch": "start.1.1",
+        "next": "start.2"
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "You say, \"Good bye.\"",
+        "next": "end"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "end": {
+        "type": "end"
+    }
+});

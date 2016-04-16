@@ -67,21 +67,44 @@ Knot.prototype.return = function _return(prev) {
 };
 
 function Option(path, parent, prev, ends) {
-    this.type = 'option';
+    this.type = 'option[]';
     this.path = path;
     this.parent = parent;
     this.prev = prev;
     this.ends = ends;
     this.option = null;
+    this.question = '';
+    this.answer = '';
+    this.position = 0;
 }
 
 Option.prototype.next = function next(type, text) {
     // istanbul ignore else
-    if (type === 'text') {
-        this.option = new story.Option(this.path, text, this.prev, this.ends);
-        return new Knot(Path.firstChild(this.path), this, this.option);
-    } else {
-        throw new Error('TODO'); // TODO
+    if (type === 'text' && this.position === 0) {
+        this.answer += text;
+        return this;
+    } else if (type === 'token' && text === '[' && this.position === 0) {
+        this.position = 1;
+        return this;
+    } else if (type === 'text' && this.position === 1) {
+        this.question += text;
+        return this;
+    } else if (type === 'token' && text === ']' && this.position === 1) {
+        this.position = 2;
+        return this;
+    } else if (type === 'text' && this.position === 2) {
+        this.question += text;
+        this.answer += text;
+        return this;
+    } else if (this.position === 0) {
+        this.option = new story.Option(this.path, this.answer, this.prev, this.ends);
+        return new Knot(Path.firstChild(this.path), this, this.option).next(type, text);
+    } else if (this.position === 1) {
+        throw new Error('expected matching ]');
+    } else if (this.position === 2) {
+        this.option = new story.Option(this.path, this.question, this.prev, this.ends);
+        var answer = new story.Text(Path.firstChild(this.path), this.answer, this.option);
+        return new Knot(Path.next(answer.path), this, answer).next(type, text);
     }
 };
 
