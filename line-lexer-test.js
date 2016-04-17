@@ -52,7 +52,7 @@ test([
     'bye',
     'STOP',
     'STOP'
-])
+]);
 
 test([
     'And they lived happily ever after.',
@@ -65,7 +65,7 @@ test([
     'The End',
     'STOP',
     'STOP'
-])
+]);
 
 test([
     '-> hi',
