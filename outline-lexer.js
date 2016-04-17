@@ -18,12 +18,20 @@ function OutlineLexer(generator) {
     this.top = 0;
     this.stack = [this.top];
     this.broken = false;
+    this.debug = debug;
 }
 
 OutlineLexer.prototype.next = function next(line, scanner) {
     // istanbul ignore if
-    if (debug) {
-        console.error('OUTLINE', JSON.stringify(line), scanner.indent, JSON.stringify(scanner.leader), this.stack, this.top);
+    if (this.debug) {
+        console.error(
+            'OLL', scanner.position(),
+            JSON.stringify(line),
+            'indent', scanner.indent,
+            'leader', JSON.stringify(scanner.leader),
+            'stack', this.stack,
+            'top', this.top
+        );
     }
     while (scanner.indent < this.top) {
         this.generator = this.generator.next('stop', '', scanner);
@@ -52,7 +60,7 @@ OutlineLexer.prototype.next = function next(line, scanner) {
 
 OutlineLexer.prototype.return = function _return(scanner) {
     for (var i = 0; i < this.stack.length; i++) {
-        this.generator.next('stop', '', scanner);
+        this.generator = this.generator.next('stop', '', scanner);
     }
     this.stack.length = 0;
     return this;

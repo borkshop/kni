@@ -38,7 +38,7 @@ function Knot(path, parent, prev) {
     this.prev = prev;
 }
 
-Knot.prototype.next = function next(type, text) {
+Knot.prototype.next = function next(type, text, scanner) {
     if (type === 'text') {
         return new Knot(Path.next(this.path), this.parent, new story.Text(this.path, text, this.prev));
     } else if (type === 'stop') {
@@ -58,7 +58,7 @@ Knot.prototype.next = function next(type, text) {
     } else if (type === 'token' && text === '->') {
         return new Goto(this.path, this.parent, this.prev);
     } else {
-        throw new Error('no support for type in knot state: ' + type + ' ' + JSON.stringify(text));
+        throw new Error(scanner.position() + ': no support for type in knot state: ' + type + ' ' + JSON.stringify(text));
     }
 };
 

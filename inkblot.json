@@ -1,12 +1,17 @@
 {
   "name": "inkblot",
   "description": [
-    "inkblot [-j] [-s label] script.ink "
+    "inkblot [-j] [-s label] script.ink"
   ],
   "usage": [
     "<script> :input  Script file name",
     "[-s <start>]     Start script at this label",
-    "[-j|--json]      Dump compiled script as JSON instead of running interactively."
+    "[-j|--json]      Dump compiled script as JSON instead of running interactively.",
+    "[--di]           Log input file before processing",
+    "[--dp]           Enable parser debug logging",
+    "[--dil]          Enable inline lexer debug logging",
+    "[--dol]          Enable outline lexer debug logging",
+    "[--ds]           Enable scanner debug loggin"
   ],
   "terms": {
     "script": {
@@ -55,6 +60,86 @@
       "minLength": null,
       "maxLength": null,
       "help": "Dump compiled script as JSON instead of running interactively."
+    },
+    "debugInput": {
+      "flags": [
+        {
+          "flag": "--di",
+          "long": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Log input file before processing"
+    },
+    "debugParser": {
+      "flags": [
+        {
+          "flag": "--dp",
+          "long": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Enable parser debug logging"
+    },
+    "debugInlineLexer": {
+      "flags": [
+        {
+          "flag": "--dil",
+          "long": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Enable inline lexer debug logging"
+    },
+    "debugOutlineLexer": {
+      "flags": [
+        {
+          "flag": "--dol",
+          "long": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Enable outline lexer debug logging"
+    },
+    "debugScanner": {
+      "flags": [
+        {
+          "flag": "--ds",
+          "long": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Enable scanner debug loggin"
     }
   },
   "parsers": {},

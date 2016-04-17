@@ -20,6 +20,7 @@ function Scanner(generator) {
     this.columnNo = 0;
     this.leading = true;
     this.leader = '';
+    this.debug = debug;
 }
 
 Scanner.prototype.next = function next(text) {
@@ -27,8 +28,8 @@ Scanner.prototype.next = function next(text) {
         var c = text[i];
         var d = text[i + 1];
         // istanbul ignore if
-        if (debug) {
-            console.error('SCAN', i, JSON.stringify(c));
+        if (this.debug) {
+            console.error('SCN', this.position() + ':' + i, JSON.stringify(c + d));
         }
         if (c === '\t') {
             this.columnNo = nextTabStop(this.columnNo);
@@ -63,6 +64,11 @@ Scanner.prototype.next = function next(text) {
 
 Scanner.prototype.return = function _return() {
     this.generator.return(this);
+};
+
+// istanbul ignore next
+Scanner.prototype.position = function position() {
+    return (this.lineNo + 1) + ':' + (this.columnNo + 1);
 };
 
 function nextTabStop(columnNo) {

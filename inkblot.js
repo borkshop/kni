@@ -7,6 +7,7 @@ var ReadlineEngine = require('./engine');
 var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
 var InlineLexer = require('./inline-lexer');
+var Parser = require('./parser');
 var grammar = require('./grammar');
 var exec = require('shon/exec');
 var usage = require('./inkblot.json');
@@ -25,28 +26,46 @@ function main() {
             return;
         }
 
-        // console.log(ink);
+        if (config.debugInput) {
+            console.log(ink);
+        }
 
         var story = {};
-        var p = grammar.start();
+        var interactive = true;
+
+        var p = new Parser(grammar.start());
         var il = new InlineLexer(p);
         var ol = new OutlineLexer(il);
         var s = new Scanner(ol);
+
+        if (config.debugParser) {
+            p.debug = true;
+            interactive = false;
+        }
+        if (config.debugInlineLexer) {
+            il.debug = true;
+            interactive = false;
+        }
+        if (config.debugOutlineLexer) {
+            ol.debug = true;
+            interactive = false;
+        }
+        if (config.debugScanner) {
+            s.debug = true;
+            interactive = false;
+        }
+
         s.next(ink);
         s.return();
 
-        // console.log(JSON.stringify(ll.generator, null, 4));
-
-        if (il.generator.prev) {
-            il.generator.prev.write(story, 'end');
-            story.end = {type: 'end'};
-        } else {
-            story.start = {type: 'end'};
-        }
+        p.write(story);
 
         if (config.json) {
             console.log(JSON.stringify(story, null, 4));
-        } else {
+            interactive = false;
+        }
+
+        if (interactive) {
             var engine = new ReadlineEngine(story, config.start);
             engine.continue();
         }

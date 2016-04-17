@@ -53,7 +53,7 @@ Text.prototype.write = function write(story, next) {
 
 // istanbul ignore next
 Text.prototype.inline = function inline() {
-    var line = this.name + ':text(' + JSON.stringify(this.text) + ')';
+    var line = this.name + ':text(' + JSON.stringify(this.text.slice(0, 10)) + ')';
     if (this.prev) {
         line += ' <- ' + this.prev.inline();
     }

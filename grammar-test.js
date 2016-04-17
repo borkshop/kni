@@ -4,11 +4,12 @@ var equals = require('pop-equals');
 var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
 var InlineLexer = require('./inline-lexer');
+var Parser = require('./parser');
 var grammar = require('./grammar');
 
 function test(input, output) {
     var story = {};
-    var p = grammar.start();
+    var p = new Parser(grammar.start());
     var il = new InlineLexer(p);
     var ol = new OutlineLexer(il);
     var s = new Scanner(ol);
@@ -16,13 +17,7 @@ function test(input, output) {
         s.next(input[i]);
     }
     s.return();
-    // console.log(JSON.stringify(il.generator, null, 4));
-    if (il.generator.prev) {
-        il.generator.prev.write(story, 'end');
-        story.end = {type: 'end'};
-    } else {
-        story.start = {type: 'end'};
-    }
+    p.write(story);
     // istanbul ignore if
     if (!equals(story, output)) {
         console.error('ERROR');

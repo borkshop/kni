@@ -27,16 +27,22 @@ function InlineLexer(generator) {
     this.spaced = false;
     this.skipping = false;
     this.accumulator = '';
+    this.debug = debug;
 }
 
 InlineLexer.prototype.next = function next(type, text, scanner) {
     // istanbul ignore if
-    if (debug) {
-        console.error('INLINE', type, JSON.stringify(text), this.spaced ? 'spaced' : '');
+    if (this.debug) {
+        console.error(
+            'ILL', scanner.position(),
+            type,
+            this.spaced ? 'space then' : '',
+            JSON.stringify(text)
+        );
     }
     if (type !== 'text') {
         this.flush(scanner);
-        this.generator = this.generator.next(type, text);
+        this.generator = this.generator.next(type, text, scanner);
         return this;
     }
     for (var i = 0; i < text.length; i++) {
@@ -50,7 +56,7 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             this.skipping = false;
             if (c === '-' && d === '>') {
                 this.flush(scanner);
-                this.generator = this.generator.next('token', '->');
+                this.generator = this.generator.next('token', '->', scanner);
                 this.spaced = false;
                 this.skipping = true;
                 i++;
@@ -62,7 +68,7 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
                 // TODO c === '*' || c === '_' // strength / emphasis
             ) {
                 this.flush(scanner);
-                this.generator = this.generator.next('token', c);
+                this.generator = this.generator.next('token', c, scanner);
             } else if (this.spaced) {
                 this.spaced = false;
                 this.accumulator += ' ' + c;
