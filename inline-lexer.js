@@ -11,7 +11,6 @@
 // states.
 // The final parse state captures the entire syntax tree.
 
-// TODO rename InlineLexer inline-lexer.js
 // TODO stop merging line tokens with the accumulator (merging text tokens
 // should occur during parsing or runtime). This will require passing forward
 // a flag indicating whether the token was preceeded by whitespace.
@@ -19,18 +18,18 @@
 // of doing the state monad here), and expose an API for capturing the AST from
 // a parse state, so this API can be proxied by the debug parser.
 
-module.exports = LineLexer;
+module.exports = InlineLexer;
 
 var debug = process.env.DEBUG_INLINE_LEXER;
 
-function LineLexer(generator) {
+function InlineLexer(generator) {
     this.generator = generator;
     this.spaced = false;
     this.skipping = false;
     this.accumulator = '';
 }
 
-LineLexer.prototype.next = function next(type, text, scanner) {
+InlineLexer.prototype.next = function next(type, text, scanner) {
     // istanbul ignore if
     if (debug) {
         console.error('INLINE', type, JSON.stringify(text), this.spaced ? 'spaced' : '');
@@ -76,7 +75,7 @@ LineLexer.prototype.next = function next(type, text, scanner) {
     return this;
 };
 
-LineLexer.prototype.flush = function flush(scanner) {
+InlineLexer.prototype.flush = function flush(scanner) {
     if (this.accumulator) {
         this.generator = this.generator.next('text', this.accumulator, scanner);
         this.accumulator = '';

@@ -2,23 +2,23 @@
 
 var equals = require('pop-equals');
 var Scanner = require('./scanner');
-var Lexer = require('./lexer');
-var LineLexer = require('./line-lexer');
+var OutlineLexer = require('./outline-lexer');
+var InlineLexer = require('./inline-lexer');
 var grammar = require('./grammar');
 
 function test(input, output) {
     var story = {};
     var p = grammar.start();
-    var ll = new LineLexer(p);
-    var l = new Lexer(ll);
-    var s = new Scanner(l);
+    var il = new InlineLexer(p);
+    var ol = new OutlineLexer(il);
+    var s = new Scanner(ol);
     for (var i = 0; i < input.length; i++) {
         s.next(input[i]);
     }
     s.return();
-    // console.log(JSON.stringify(ll.generator, null, 4));
-    if (ll.generator.prev) {
-        ll.generator.prev.write(story, 'end');
+    // console.log(JSON.stringify(il.generator, null, 4));
+    if (il.generator.prev) {
+        il.generator.prev.write(story, 'end');
         story.end = {type: 'end'};
     } else {
         story.start = {type: 'end'};

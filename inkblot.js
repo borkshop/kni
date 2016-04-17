@@ -5,8 +5,8 @@
 var fs = require('fs');
 var ReadlineEngine = require('./engine');
 var Scanner = require('./scanner');
-var Lexer = require('./lexer');
-var LineLexer = require('./line-lexer');
+var OutlineLexer = require('./outline-lexer');
+var InlineLexer = require('./inline-lexer');
 var grammar = require('./grammar');
 var exec = require('shon/exec');
 var usage = require('./inkblot.json');
@@ -29,16 +29,16 @@ function main() {
 
         var story = {};
         var p = grammar.start();
-        var ll = new LineLexer(p);
-        var l = new Lexer(ll);
-        var s = new Scanner(l);
+        var il = new InlineLexer(p);
+        var ol = new OutlineLexer(il);
+        var s = new Scanner(ol);
         s.next(ink);
         s.return();
 
         // console.log(JSON.stringify(ll.generator, null, 4));
 
-        if (ll.generator.prev) {
-            ll.generator.prev.write(story, 'end');
+        if (il.generator.prev) {
+            il.generator.prev.write(story, 'end');
             story.end = {type: 'end'};
         } else {
             story.start = {type: 'end'};

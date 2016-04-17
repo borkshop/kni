@@ -2,15 +2,15 @@
 
 var fs = require('fs');
 
-var Lexer = require('./lexer');
 var Scanner = require('./scanner');
+var OutlineLexer = require('./outline-lexer');
 var LexLister = require('./lex-lister');
 var equals = require('pop-equals');
 
 function test(input, output) {
     var text = input.map(enline).join('');
     var lister = new LexLister();
-    var lexer = new Lexer(lister);
+    var lexer = new OutlineLexer(lister);
     var scanner = new Scanner(lexer);
     scanner.next(text);
     scanner.return();

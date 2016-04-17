@@ -1,27 +1,27 @@
 'use strict';
 
 var equals = require('pop-equals');
-var Lexer = require('./lexer');
 var Scanner = require('./scanner');
-var LineLexer = require('./line-lexer');
+var OutlineLexer = require('./outline-lexer');
+var InlineLexer = require('./inline-lexer');
 var LexLister = require('./lex-lister');
 
 function test(input, output) {
     var text = input.map(enline).join('');
-    var lister = new LexLister();
-    var lineLexer = new LineLexer(lister);
-    var lexer = new Lexer(lineLexer);
-    var scanner = new Scanner(lexer);
+    var ll = new LexLister();
+    var il = new InlineLexer(ll);
+    var ol = new OutlineLexer(il);
+    var scanner = new Scanner(ol);
     scanner.next(text);
     scanner.return();
-    lineLexer.next('stop', ''); // induce second flush for coverage
+    il.next('stop', ''); // induce second flush for coverage
 
     // istanbul ignore if
-    if (!equals(lister.list, output)) {
+    if (!equals(ll.list, output)) {
         console.error('ERROR');
         console.error(input);
         console.error('expected', output);
-        console.error('actual  ', lister.list);
+        console.error('actual  ', ll.list);
         global.fail = true;
     }
 }

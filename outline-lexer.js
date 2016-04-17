@@ -8,20 +8,19 @@
 // text lines to an inline lexer.
 
 // TODO remove the break emission feature
-// TODO rename as OutlineLexer outline-lexer.js
 
-module.exports = Lexer;
+module.exports = OutlineLexer;
 
 var debug = process.env.DEBUG_OUTLINE_LEXER;
 
-function Lexer(generator) {
+function OutlineLexer(generator) {
     this.generator = generator;
     this.top = 0;
     this.stack = [this.top];
     this.broken = false;
 }
 
-Lexer.prototype.next = function next(line, scanner) {
+OutlineLexer.prototype.next = function next(line, scanner) {
     // istanbul ignore if
     if (debug) {
         console.error('OUTLINE', JSON.stringify(line), scanner.indent, JSON.stringify(scanner.leader), this.stack, this.top);
@@ -51,7 +50,7 @@ Lexer.prototype.next = function next(line, scanner) {
     return this;
 };
 
-Lexer.prototype.return = function _return(scanner) {
+OutlineLexer.prototype.return = function _return(scanner) {
     for (var i = 0; i < this.stack.length; i++) {
         this.generator.next('stop', '', scanner);
     }
