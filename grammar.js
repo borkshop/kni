@@ -67,7 +67,7 @@ Knot.prototype.return = function _return(prev) {
 };
 
 function Option(path, parent, prev, ends) {
-    this.type = 'option[]';
+    this.type = 'option';
     this.path = path;
     this.parent = parent;
     this.prev = prev;

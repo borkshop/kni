@@ -21,6 +21,15 @@ Break.prototype.write = function write(story, next) {
     };
 };
 
+// istanbul ignore next
+Break.prototype.inline = function inline() {
+    var line = this.name + ':break';
+    if (this.prev) {
+        line += ' <- ' + this.prev.inline();
+    }
+    return line;
+};
+
 exports.Text = Text;
 
 function Text(path, text, prev) {
@@ -40,6 +49,15 @@ Text.prototype.write = function write(story, next) {
         text: this.text,
         next: next
     };
+};
+
+// istanbul ignore next
+Text.prototype.inline = function inline() {
+    var line = this.name + ':text(' + JSON.stringify(this.text) + ')';
+    if (this.prev) {
+        line += ' <- ' + this.prev.inline();
+    }
+    return line;
 };
 
 exports.Option = Option;
@@ -70,6 +88,19 @@ Option.prototype.write = function write(story, next) {
     }
 };
 
+// istanbul ignore next
+Option.prototype.inline = function inline() {
+    var line = this.name + ':option(';
+    if (this.branch) {
+        line += this.branch;
+    }
+    line += ')';
+    if (this.prev) {
+        line += ' <- ' + this.prev.inline();
+    }
+    return line;
+};
+
 exports.Options = Options;
 
 function Options(path, ends, prev) {
@@ -94,6 +125,24 @@ Options.prototype.write = function write(story, next) {
     };
 };
 
+// istanbul ignore next
+Options.prototype.inline = function inline() {
+    var line = this.name + ':prompt(';
+    for (var i = 0; i < this.ends.length; i++) {
+        if (i !== 0) {
+            line += ', ';
+        }
+        var end = this.ends[i];
+        line += end.name;
+        // end.write(story, next);
+    }
+    line += ')';
+    if (this.prev) {
+        line += ' <- ' + this.prev.inline();
+    }
+    return line;
+};
+
 exports.Goto = Goto;
 
 function Goto(path, label, prev) {
@@ -113,4 +162,13 @@ Goto.prototype.write = function write(story, next) {
         type: 'goto',
         label: this.label
     };
-}
+};
+
+// istanbul ignore next
+Goto.prototype.inline = function inline() {
+    var line = this.name + ':goto';
+    if (this.prev) {
+        line += ' <- ' + this.prev.inline();
+    }
+    return line;
+};
