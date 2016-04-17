@@ -30,6 +30,17 @@ To run an Inkblot, use the command-line interactive reader:
 
 ```
 ❯ inkblot hello.ink
+Hello, "World!"
+1. Say, "Hello".
+2. Say, "Farewell."
+> 1
+You say, "Hello".
+You are too kind, hello again to you too.
+1. Say, "Hello".
+2. Say, "Farewell."
+> 2
+You say, "Farewell."
+The End.
 ```
 
 The command line tool can also generate the intermediate JSON representation of
