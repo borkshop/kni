@@ -8,6 +8,7 @@ var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
 var InlineLexer = require('./inline-lexer');
 var Parser = require('./parser');
+var Story = require('./story');
 var grammar = require('./grammar');
 var exec = require('shon/exec');
 var usage = require('./inkblot.json');
@@ -30,10 +31,10 @@ function main() {
             console.log(ink);
         }
 
-        var story = {};
+        var story = new Story();
         var interactive = true;
 
-        var p = new Parser(grammar.start());
+        var p = new Parser(grammar.start(story));
         var il = new InlineLexer(p);
         var ol = new OutlineLexer(il);
         var s = new Scanner(ol);
@@ -58,15 +59,18 @@ function main() {
         s.next(ink);
         s.return();
 
-        p.write(story);
-
         if (config.json) {
-            console.log(JSON.stringify(story, null, 4));
+            console.log(JSON.stringify(story.states, null, 4));
+            interactive = false;
+        }
+
+        if (config.dot) {
+            console.log(p.dot());
             interactive = false;
         }
 
         if (interactive) {
-            var engine = new ReadlineEngine(story, config.start);
+            var engine = new ReadlineEngine(story.states, config.start);
             engine.continue();
         }
     }

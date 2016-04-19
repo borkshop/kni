@@ -10,7 +10,7 @@ function pathToName(path) {
         name += '.' + path[i];
     }
     var last = path[i];
-    if (last !== 0) {
+    if (path.length > 1 && last !== 0) {
         name += '.' + last;
     }
     return name;

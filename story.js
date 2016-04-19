@@ -1,174 +1,82 @@
 'use strict';
 
 var Path = require('./path');
+var constructors = {};
 
-exports.Break = Break;
+module.exports = Story;
 
-function Break(path, prev) {
-    this.type = 'break';
-    this.path = path;
-    this.name = Path.toName(path);
-    this.prev = prev;
+function Story() {
+    this.states = {};
+    Object.seal(this);
 }
 
-Break.prototype.write = function write(story, next) {
-    if (this.prev) {
-        this.prev.write(story, this.name);
+Story.prototype.create = function create(path, type, text) {
+    var name = Path.toName(path);
+    var Node = constructors[type];
+    if (!Node) {
+        throw new Error('No node constructor for type: ' + type);
     }
-    story[this.name] = {
-        type: 'break',
-        next: next
-    };
+    var node = new Node(text);
+    this.states[name] = node;
+    return node;
 };
 
-// istanbul ignore next
-Break.prototype.inline = function inline() {
-    var line = this.name + ':break';
-    if (this.prev) {
-        line += ' <- ' + this.prev.inline();
-    }
-    return line;
-};
-
-exports.Text = Text;
-
-function Text(path, text, prev) {
+constructors.text = Text;
+function Text(text) {
     this.type = 'text';
-    this.path = path;
-    this.name = Path.toName(path);
     this.text = text;
-    this.prev = prev;
+    this.next = null;
+    Object.seal(this);
 }
 
-Text.prototype.write = function write(story, next) {
-    if (this.prev) {
-        this.prev.write(story, this.name);
-    }
-    story[this.name] = {
-        type: 'text',
-        text: this.text,
-        next: next
-    };
-};
+Text.prototype.tie = tie;
 
-// istanbul ignore next
-Text.prototype.inline = function inline() {
-    var line = this.name + ':text(' + JSON.stringify(this.text.slice(0, 10)) + ')';
-    if (this.prev) {
-        line += ' <- ' + this.prev.inline();
-    }
-    return line;
-};
+constructors.break = Break;
+function Break() {
+    this.type = 'break';
+    this.next = null;
+    Object.seal(this);
+}
 
-exports.Option = Option;
+Break.prototype.tie = tie;
 
-function Option(path, text, prev) {
+constructors.option = Option;
+function Option(label) {
     this.type = 'option';
-    this.path = path;
-    this.name = Path.toName(path);
-    this.text = text;
-    this.prev = prev;
-    this.branch = null;
-}
-
-Option.prototype.write = function write(story, next) {
-    if (!this.branch) {
-        this.branch = next;
-    } else {
-        if (this.prev) {
-            this.prev.write(story, this.name);
-        }
-        story[this.name] = {
-            type: 'option',
-            label: this.text,
-            keywords: [],
-            branch: this.branch,
-            next: next
-        };
-    }
-};
-
-// istanbul ignore next
-Option.prototype.inline = function inline() {
-    var line = this.name + ':option(';
-    if (this.branch) {
-        line += this.branch;
-    }
-    line += ')';
-    if (this.prev) {
-        line += ' <- ' + this.prev.inline();
-    }
-    return line;
-};
-
-exports.Options = Options;
-
-function Options(path, ends, prev) {
-    this.type = 'options';
-    this.path = path;
-    this.name = Path.toName(path);
-    this.ends = ends;
-    this.prev = prev;
-}
-
-Options.prototype.write = function write(story, next) {
-    // write ends before prev to populate branches
-    for (var i = 0; i < this.ends.length; i++) {
-        var end = this.ends[i];
-        end.write(story, next);
-    }
-
-    this.prev.write(story, this.name);
-
-    story[this.name] = {
-        type: 'prompt'
-    };
-};
-
-// istanbul ignore next
-Options.prototype.inline = function inline() {
-    var line = this.name + ':prompt(';
-    for (var i = 0; i < this.ends.length; i++) {
-        if (i !== 0) {
-            line += ', ';
-        }
-        var end = this.ends[i];
-        line += end.name;
-        // end.write(story, next);
-    }
-    line += ')';
-    if (this.prev) {
-        line += ' <- ' + this.prev.inline();
-    }
-    return line;
-};
-
-exports.Goto = Goto;
-
-function Goto(path, label, prev) {
-    this.type = 'goto';
-    this.path = path;
-    this.name = Path.toName(path);
     this.label = label;
-    this.prev = prev;
+    this.keywords = [];
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
 }
 
-Goto.prototype.write = function write(story, next) {
-    if (this.prev) {
-        this.prev.write(story, this.name);
-    }
+Option.prototype.tie = tie;
 
-    story[this.name] = {
-        type: 'goto',
-        label: this.label
-    };
-};
+constructors.prompt = Prompt;
+function Prompt() {
+    this.type = 'prompt';
+    Object.seal(this);
+}
 
-// istanbul ignore next
-Goto.prototype.inline = function inline() {
-    var line = this.name + ':goto';
-    if (this.prev) {
-        line += ' <- ' + this.prev.inline();
-    }
-    return line;
-};
+Prompt.prototype.tie = tie;
+
+constructors.goto = Goto;
+function Goto(label) {
+    this.type = 'goto';
+    this.label = label;
+    Object.seal(this);
+}
+
+Goto.prototype.tie = tie;
+
+constructors.end = End;
+function End() {
+    this.type = 'end';
+    Object.seal(this);
+}
+
+End.prototype.tie = tie;
+
+function tie(end) {
+    this.next = end;
+}

@@ -7,6 +7,7 @@
     "<script> :input  Script file name",
     "[-s <start>]     Start script at this label",
     "[-j|--json]      Dump compiled script as JSON instead of running interactively.",
+    "[--dot]          Dump the final parse tree in Graphviz DOT format.",
     "[--di]           Log input file before processing",
     "[--dp]           Enable parser debug logging",
     "[--dil]          Enable inline lexer debug logging",
@@ -60,6 +61,22 @@
       "minLength": null,
       "maxLength": null,
       "help": "Dump compiled script as JSON instead of running interactively."
+    },
+    "dot": {
+      "flags": [
+        {
+          "flag": "--dot",
+          "long": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Dump the final parse tree in Graphviz DOT format."
     },
     "debugInput": {
       "flags": [

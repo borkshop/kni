@@ -32,3 +32,13 @@ Parser.prototype.write = function write(story) {
         story.start = {type: 'end'};
     }
 };
+
+Parser.prototype.dot = function dot() {
+	var dot = '';
+	dot += 'digraph {\n';
+	dot += 'graph [ rankdir = "TB" ];\n';
+	dot += 'node [ shape = "record" ];\n';
+	dot += this.generator.dot({});
+	dot += '}\n';
+	return dot;
+};

@@ -6,10 +6,11 @@ var OutlineLexer = require('./outline-lexer');
 var InlineLexer = require('./inline-lexer');
 var Parser = require('./parser');
 var grammar = require('./grammar');
+var Story = require('./story');
 
 function test(input, output) {
-    var story = {};
-    var p = new Parser(grammar.start());
+    var story = new Story();
+    var p = new Parser(grammar.start(story));
     var il = new InlineLexer(p);
     var ol = new OutlineLexer(il);
     var s = new Scanner(ol);
@@ -17,15 +18,14 @@ function test(input, output) {
         s.next(input[i]);
     }
     s.return();
-    p.write(story);
     // istanbul ignore if
-    if (!equals(story, output)) {
+    if (!equals(JSON.parse(JSON.stringify(story.states)), output)) {
         console.error('ERROR');
         console.error(input.join(''));
         console.error('expected');
         console.error(JSON.stringify(output, null, 4));
         console.error('actual');
-        console.error(JSON.stringify(story, null, 4));
+        console.error(JSON.stringify(story.states, null, 4));
         global.fail = true;
     }
 }
@@ -137,6 +137,53 @@ test([
     "start.4": {
         "type": "text",
         "text": "Five",
+        "next": "end"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    'One\n',
+    '  Two\n',
+    '    Three\n',
+    '    - Four\n',
+    '  Five\n',
+    'Six\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "One",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Two",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Three",
+        "next": "start.3"
+    },
+    "start.3": {
+        "type": "break",
+        "next": "start.4"
+    },
+    "start.4": {
+        "type": "text",
+        "text": "Four",
+        "next": "start.5"
+    },
+    "start.5": {
+        "type": "text",
+        "text": "Five",
+        "next": "start.6"
+    },
+    "start.6": {
+        "type": "text",
+        "text": "Six",
         "next": "end"
     },
     "end": {
@@ -359,6 +406,115 @@ test([
         "type": "text",
         "text": "Delta",
         "next": "end"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    '+ Apples\n',
+    '  + Honeycrisps\n',
+    '  + Braeburns\n',
+    '+ Oranges\n',
+], {
+    "start": {
+        "type": "option",
+        "label": "Apples",
+        "keywords": [],
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "Honeycrisps",
+        "keywords": [],
+        "branch": "end",
+        "next": "start.0.2"
+    },
+    "start.0.2": {
+        "type": "option",
+        "label": "Braeburns",
+        "keywords": [],
+        "branch": "end",
+        "next": "start.0.3"
+    },
+    "start.0.3": {
+        "type": "prompt"
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Oranges",
+        "keywords": [],
+        "branch": "end",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    '+ Apples\n',
+    '  + Honeycrisps\n',
+    '    + Braeburns\n',
+    '    + Galas\n',
+    '  + Fujis\n',
+    '+ Oranges\n',
+], {
+    "start": {
+        "type": "option",
+        "label": "Apples",
+        "keywords": [],
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "Honeycrisps",
+        "keywords": [],
+        "branch": "start.0.1.1",
+        "next": "start.0.2"
+    },
+    "start.0.1.1": {
+        "type": "option",
+        "label": "Braeburns",
+        "keywords": [],
+        "branch": "end",
+        "next": "start.0.1.2"
+    },
+    "start.0.1.2": {
+        "type": "option",
+        "label": "Galas",
+        "keywords": [],
+        "branch": "end",
+        "next": "start.0.1.3"
+    },
+    "start.0.1.3": {
+        "type": "prompt"
+    },
+    "start.0.2": {
+        "type": "option",
+        "label": "Fujis",
+        "keywords": [],
+        "branch": "end",
+        "next": "start.0.3"
+    },
+    "start.0.3": {
+        "type": "prompt"
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Oranges",
+        "keywords": [],
+        "branch": "end",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "prompt"
     },
     "end": {
         "type": "end"
