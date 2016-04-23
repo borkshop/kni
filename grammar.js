@@ -154,10 +154,6 @@ MaybeOption.prototype.next = function next(type, text, scanner) {
     }
 };
 
-MaybeOption.prototype.return = function _return(prev, ends, scanner) {
-    return new Knot(Path.next(this.path), this.parent, ends);
-};
-
 function Branch(option) {
     this.type = 'branch';
     this.option = option;
@@ -220,12 +216,15 @@ function Goto(story, path, parent, ends) {
 Goto.prototype.next = function next(type, text, scanner) {
     if (type === 'text') {
         return readIdentifier(text, this);
+    // istanbul ignore else
     } else if (type === 'identifier') {
         tie(this.ends, this.path);
         this.story.create(this.path, 'goto', text);
         // TODO consider placing a guard here/somewhere to ensure that the
         // following route is traversable if further states are added.
         return new Knot(this.story, Path.next(this.path), this.parent, []);
+    } else {
+        throw new Error('Unexpected token after goto arrow: ' + type + ' ' + text + ' ' + scanner.position());
     }
 };
 

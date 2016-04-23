@@ -13,6 +13,7 @@ function Story() {
 Story.prototype.create = function create(path, type, text) {
     var name = Path.toName(path);
     var Node = constructors[type];
+    // istanbul ignore if
     if (!Node) {
         throw new Error('No node constructor for type: ' + type);
     }
