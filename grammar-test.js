@@ -566,9 +566,6 @@ test([
     "hi.1": {
         "type": "goto",
         "label": "hi",
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -628,5 +625,44 @@ test([
     },
     "end": {
         "type": "end"
+    }
+});
+
+test([
+    '+ You s[S]ay, "Hello, World!"\n',
+    '= again\n',
+    '+ You s[S]ay, "Good bye."\n',
+    '-> again\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Say, \"Hello, World!\"",
+        "keywords": [],
+        "branch": "start.0.1",
+        "next": "again"
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "You say, \"Hello, World!\"",
+        "next": "again.2"
+    },
+    "again": {
+        "type": "option",
+        "label": "Say, \"Good bye.\"",
+        "keywords": [],
+        "branch": "again.0.1",
+        "next": "again.1"
+    },
+    "again.0.1": {
+        "type": "text",
+        "text": "You say, \"Good bye.\"",
+        "next": "again.2"
+    },
+    "again.1": {
+        "type": "prompt"
+    },
+    "again.2": {
+        "type": "goto",
+        "label": "again"
     }
 });

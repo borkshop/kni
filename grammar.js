@@ -20,7 +20,9 @@ Start.prototype.return = function _return(path, ends, scanner) {
     if (path.length === 2 && path[0] === 'start' && path[1] === 0) {
         this.story.create(path, 'end');
     } else {
-        this.story.create(['end'], 'end');
+        if (ends.length) {
+            this.story.create(['end'], 'end');
+        }
         tie(ends, ['end']);
     }
     return new End();
@@ -111,14 +113,12 @@ Option.prototype.next = function next(type, text, scanner) {
         return this;
     } else if (this.position === 0) {
         this.option = this.story.create(this.path, 'option', this.answer);
-        this.option.tie(Path.toName(Path.next(this.path)));
         var branch = new Branch(this.option);
         return new Knot(this.story, Path.firstChild(this.path), this, [branch]).next(type, text);
     } else if (this.position === 1) {
         throw new Error('expected matching ]');
     } else if (this.position === 2) {
         this.option = this.story.create(this.path, 'option', this.question);
-        this.option.tie(Path.toName(Path.next(this.path)));
         var branch = new Branch(this.option);
         var path = Path.firstChild(this.path);
         tie([branch], path);
@@ -131,19 +131,24 @@ Option.prototype.return = function _return(path, ends, scanner) {
     return new MaybeOption(this.story, Path.next(this.path), this.parent, this.option, this.ends.concat(ends));
 };
 
-function MaybeOption(story, path, parent, options, ends) {
+function MaybeOption(story, path, parent, option, ends) {
     this.type = 'maybe-option';
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.story = story;
+    this.option = option;
     Object.seal(this);
 }
 
 MaybeOption.prototype.next = function next(type, text, scanner) {
     if (type === 'start' && text === '+') {
+        this.option.tie(Path.toName(this.path));
         return new Option(this.story, this.path, this.parent, this.ends);
+    } else if (type === 'token' && text === '=') {
+        return new OptionLabel(this.story, this.path, this.option, this.parent, this.ends);
     } else {
+        this.option.tie(Path.toName(this.path));
         var prompt = this.story.create(this.path, 'prompt');
         return this.parent.return(Path.next(this.path), this.ends, scanner).next(type, text, scanner);
     }
@@ -177,6 +182,27 @@ Label.prototype.next = function next(type, text, scanner) {
     // istanbul ignore else
     } else if (type === 'identifier') {
         return new Knot(this.story, [text, 0], this.parent, this.ends);
+    } else {
+        // TODO produce a readable error using scanner
+        throw new Error('expected label after =');
+    }
+};
+
+function OptionLabel(story, path, option, parent, ends) {
+    this.type = 'option-label';
+    this.story = story;
+    this.path = path;
+    this.option = option;
+    this.parent = parent;
+    this.ends = ends;
+}
+
+OptionLabel.prototype.next = function next(type, text, scanner) {
+    if (type === 'text') {
+        return readIdentifier(text, this);
+    // istanbul ignore else
+    } else if (type === 'identifier') {
+        return new MaybeOption(this.story, [text, 0], this.parent, this.option, this.ends);
     } else {
         // TODO produce a readable error using scanner
         throw new Error('expected label after =');
