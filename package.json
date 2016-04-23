@@ -15,6 +15,18 @@
     "istanbul": "^0.4.3",
     "opn": "^1.0.1"
   },
+  "files": [
+    "engine.js",
+    "grammar.js",
+    "inkblot.js",
+    "inkblot.json",
+    "inline-lexer.js",
+    "outline-lexer.js",
+    "parser.js",
+    "path.js",
+    "scanner.js",
+    "story.js"
+  ],
   "scripts": {
     "test": "npm ls -s && npm run lint && npm run cover -s",
     "lint": "eslint .",
