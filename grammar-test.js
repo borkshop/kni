@@ -628,3 +628,59 @@ test([
     }
 });
 
+test([
+    '+ Alpha\n',
+    '-\n',
+    '+ Omega\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Alpha",
+        "next": "start.1",
+        "branch": "start.2",
+        "keywords": []
+    },
+    "start.1": {
+        "type": "prompt"
+    },
+    "start.2": {
+        "type": "option",
+        "label": "Omega",
+        "next": "start.3",
+        "branch": "end",
+        "keywords": []
+    },
+    "start.3": {
+        "type": "prompt"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    '+ Alpha\n',
+    '\n',
+    '+ Omega\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Alpha",
+        "next": "start.1",
+        "branch": "end",
+        "keywords": []
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Omega",
+        "next": "start.2",
+        "branch": "end",
+        "keywords": []
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "end": {
+        "type": "end"
+    }
+});

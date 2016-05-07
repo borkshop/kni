@@ -50,6 +50,8 @@ function Knot(story, path, parent, ends) {
 Knot.prototype.next = function next(type, text, scanner) {
     if (type === 'stop') {
         return this.parent.return(this.path, this.ends, scanner);
+    } else if (type === 'text' && text === '-') {
+        return this;
     } else if (type === 'text') {
         tie(this.ends, this.path);
         var text = this.story.create(this.path, 'text', text);
