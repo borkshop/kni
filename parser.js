@@ -9,9 +9,9 @@ function Parser(generator) {
     this.debug = debug;
 }
 
-Parser.prototype.next = function next(type, text, scanner) {
+Parser.prototype.next = function next(type, space, text, scanner) {
     var prior = this.generator.type;
-    this.generator = this.generator.next(type, text, scanner);
+    this.generator = this.generator.next(type, space, text, scanner);
     // istanbul ignore if
     if (this.debug) {
         console.error(

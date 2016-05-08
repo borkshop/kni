@@ -34,7 +34,7 @@ function End() {
 }
 
 // istanbul ignore next
-End.prototype.next = function next(type, text, scanner) {
+End.prototype.next = function next(type, space, text, scanner) {
     throw new Error('nodes beyond root ' + type + ' ' + JSON.stringify(text));
 };
 
@@ -47,7 +47,7 @@ function Knot(story, path, parent, ends) {
     Object.seal(this);
 }
 
-Knot.prototype.next = function next(type, text, scanner) {
+Knot.prototype.next = function next(type, space, text, scanner) {
     if (type === 'stop') {
         return this.parent.return(this.path, this.ends, scanner);
     } else if (type === 'text' && text === '-') {
@@ -95,7 +95,7 @@ function Option(story, path, parent, ends) {
     Object.seal(this);
 }
 
-Option.prototype.next = function next(type, text, scanner) {
+Option.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
     if (type === 'text' && this.position === 0) {
         this.answer += text;
@@ -116,7 +116,7 @@ Option.prototype.next = function next(type, text, scanner) {
     } else if (this.position === 0) {
         this.option = this.story.create(this.path, 'option', this.answer);
         var branch = new Branch(this.option);
-        return new Knot(this.story, Path.firstChild(this.path), this, [branch]).next(type, text);
+        return new Knot(this.story, Path.firstChild(this.path), this, [branch]).next(type, space, text, scanner);
     } else if (this.position === 1) {
         throw new Error('expected matching ]');
     } else if (this.position === 2) {
@@ -125,7 +125,7 @@ Option.prototype.next = function next(type, text, scanner) {
         var path = Path.firstChild(this.path);
         tie([branch], path);
         var answer = this.story.create(path, 'text', this.answer);
-        return new Knot(this.story, Path.next(path), this, [answer]).next(type, text, scanner);
+        return new Knot(this.story, Path.next(path), this, [answer]).next(type, space, text, scanner);
     }
 };
 
@@ -143,14 +143,14 @@ function MaybeOption(story, path, parent, option, ends) {
     Object.seal(this);
 }
 
-MaybeOption.prototype.next = function next(type, text, scanner) {
+MaybeOption.prototype.next = function next(type, space, text, scanner) {
     if (type === 'start' && text === '+') {
         this.option.tie(Path.toName(this.path));
         return new Option(this.story, this.path, this.parent, this.ends);
     } else {
         this.option.tie(Path.toName(this.path));
         var prompt = this.story.create(this.path, 'prompt');
-        return this.parent.return(Path.next(this.path), this.ends, scanner).next(type, text, scanner);
+        return this.parent.return(Path.next(this.path), this.ends, scanner).next(type, '', text, scanner);
     }
 };
 
@@ -172,9 +172,9 @@ function Label(story, path, parent, ends) {
     this.ends = ends;
 }
 
-Label.prototype.next = function next(type, text, scanner) {
+Label.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text') {
-        return readIdentifier(text, this);
+        return readIdentifier(space, text, this, scanner);
     // istanbul ignore else
     } else if (type === 'identifier') {
         return new Knot(this.story, [text, 0], this.parent, this.ends);
@@ -192,9 +192,9 @@ function Goto(story, path, parent, ends) {
     this.ends = ends;
 }
 
-Goto.prototype.next = function next(type, text, scanner) {
+Goto.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text') {
-        return readIdentifier(text, this);
+        return readIdentifier(space, text, this, scanner);
     // istanbul ignore else
     } else if (type === 'identifier') {
         tie(this.ends, this.path);
@@ -207,7 +207,7 @@ Goto.prototype.next = function next(type, text, scanner) {
     }
 };
 
-function readIdentifier(text, node, scanner) {
+function readIdentifier(space, text, node, scanner) {
     var i = 0, c;
     // eat leading whitespace
     while (c = text[i], i < text.length && (c === ' ' || c === '\t')) {
@@ -223,10 +223,10 @@ function readIdentifier(text, node, scanner) {
     }
     // istanbul ignore else
     if (start < end) {
-        node = node.next('identifier', text.slice(start, end), scanner);
+        node = node.next('identifier', space, text.slice(start, end), scanner);
     }
     if (end < text.length) {
-        node = node.next('text', text.slice(end + 1), scanner);
+        node = node.next('text', space, text.slice(end + 1), scanner);
     }
     return node;
 }

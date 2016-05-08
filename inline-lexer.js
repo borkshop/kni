@@ -24,7 +24,7 @@ var debug = process.env.DEBUG_INLINE_LEXER;
 
 function InlineLexer(generator) {
     this.generator = generator;
-    this.spaced = false;
+    this.space = '';
     this.skipping = false;
     this.accumulator = '';
     this.debug = debug;
@@ -36,13 +36,13 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         console.error(
             'ILL', scanner.position(),
             type,
-            this.spaced ? 'space then' : '',
+            JSON.stringify(this.space),
             JSON.stringify(text)
         );
     }
     if (type !== 'text') {
         this.flush(scanner);
-        this.generator = this.generator.next(type, text, scanner);
+        this.generator = this.generator.next(type, this.space, text, scanner);
         return this;
     }
     for (var i = 0; i < text.length; i++) {
@@ -50,14 +50,14 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         var d = text[i + 1];
         if (c === ' ' || c === '\t') {
             if (!this.skipping) {
-                this.spaced = true;
+                this.space = ' ';
             }
         } else {
             this.skipping = false;
             if (c === '-' && d === '>') {
                 this.flush(scanner);
-                this.generator = this.generator.next('token', '->', scanner);
-                this.spaced = false;
+                this.generator = this.generator.next('token', this.space, '->', scanner);
+                this.space = '';
                 this.skipping = true;
                 i++;
             } else if (
@@ -68,24 +68,24 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
                 // TODO c === '*' || c === '_' // strength / emphasis
             ) {
                 this.flush(scanner);
-                this.generator = this.generator.next('token', c, scanner);
-            } else if (this.spaced) {
-                this.spaced = false;
+                this.generator = this.generator.next('token', this.space, c, scanner);
+            } else if (this.space.length) {
+                this.space = '';
                 this.accumulator += ' ' + c;
             } else {
                 this.accumulator += c;
             }
         }
     }
-    this.spaced = true;
+    this.space = ' ';
     return this;
 };
 
 InlineLexer.prototype.flush = function flush(scanner) {
     if (this.accumulator) {
-        this.generator = this.generator.next('text', this.accumulator, scanner);
+        this.generator = this.generator.next('text', this.space, this.accumulator, scanner);
         this.accumulator = '';
     }
-    this.spaced = false;
+    this.space = '';
     this.skipping = false;
 };
