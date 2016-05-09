@@ -106,6 +106,7 @@ ReadlineEngine.prototype.command = function command(command) {
     if (command === 'quit') {
         this.readline.close();
     }
+    console.log('');
     var n = +command;
     if (n >= 1 && n <= this.options.length) {
         this.instruction = this.story[this.options[n - 1].branch];
