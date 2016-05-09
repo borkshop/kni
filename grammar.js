@@ -123,9 +123,13 @@ Option.prototype.next = function next(type, space, text, scanner) {
         this.option = this.story.create(this.path, 'option', this.question);
         var branch = new Branch(this.option);
         var path = Path.firstChild(this.path);
-        tie([branch], path);
-        var answer = this.story.create(path, 'text', this.answer);
-        return new Knot(this.story, Path.next(path), this, [answer]).next(type, space, text, scanner);
+        if (this.answer) {
+            tie([branch], path);
+            var answer = this.story.create(path, 'text', this.answer);
+            return new Knot(this.story, Path.next(path), this, [answer]).next(type, space, text, scanner);
+        } else {
+            return new Knot(this.story, Path.next(path), this, [branch]).next(type, space, text, scanner);
+        }
     }
 };
 
