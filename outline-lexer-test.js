@@ -4,12 +4,13 @@ var fs = require('fs');
 
 var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
-var LexLister = require('./lex-lister');
 var equals = require('pop-equals');
+
+var debug = process.env.DEBUG_OUTLINE_LEXER;
 
 function test(input, output) {
     var text = input.map(enline).join('');
-    var lister = new LexLister();
+    var lister = new OutlineLexLister();
     var lexer = new OutlineLexer(lister);
     var scanner = new Scanner(lexer);
     scanner.next(text);
@@ -23,6 +24,25 @@ function test(input, output) {
         global.fail = true;
     }
 }
+
+function OutlineLexLister() {
+    this.list = [];
+    this.debug = debug;
+}
+
+OutlineLexLister.prototype.next = function next(type, text, scanner) {
+    // istanbul ignore if
+    if (this.debug) {
+        console.log("OLL", scanner.position(), type, JSON.stringify(text));
+    }
+    if (type !== 'text') {
+        this.list.push(type.toUpperCase());
+    }
+    if (text) {
+        this.list.push(text);
+    }
+    return this;
+};
 
 function enline(line) {
     return line + '\n';

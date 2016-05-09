@@ -712,3 +712,27 @@ test([
         "type": "end"
     }
 });
+
+test([
+    '+ [Alpha]\n',
+    '  Omega\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Alpha Omega",
+        "next": "start.1",
+        "branch": "start.0.1",
+        "keywords": []
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "Omega",
+        "next": "end"
+    },
+    "start.1": {
+        "type": "prompt"
+    },
+    "end": {
+        "type": "end"
+    }
+});

@@ -104,13 +104,13 @@ Option.prototype.next = function next(type, space, text, scanner) {
         this.position = 1;
         return this;
     } else if (type === 'text' && this.position === 1) {
-        this.question += text;
+        this.question += space + text;
         return this;
     } else if (type === 'token' && text === ']' && this.position === 1) {
         this.position = 2;
         return this;
     } else if (type === 'text' && this.position === 2) {
-        this.question += text;
+        this.question += space + text;
         this.answer += text;
         return this;
     } else if (this.position === 0) {
@@ -209,24 +209,21 @@ Goto.prototype.next = function next(type, space, text, scanner) {
 
 function readIdentifier(space, text, node, scanner) {
     var i = 0, c;
-    // eat leading whitespace
-    while (c = text[i], i < text.length && (c === ' ' || c === '\t')) {
-        i++;
-    }
-    var start = i;
+    // eat identifier
     while (c = text[i], i < text.length && c !== ' ' && c !== '\t') {
         i++;
     }
     var end = i;
+    // eat following whitespace
     while (c = text[i], i < text.length && (c === ' ' || c === '\t')) {
         i++;
     }
     // istanbul ignore else
-    if (start < end) {
-        node = node.next('identifier', space, text.slice(start, end), scanner);
+    if (end > 0) {
+        node = node.next('identifier', space, text.slice(0, end), scanner);
     }
-    if (end < text.length) {
-        node = node.next('text', space, text.slice(end + 1), scanner);
+    if (i < text.length) {
+        node = node.next('text', text.slice(end + 1, i), text.slice(i), scanner);
     }
     return node;
 }

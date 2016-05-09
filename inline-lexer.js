@@ -24,8 +24,9 @@ var debug = process.env.DEBUG_INLINE_LEXER;
 
 function InlineLexer(generator) {
     this.generator = generator;
-    this.space = '';
-    this.skipping = false;
+    this.leading = true;
+    this.lead = ''; // leading space
+    this.space = ''; // following space
     this.accumulator = '';
     this.debug = debug;
 }
@@ -36,11 +37,13 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         console.error(
             'ILL', scanner.position(),
             type,
+            JSON.stringify(this.lead),
             JSON.stringify(this.space),
             JSON.stringify(text)
         );
     }
     if (type !== 'text') {
+        this.space = '';
         this.flush(scanner);
         this.generator = this.generator.next(type, this.space, text, scanner);
         return this;
@@ -49,43 +52,51 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         var c = text[i];
         var d = text[i + 1];
         if (c === ' ' || c === '\t') {
-            if (!this.skipping) {
+            if (this.leading) {
+                this.lead = ' ';
+            } else {
                 this.space = ' ';
             }
+        } else if (c === '-' && d === '>') {
+            this.flush(scanner);
+            this.generator = this.generator.next('token', this.lead, '->', scanner);
+            this.lead = '';
+            this.space = '';
+            this.leading = true;
+            i++;
+        } else if (
+            c === '=' || // named label
+            c === '[' || c === ']' // You a[Ask] a question.
+            // TODO c === '{' || c === '}' || // logic
+            // TODO c === '`' || // keyword
+            // TODO c === '*' || c === '_' // strength / emphasis
+        ) {
+            this.flush(scanner);
+            this.generator = this.generator.next('token', this.lead, c, scanner);
+            this.lead = '';
+            this.space = '';
+            this.leading = true;
         } else {
-            this.skipping = false;
-            if (c === '-' && d === '>') {
-                this.flush(scanner);
-                this.generator = this.generator.next('token', this.space, '->', scanner);
-                this.space = '';
-                this.skipping = true;
-                i++;
-            } else if (
-                c === '=' || // named label
-                c === '[' || c === ']' // You a[Ask] a question.
-                // TODO c === '{' || c === '}' || // logic
-                // TODO c === '`' || // keyword
-                // TODO c === '*' || c === '_' // strength / emphasis
-            ) {
-                this.flush(scanner);
-                this.generator = this.generator.next('token', this.space, c, scanner);
-            } else if (this.space.length) {
-                this.space = '';
-                this.accumulator += ' ' + c;
-            } else {
-                this.accumulator += c;
-            }
+            this.accumulator += this.space + c;
+            this.space = '';
+            this.leading = false;
         }
     }
-    this.space = ' ';
+    if (this.leading) {
+        this.lead = ' ';
+    } else {
+        this.space = ' ';
+    }
     return this;
 };
 
 InlineLexer.prototype.flush = function flush(scanner) {
     if (this.accumulator) {
-        this.generator = this.generator.next('text', this.space, this.accumulator, scanner);
+        this.generator = this.generator.next('text', this.lead, this.accumulator, scanner);
+        this.lead = '';
+        this.leading = true;
         this.accumulator = '';
     }
     this.space = '';
-    this.skipping = false;
+    this.leading = true;
 };
