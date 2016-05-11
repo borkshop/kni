@@ -1,0 +1,95 @@
+{
+    "start": {
+        "type": "jnz",
+        "variable": "start",
+        "branch": "start.1",
+        "next": "start.0.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "One Fish",
+        "keywords": [],
+        "branch": "start.0.2",
+        "next": "start.1"
+    },
+    "start.0.2": {
+        "type": "inc",
+        "variable": "start",
+        "next": "start.6"
+    },
+    "start.1": {
+        "type": "jnz",
+        "variable": "start.1",
+        "branch": "start.2",
+        "next": "start.1.1"
+    },
+    "start.1.1": {
+        "type": "option",
+        "label": "Two Fish",
+        "keywords": [],
+        "branch": "start.1.2",
+        "next": "start.2"
+    },
+    "start.1.2": {
+        "type": "inc",
+        "variable": "start.1",
+        "next": "start.6"
+    },
+    "start.2": {
+        "type": "jnz",
+        "variable": "start.2",
+        "branch": "start.3",
+        "next": "start.2.1"
+    },
+    "start.2.1": {
+        "type": "option",
+        "label": "Red Fish",
+        "keywords": [],
+        "branch": "start.2.2",
+        "next": "start.3"
+    },
+    "start.2.2": {
+        "type": "inc",
+        "variable": "start.2",
+        "next": "start.6"
+    },
+    "start.3": {
+        "type": "jnz",
+        "variable": "start.3",
+        "branch": "start.4",
+        "next": "start.3.1"
+    },
+    "start.3.1": {
+        "type": "option",
+        "label": "Blue Fish",
+        "keywords": [],
+        "branch": "start.3.2",
+        "next": "start.4"
+    },
+    "start.3.2": {
+        "type": "inc",
+        "variable": "start.3",
+        "next": "start.6"
+    },
+    "start.4": {
+        "type": "option",
+        "label": "End",
+        "keywords": [],
+        "branch": "start.4.1",
+        "next": "start.5"
+    },
+    "start.4.1": {
+        "type": "goto",
+        "label": "end"
+    },
+    "start.5": {
+        "type": "prompt"
+    },
+    "start.6": {
+        "type": "goto",
+        "label": "start"
+    },
+    "end": {
+        "type": "end"
+    }
+}
