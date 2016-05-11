@@ -45,13 +45,13 @@ ReadlineEngine.prototype.$end = function end() {
 
 ReadlineEngine.prototype.$text = function text() {
     this.blocks[this.blocks.length - 1].push(this.instruction.text);
-    this.next();
+    this.goto(this.instruction.next);
     return true;
 };
 
 ReadlineEngine.prototype.$break = function $break() {
     this.blocks.push([]);
-    this.next();
+    this.goto(this.instruction.next);
     return true;
 };
 
@@ -66,7 +66,7 @@ ReadlineEngine.prototype.$option = function option() {
         var keyword = this.instruction.keywords[i];
         this.keywords[keyword] = this.instruction.branch;
     }
-    this.next();
+    this.goto(this.instruction.next);
     return true;
 };
 
@@ -91,13 +91,9 @@ ReadlineEngine.prototype.$branch = function branch() {
             throw new Error('Branched to non-existant instruction' + label);
         }
     } else {
-        this.next();
+        this.goto(this.instruction.next);
     }
     return true;
-};
-
-ReadlineEngine.prototype.next = function next() {
-    this.goto(this.instruction.next);
 };
 
 ReadlineEngine.prototype.goto = function _goto(label) {
