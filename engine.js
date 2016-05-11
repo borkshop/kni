@@ -4,6 +4,8 @@ var readline = require('readline');
 
 module.exports = ReadlineEngine;
 
+var debug = process.env.DEBUG_READLINE_ENGINE;
+
 function ReadlineEngine(story, start) {
     var self = this;
     this.story = story;
@@ -15,6 +17,7 @@ function ReadlineEngine(story, start) {
         input: process.stdin,
         output: process.stdout
     });
+    this.debug = debug;
     this.boundCommand = command;
     function command(answer) {
         self.command(answer);
@@ -24,6 +27,9 @@ function ReadlineEngine(story, start) {
 ReadlineEngine.prototype.continue = function _continue() {
     var _continue;
     do {
+        if (this.debug) {
+            console.log(this.instruction);
+        }
         if (!this['$' + this.instruction.type]) {
             throw new Error('Unexpected instruction type: ' + this.instruction.type);
         }
@@ -95,6 +101,9 @@ ReadlineEngine.prototype.next = function next() {
 };
 
 ReadlineEngine.prototype.goto = function _goto(label) {
+    if (this.debug) {
+        console.log('GOTO', label);
+    }
     var next = this.story[label];
     if (!next) {
         throw new Error('Story missing knot for label: ' + label);
