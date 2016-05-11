@@ -12,6 +12,7 @@ function ReadlineEngine(story, start) {
     this.blocks = [[]];
     this.options = [];
     this.keywords = {};
+    this.variables = {};
     this.instruction = {type: 'goto', label: start || 'start'};
     this.readline = readline.createInterface({
         input: process.stdin,
@@ -76,20 +77,20 @@ ReadlineEngine.prototype.$prompt = function prompt() {
 };
 
 ReadlineEngine.prototype.$inc = function inc() {
-    if (this.state[this.instruction.name] == null) {
-        this.state[this.instruction.name] = 0;
+    if (this.variables[this.instruction.variable] == null) {
+        this.variables[this.instruction.variable] = 0;
     }
-    this.state[this.instruction.name]++;
+    this.variables[this.instruction.variable]++;
+    this.goto(this.instruction.next);
     return true;
 };
 
-ReadlineEngine.prototype.$branch = function branch() {
-    if (this.state[this.instruction.name]) {
-        var label = this.instruction.branch;
-        this.instruction = this.story[label];
-        if (!this.instruction) {
-            throw new Error('Branched to non-existant instruction' + label);
-        }
+ReadlineEngine.prototype.$jnz = function jnz() {
+    if (this.debug) {
+        console.log('JNZ', this.instruction.variable, this.variables[this.instruction.variable]);
+    }
+    if (this.variables[this.instruction.variable]) {
+        this.goto(this.instruction.branch);
     } else {
         this.goto(this.instruction.next);
     }

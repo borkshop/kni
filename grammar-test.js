@@ -720,9 +720,9 @@ test([
     "start": {
         "type": "option",
         "label": "Alpha Omega",
-        "next": "start.1",
+        "keywords": [],
         "branch": "start.0.1",
-        "keywords": []
+        "next": "start.1"
     },
     "start.0.1": {
         "type": "text",
@@ -743,12 +743,101 @@ test([
     "start": {
         "type": "option",
         "label": "Alpha",
-        "next": "start.1",
+        "keywords": [],
         "branch": "end",
-        "keywords": []
+        "next": "start.1"
     },
     "start.1": {
         "type": "prompt"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    '* [Choice]\n',
+    'Fin\n'
+], {
+    "start": {
+        "type": "jnz",
+        "variable": "start",
+        "branch": "start.1",
+        "next": "start.0.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "Choice",
+        "next": "start.1",
+        "branch": "start.0.2",
+        "keywords": []
+    },
+    "start.0.2": {
+        "type": "inc",
+        "variable": "start",
+        "next": "start.2"
+    },
+    "start.1": {
+        "type": "prompt"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Fin",
+        "next": "end"
+    },
+    "end": {
+        "type": "end"
+    }
+});
+
+test([
+    '* [One Fish]\n',
+    '* [Two Fish]\n',
+    'Fin\n'
+], {
+    "start": {
+        "type": "jnz",
+        "variable": "start",
+        "branch": "start.1",
+        "next": "start.0.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "One Fish",
+        "next": "start.1",
+        "branch": "start.0.2",
+        "keywords": []
+    },
+    "start.0.2": {
+        "type": "inc",
+        "variable": "start",
+        "next": "start.3"
+    },
+    "start.1": {
+        "type": "jnz",
+        "variable": "start.1",
+        "branch": "start.2",
+        "next": "start.1.1"
+    },
+    "start.1.1": {
+        "type": "option",
+        "label": "Two Fish",
+        "next": "start.2",
+        "branch": "start.1.2",
+        "keywords": []
+    },
+    "start.1.2": {
+        "type": "inc",
+        "variable": "start.1",
+        "next": "start.3"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "Fin",
+        "next": "end"
     },
     "end": {
         "type": "end"

@@ -56,9 +56,9 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         tie(this.ends, this.path);
         var text = this.story.create(this.path, 'text', text);
         return new Knot(this.story, Path.next(this.path), this.parent, [text]);
-    } else if (type === 'start' && text === '+') {
+    } else if (type === 'start' && (text === '+' || text === '*')) {
         tie(this.ends, this.path);
-        return new Option(this.story, this.path, this, []);
+        return new Option(text, this.story, this.path, this, []);
     } else if (type === 'start' && text === '-') {
         tie(this.ends, this.path);
         var node = this.story.create(this.path, 'break');
@@ -81,14 +81,15 @@ Knot.prototype.return = function _return(path, ends, scanner) {
     return new Knot(this.story, path, this.parent, ends);
 };
 
-function Option(story, path, parent, ends) {
+function Option(leader, story, path, parent, ends) {
     this.type = 'option';
+    this.leader = leader;
     this.story = story;
     this.path = path;
     this.name = Path.toName(path);
     this.parent = parent;
-    this.ends = ends;
-    this.option = null;
+    this.ends = ends; // to tie off to the next node after the entire option list
+    this.continues = []; // to tie off to the next option
     this.question = '';
     this.answer = '';
     this.position = 0;
@@ -114,58 +115,88 @@ Option.prototype.next = function next(type, space, text, scanner) {
         this.answer += text;
         return this;
     } else if (this.position === 0) {
-        this.option = this.story.create(this.path, 'option', this.answer);
-        var branch = new Branch(this.option);
-        return new Knot(this.story, Path.firstChild(this.path), this, [branch]).next(type, space, text, scanner);
+        return this.create(this.answer, '', type, space, text, scanner);
     } else if (this.position === 1) {
         throw new Error('expected matching ]');
     } else if (this.position === 2) {
-        this.option = this.story.create(this.path, 'option', this.question);
-        var branch = new Branch(this.option);
-        var path = Path.firstChild(this.path);
-        if (this.answer) {
-            tie([branch], path);
-            var answer = this.story.create(path, 'text', this.answer);
-            return new Knot(this.story, Path.next(path), this, [answer]).next(type, space, text, scanner);
-        } else {
-            return new Knot(this.story, Path.next(path), this, [branch]).next(type, space, text, scanner);
-        }
+        return this.create(this.question, this.answer, type, space, text, scanner);
     }
 };
 
-Option.prototype.return = function _return(path, ends, scanner) {
-    return new MaybeOption(this.story, Path.next(this.path), this.parent, this.option, this.ends.concat(ends));
+Option.prototype.create = function create(question, answer, type, space, text, scanner) {
+    var variable = Path.toName(this.path);
+    var path = this.path;
+
+    if (this.leader === '*') {
+        var jnz = this.story.create(path, 'jnz', variable);
+        var jnzBranch = new Branch(jnz);
+        this.continues.push(jnzBranch);
+        path = Path.firstChild(path);
+        tie([jnz], path);
+    }
+
+    var option = this.story.create(path, 'option', question);
+    this.continues.push(option);
+
+    if (this.leader === '*') {
+        path = Path.next(path);
+    } else {
+        path = Path.firstChild(path);
+    }
+
+    var prev = new Branch(option);
+    var next;
+
+    if (this.leader === '*') {
+        next = this.story.create(path, 'inc', variable);
+        tie([prev], path);
+        path = Path.next(path);
+        prev = next;
+    }
+
+    if (answer) {
+        next = this.story.create(path, 'text', answer);
+        tie([prev], path);
+        path = Path.next(path);
+        prev = next;
+    }
+
+    return new Knot(this.story, path, this, [prev]).next(type, space, text, scanner);
 };
 
-function MaybeOption(story, path, parent, option, ends) {
+Option.prototype.return = function _return(path, ends, scanner) {
+    return new MaybeOption(this.story, Path.next(this.path), this.parent, this.continues, this.ends.concat(ends));
+};
+
+function MaybeOption(story, path, parent, continues, ends) {
     this.type = 'maybe-option';
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.story = story;
-    this.option = option;
+    this.continues = continues;
     Object.seal(this);
 }
 
 MaybeOption.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'start' && text === '+') {
-        this.option.tie(Path.toName(this.path));
-        return new Option(this.story, this.path, this.parent, this.ends);
+    if (type === 'start' && (text === '+' || text === '*')) {
+        tie(this.continues, this.path);
+        return new Option(text, this.story, this.path, this.parent, this.ends);
     } else {
-        this.option.tie(Path.toName(this.path));
+        tie(this.continues, this.path);
         var prompt = this.story.create(this.path, 'prompt');
         return this.parent.return(Path.next(this.path), this.ends, scanner).next(type, '', text, scanner);
     }
 };
 
-function Branch(option) {
+function Branch(node) {
     this.type = 'branch';
-    this.option = option;
+    this.node = node;
     Object.seal(this);
 }
 
 Branch.prototype.tie = function tie(path) {
-    this.option.branch = path;
+    this.node.branch = path;
 };
 
 function Label(story, path, parent, ends) {

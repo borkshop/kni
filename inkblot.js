@@ -31,46 +31,54 @@ function main() {
             console.log(ink);
         }
 
-        var story = new Story();
         var interactive = true;
 
-        var p = new Parser(grammar.start(story));
-        var il = new InlineLexer(p);
-        var ol = new OutlineLexer(il);
-        var s = new Scanner(ol);
+        var states;
+        if (config.fromJson) {
+            states = JSON.parse(ink);
 
-        if (config.debugParser) {
-            p.debug = true;
-            interactive = false;
-        }
-        if (config.debugInlineLexer) {
-            il.debug = true;
-            interactive = false;
-        }
-        if (config.debugOutlineLexer) {
-            ol.debug = true;
-            interactive = false;
-        }
-        if (config.debugScanner) {
-            s.debug = true;
-            interactive = false;
+        } else {
+            var story = new Story();
+
+            var p = new Parser(grammar.start(story));
+            var il = new InlineLexer(p);
+            var ol = new OutlineLexer(il);
+            var s = new Scanner(ol);
+
+            if (config.debugParser) {
+                p.debug = true;
+                interactive = false;
+            }
+            if (config.debugInlineLexer) {
+                il.debug = true;
+                interactive = false;
+            }
+            if (config.debugOutlineLexer) {
+                ol.debug = true;
+                interactive = false;
+            }
+            if (config.debugScanner) {
+                s.debug = true;
+                interactive = false;
+            }
+
+            s.next(ink);
+            s.return();
+            states = story.states;
         }
 
-        s.next(ink);
-        s.return();
-
-        if (config.json) {
-            console.log(JSON.stringify(story.states, null, 4));
+        if (config.toJson) {
+            console.log(JSON.stringify(states, null, 4));
             interactive = false;
         }
 
         if (config.dot) {
-            console.log(p.dot());
+            console.log(story.dot());
             interactive = false;
         }
 
         if (interactive) {
-            var engine = new ReadlineEngine(story.states, config.start);
+            var engine = new ReadlineEngine(states, config.start);
             engine.continue();
         }
     }

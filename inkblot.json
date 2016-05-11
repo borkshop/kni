@@ -1,11 +1,12 @@
 {
   "name": "inkblot",
   "description": [
-    "inkblot [-j] [-s label] script.ink"
+    "inkblot [-jJ] [-s label] script.ink"
   ],
   "usage": [
     "<script> :input  Script file name",
     "[-s <start>]     Start script at this label",
+    "[-J]             Read ink script as compiled JSON",
     "[-j|--json]      Dump compiled script as JSON instead of running interactively.",
     "[--dot]          Dump the final parse tree in Graphviz DOT format.",
     "[--di]           Log input file before processing",
@@ -42,7 +43,23 @@
       "maxLength": null,
       "help": "Start script at this label"
     },
-    "json": {
+    "fromJson": {
+      "flags": [
+        {
+          "flag": "-J",
+          "short": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Read ink script as compiled JSON"
+    },
+    "toJson": {
       "flags": [
         {
           "flag": "-j",

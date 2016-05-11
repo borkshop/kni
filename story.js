@@ -22,6 +22,11 @@ Story.prototype.create = function create(path, type, text) {
     return node;
 };
 
+// istanbul ignore next
+Story.prototype.dot = function dot() {
+    return 'graph {}';
+};
+
 constructors.text = Text;
 function Text(text) {
     this.type = 'text';
@@ -69,6 +74,27 @@ function Goto(label) {
 }
 
 Goto.prototype.tie = tie;
+
+constructors.jnz = Jnz;
+function Jnz(variable) {
+    this.type = 'jnz';
+    this.variable = variable;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+
+Jnz.prototype.tie = tie;
+
+constructors.inc = Inc;
+function Inc(variable) {
+    this.type = 'inc';
+    this.variable = variable;
+    this.next = null;
+    Object.seal(this);
+}
+
+Inc.prototype.tie = tie;
 
 constructors.end = End;
 function End() {
