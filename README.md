@@ -7,9 +7,8 @@ intended for text adventures or interactive fiction.
 [Ink]: https://github.com/inkle/ink
 
 Inkblots consist of descriptive text and options.
-Inkblot runtime engines trace the dialog, entering at the top of the file
-(implicitly labeled "start") and exiting out the bottom (implicitly labeled
-"end").
+Inkblot runtime engines trace the dialog, entering at the top of the file and
+exiting out the bottom.
 The dialog accumulates options and presents a prompt for the interlocutor to
 chose the direction of the narrative.
 
@@ -49,29 +48,6 @@ a dialog graph, suitable for use with alternate ink readers.
 ```
 ❯ inkblot -j hello.ink
 {
-    "loop.0.1": {
-        "type": "text",
-        "text": "You say, \"Hello\".",
-        "next": "loop.0.2"
-    },
-    "loop.0.2": {
-        "type": "break",
-        "next": "loop.0.3"
-    },
-    "loop.0.3": {
-        "type": "text",
-        "text": "You are too kind, hello again to you too.",
-        "next": "loop.0.4"
-    },
-    "loop.0.4": {
-        "type": "goto",
-        "label": "loop"
-    },
-    "loop.1.1": {
-        "type": "text",
-        "text": "You say, \"Farewell.\"",
-        "next": "loop.3"
-    },
     "start": {
         "type": "text",
         "text": "Hello, \"World!\"",
@@ -84,12 +60,31 @@ a dialog graph, suitable for use with alternate ink readers.
         "branch": "loop.0.1",
         "next": "loop.1"
     },
+    "loop.0.1": {
+        "type": "text",
+        "text": "You say, \"Hello\".",
+        "next": "loop.0.2"
+    },
+    "loop.0.2": {
+        "type": "break",
+        "next": "loop.0.3"
+    },
+    "loop.0.3": {
+        "type": "text",
+        "text": "You are too kind, hello again to you too.",
+        "next": "loop"
+    },
     "loop.1": {
         "type": "option",
         "label": "Say, \"Farewell.\"",
         "keywords": [],
         "branch": "loop.1.1",
         "next": "loop.2"
+    },
+    "loop.1.1": {
+        "type": "text",
+        "text": "You say, \"Farewell.\"",
+        "next": "loop.3"
     },
     "loop.2": {
         "type": "prompt"
@@ -101,10 +96,7 @@ a dialog graph, suitable for use with alternate ink readers.
     "loop.4": {
         "type": "text",
         "text": "The End.",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 }
 ```
