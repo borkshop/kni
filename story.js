@@ -67,9 +67,9 @@ function Prompt() {
 Prompt.prototype.tie = tie;
 
 constructors.goto = Goto;
-function Goto(label) {
+function Goto(next) {
     this.type = 'goto';
-    this.label = label;
+    this.next = next;
     Object.seal(this);
 }
 
@@ -95,14 +95,6 @@ function Inc(variable) {
 }
 
 Inc.prototype.tie = tie;
-
-constructors.end = End;
-function End() {
-    this.type = 'end';
-    Object.seal(this);
-}
-
-End.prototype.tie = tie;
 
 function tie(end) {
     this.next = end;

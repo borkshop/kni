@@ -9,6 +9,14 @@ var grammar = require('./grammar');
 var Story = require('./story');
 
 function test(input, output) {
+    // istanbul ignore if
+    if (process.env.ONLY) {
+        return;
+    }
+    only(input, output);
+}
+
+function only(input, output) {
     var story = new Story();
     var p = new Parser(grammar.start(story));
     var il = new InlineLexer(p);
@@ -32,21 +40,34 @@ function test(input, output) {
 
 test([
 ], {
-    start: {type: 'end'}
+    start: {type: 'goto', next: null}
+});
+
+test([
+    '= end\n'
+], {
+    start: {type: 'goto', next: null},
+    end: {type: 'goto', next: null}
+});
+
+test([
+    '= end\n',
+    'The End\n'
+], {
+    start: {type: 'goto', next: 'end'},
+    end: {type: 'text', text: 'The End', next: null}
 });
 
 test([
     'Hello, World!\n'
 ], {
-    start: {type: 'text', text: 'Hello, World!', next: 'end'},
-    end: {type: 'end'}
+    start: {type: 'text', text: 'Hello, World!', next: null}
 });
 
 test([
     '  Hello, World!\n'
 ], {
-    start: {type: 'text', text: 'Hello, World!', next: 'end'},
-    end: {type: 'end'}
+    start: {type: 'text', text: 'Hello, World!', next: null}
 });
 
 test([
@@ -55,16 +76,14 @@ test([
 ], {
     "start": {"type": "text", "text": "Hello, World!", "next": "start.1"},
     "start.1": {"type": "break", "next": "start.2"},
-    "start.2": {"type": "text", "text": "Farewell.", "next": "end"},
-    "end": {"type": "end"}
+    "start.2": {"type": "text", "text": "Farewell.", "next": null},
 });
 
 test([
     '- Farewell.\n'
 ], {
     "start": {"type": "break", "next": "start.1"},
-    "start.1": {"type": "text", "text": "Farewell.", "next": "end"},
-    "end": {"type": "end"}
+    "start.1": {"type": "text", "text": "Farewell.", "next": null},
 });
 
 test([
@@ -80,10 +99,7 @@ test([
     "start.1": {
         "type": "text",
         "text": "Farewell, World!",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
@@ -100,10 +116,7 @@ test([
     "start.1": {
         "type": "text",
         "text": "Farewell, World!",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
@@ -137,10 +150,7 @@ test([
     "start.4": {
         "type": "text",
         "text": "Five",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
@@ -184,10 +194,7 @@ test([
     "start.6": {
         "type": "text",
         "text": "Six",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
@@ -204,10 +211,7 @@ test([
     "start.1": {
         "type": "text",
         "text": "Farewell, World!",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
@@ -218,14 +222,11 @@ test([
         "type": "option",
         "label": "Apples",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.1"
     },
     "start.1": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -237,21 +238,18 @@ test([
         "type": "option",
         "label": "Apples",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.1"
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.2"
     },
     "start.2": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -270,7 +268,7 @@ test([
         "type": "option",
         "label": "Honeycrisps",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.0.2"
     },
     "start.0.2": {
@@ -278,9 +276,6 @@ test([
     },
     "start.1": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -300,7 +295,7 @@ test([
         "type": "option",
         "label": "Honeycrisps",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.0.2"
     },
     "start.0.2": {
@@ -310,14 +305,11 @@ test([
         "type": "option",
         "label": "Oranges",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.2"
     },
     "start.2": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -367,10 +359,7 @@ test([
     "start.4": {
         "type": "text",
         "text": "Foxtrot",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
@@ -405,10 +394,7 @@ test([
     "start.4": {
         "type": "text",
         "text": "Delta",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
@@ -429,14 +415,14 @@ test([
         "type": "option",
         "label": "Honeycrisps",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.0.2"
     },
     "start.0.2": {
         "type": "option",
         "label": "Braeburns",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.0.3"
     },
     "start.0.3": {
@@ -446,14 +432,11 @@ test([
         "type": "option",
         "label": "Oranges",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.2"
     },
     "start.2": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -483,14 +466,14 @@ test([
         "type": "option",
         "label": "Braeburns",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.0.1.2"
     },
     "start.0.1.2": {
         "type": "option",
         "label": "Galas",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.0.1.3"
     },
     "start.0.1.3": {
@@ -500,7 +483,7 @@ test([
         "type": "option",
         "label": "Fujis",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.0.3"
     },
     "start.0.3": {
@@ -510,14 +493,11 @@ test([
         "type": "option",
         "label": "Oranges",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.2"
     },
     "start.2": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -525,26 +505,53 @@ test([
     '= hi\n',
     'Hello, World!\n',
 ], {
+    "start": {
+        "type": "goto",
+        "next": "hi"
+    },
     "hi": {
         "type": "text",
         "text": "Hello, World!",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
 test([
     '= hi Hello, World!\n',
 ], {
+    "start": {
+        "type": "goto",
+        "next": "hi"
+    },
     "hi": {
         "type": "text",
         "text": "Hello, World!",
-        "next": "end"
+        "next": null
+    }
+});
+
+test([
+    'Hello, World!\n',
+    '-> start\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Hello, World!",
+        "next": "start"
+    }
+});
+
+test([
+    '-> hi\n',
+    '= hi\n'
+], {
+    "start": {
+        "type": "goto",
+        "next": "hi"
     },
-    "end": {
-        "type": "end"
+    "hi": {
+        "type": "goto",
+        "next": null
     }
 });
 
@@ -556,16 +563,12 @@ test([
 ], {
     "start": {
         "type": "goto",
-        "label": "hi"
+        "next": "hi"
     },
     "hi": {
         "type": "text",
         "text": "Hello, World!",
-        "next": "hi.1"
-    },
-    "hi.1": {
-        "type": "goto",
-        "label": "hi",
+        "next": "hi"
     }
 });
 
@@ -582,13 +585,10 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "You say, \"Hello, World!\"",
-        "next": "end"
+        "next": null
     },
     "start.1": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -606,7 +606,7 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "You say, \"Hello, World!\"",
-        "next": "end"
+        "next": null
     },
     "start.1": {
         "type": "option",
@@ -618,13 +618,10 @@ test([
     "start.1.1": {
         "type": "text",
         "text": "You say, \"Good bye.\"",
-        "next": "end"
+        "next": null
     },
     "start.2": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -647,14 +644,11 @@ test([
         "type": "option",
         "label": "Omega",
         "next": "start.3",
-        "branch": "end",
+        "branch": null,
         "keywords": []
     },
     "start.3": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -667,21 +661,18 @@ test([
         "type": "option",
         "label": "Alpha",
         "next": "start.1",
-        "branch": "end",
+        "branch": null,
         "keywords": []
     },
     "start.1": {
         "type": "option",
         "label": "Omega",
         "next": "start.2",
-        "branch": "end",
+        "branch": null,
         "keywords": []
     },
     "start.2": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -703,13 +694,10 @@ test([
     "start.0.2": {
         "type": "text",
         "text": "Omega",
-        "next": "end"
+        "next": null
     },
     "start.1": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -727,13 +715,10 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "Omega",
-        "next": "end"
+        "next": null
     },
     "start.1": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -744,14 +729,11 @@ test([
         "type": "option",
         "label": "Alpha",
         "keywords": [],
-        "branch": "end",
+        "branch": null,
         "next": "start.1"
     },
     "start.1": {
         "type": "prompt"
-    },
-    "end": {
-        "type": "end"
     }
 });
 
@@ -783,10 +765,7 @@ test([
     "start.2": {
         "type": "text",
         "text": "Fin",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });
 
@@ -837,9 +816,6 @@ test([
     "start.3": {
         "type": "text",
         "text": "Fin",
-        "next": "end"
-    },
-    "end": {
-        "type": "end"
+        "next": null
     }
 });

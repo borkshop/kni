@@ -6,26 +6,32 @@ var story = require('./story');
 exports.start = start;
 
 function start(story) {
-    return new Knot(story, ['start', 0], new Start(story), []);
+    var end = new End();
+    var label = new Label(story, ['start'], end);
+    return new Knot(story, ['start', 0], label, [label]);
 }
 
-function Start(story) {
-    this.type = 'start';
-    this.path = ['start'];
+function Label(story, path, parent) {
+    this.type = 'label';
     this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.tied = false;
+    this.next = null;
     Object.seal(this);
 }
 
-Start.prototype.return = function _return(path, ends, scanner) {
-    if (path.length === 2 && path[0] === 'start' && path[1] === 0) {
-        this.story.create(path, 'end');
-    } else {
-        if (ends.length) {
-            this.story.create(['end'], 'end');
-        }
-        tie(ends, ['end']);
+Label.prototype.tie = function _tie(next) {
+    this.next = next;
+    this.tied = Path.toName(this.path) === next;
+};
+
+Label.prototype.return = function _return(path, ends, scanner) {
+    if (!this.tied) {
+        var label = this.story.create(this.path, 'goto', this.next);
+        ends.push(label);
     }
-    return new End();
+    return this.parent.return(path, ends, scanner);
 };
 
 function End() {
@@ -36,6 +42,10 @@ function End() {
 // istanbul ignore next
 End.prototype.next = function next(type, space, text, scanner) {
     throw new Error('nodes beyond root ' + type + ' ' + JSON.stringify(text));
+};
+
+End.prototype.return = function _return() {
+    return this;
 };
 
 function Knot(story, path, parent, ends) {
@@ -68,7 +78,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
     } else if (type === 'break') {
         return this;
     } else if (type === 'token' && text === '=') {
-        return new Label(this.story, this.path, this.parent, this.ends);
+        return new ExpectLabel(this.story, this.path, this.parent, this.ends);
     // istanbul ignore else
     } else if (type === 'token' && text === '->') {
         return new Goto(this.story, this.path, this.parent, this.ends);
@@ -199,7 +209,7 @@ Branch.prototype.tie = function tie(path) {
     this.node.branch = path;
 };
 
-function Label(story, path, parent, ends) {
+function ExpectLabel(story, path, parent, ends) {
     this.type = 'label';
     this.story = story;
     this.path = path;
@@ -207,12 +217,13 @@ function Label(story, path, parent, ends) {
     this.ends = ends;
 }
 
-Label.prototype.next = function next(type, space, text, scanner) {
+ExpectLabel.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text') {
         return readIdentifier(space, text, this, scanner);
     // istanbul ignore else
     } else if (type === 'identifier') {
-        return new Knot(this.story, [text, 0], this.parent, this.ends);
+        var label = new Label(this.story, [text, 0], this.parent);
+        return new Knot(this.story, [text, 0], label, this.ends.concat([label]));
     } else {
         // TODO produce a readable error using scanner
         throw new Error('expected label after =');
@@ -232,8 +243,7 @@ Goto.prototype.next = function next(type, space, text, scanner) {
         return readIdentifier(space, text, this, scanner);
     // istanbul ignore else
     } else if (type === 'identifier') {
-        tie(this.ends, this.path);
-        this.story.create(this.path, 'goto', text);
+        tieName(this.ends, text);
         // TODO consider placing a guard here/somewhere to ensure that the
         // following route is traversable if further states are added.
         return new Knot(this.story, Path.next(this.path), this.parent, []);
@@ -265,6 +275,10 @@ function readIdentifier(space, text, node, scanner) {
 
 function tie(ends, next) {
     var name = Path.toName(next);
+    tieName(ends, name);
+}
+
+function tieName(ends, name) {
     for (var i = 0; i < ends.length; i++) {
         var end = ends[i];
         end.tie(name);

@@ -13,7 +13,7 @@ function ReadlineEngine(story, start) {
     this.options = [];
     this.keywords = {};
     this.variables = {};
-    this.instruction = {type: 'goto', label: start || 'start'};
+    this.instruction = {type: 'goto', next: start || 'start'};
     this.readline = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -38,27 +38,18 @@ ReadlineEngine.prototype.continue = function _continue() {
     } while (_continue);
 };
 
-ReadlineEngine.prototype.$end = function end() {
-    this.display();
-    this.readline.close();
-    return false;
-};
-
 ReadlineEngine.prototype.$text = function text() {
     this.blocks[this.blocks.length - 1].push(this.instruction.text);
-    this.goto(this.instruction.next);
-    return true;
+    return this.goto(this.instruction.next);
 };
 
 ReadlineEngine.prototype.$break = function $break() {
     this.blocks.push([]);
-    this.goto(this.instruction.next);
-    return true;
+    return this.goto(this.instruction.next);
 };
 
 ReadlineEngine.prototype.$goto = function $goto() {
-    this.goto(this.instruction.label);
-    return true;
+    return this.goto(this.instruction.next);
 };
 
 ReadlineEngine.prototype.$option = function option() {
@@ -67,8 +58,7 @@ ReadlineEngine.prototype.$option = function option() {
         var keyword = this.instruction.keywords[i];
         this.keywords[keyword] = this.instruction.branch;
     }
-    this.goto(this.instruction.next);
-    return true;
+    return this.goto(this.instruction.next);
 };
 
 ReadlineEngine.prototype.$prompt = function prompt() {
@@ -81,8 +71,7 @@ ReadlineEngine.prototype.$inc = function inc() {
         this.variables[this.instruction.variable] = 0;
     }
     this.variables[this.instruction.variable]++;
-    this.goto(this.instruction.next);
-    return true;
+    return this.goto(this.instruction.next);
 };
 
 ReadlineEngine.prototype.$jnz = function jnz() {
@@ -90,22 +79,27 @@ ReadlineEngine.prototype.$jnz = function jnz() {
         console.log('JNZ', this.instruction.variable, this.variables[this.instruction.variable]);
     }
     if (this.variables[this.instruction.variable]) {
-        this.goto(this.instruction.branch);
+        return this.goto(this.instruction.branch);
     } else {
-        this.goto(this.instruction.next);
+        return this.goto(this.instruction.next);
     }
-    return true;
 };
 
-ReadlineEngine.prototype.goto = function _goto(label) {
+ReadlineEngine.prototype.goto = function _goto(name) {
     if (this.debug) {
-        console.log('GOTO', label);
+        console.log('GOTO', name);
     }
-    var next = this.story[label];
+    if (name === null) {
+        this.display();
+        this.readline.close();
+        return false;
+    }
+    var next = this.story[name];
     if (!next) {
-        throw new Error('Story missing knot for label: ' + label);
+        throw new Error('Story missing knot for name: ' + name);
     }
     this.instruction = next;
+    return true;
 };
 
 ReadlineEngine.prototype.command = function command(command) {
