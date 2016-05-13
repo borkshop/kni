@@ -63,9 +63,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
     } else if (type === 'text' && text === '-') {
         return this;
     } else if (type === 'text') {
-        tie(this.ends, this.path);
-        var text = this.story.create(this.path, 'text', text);
-        return new Knot(this.story, Path.next(this.path), this.parent, [text]);
+        return new Text(this.story, this.path, text, this.parent, this.ends);
     } else if (type === 'start' && (text === '+' || text === '*')) {
         tie(this.ends, this.path);
         return new Option(text, this.story, this.path, this, []);
@@ -91,6 +89,27 @@ Knot.prototype.return = function _return(path, ends, scanner) {
     return new Knot(this.story, path, this.parent, ends);
 };
 
+function Text(story, path, text, parent, ends) {
+    this.type = 'text';
+    this.story = story;
+    this.path = path;
+    this.text = text;
+    this.parent = parent;
+    this.ends = ends;
+}
+
+Text.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'text') {
+        this.text += space + text;
+        return this;
+    } else {
+        tie(this.ends, this.path);
+        var node = this.story.create(this.path, 'text', this.text);
+        return new Knot(this.story, Path.next(this.path), this.parent, [node])
+            .next(type, space, text, scanner);
+    }
+};
+
 function Option(leader, story, path, parent, ends) {
     this.type = 'option';
     this.leader = leader;
@@ -109,7 +128,7 @@ function Option(leader, story, path, parent, ends) {
 Option.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
     if (type === 'text' && this.position === 0) {
-        this.answer += text;
+        this.answer += space + text;
         return this;
     } else if (type === 'token' && text === '[' && this.position === 0) {
         this.position = 1;
@@ -123,12 +142,17 @@ Option.prototype.next = function next(type, space, text, scanner) {
     } else if (type === 'text' && this.position === 2) {
         this.question += space + text;
         this.answer += text;
+        this.position = 3;
+        return this;
+    } else if (type === 'text' && this.position === 3) {
+        this.question += space + text;
+        this.answer += space + text;
         return this;
     } else if (this.position === 0) {
         return this.create(this.answer, '', type, space, text, scanner);
     } else if (this.position === 1) {
         throw new Error('expected matching ]');
-    } else if (this.position === 2) {
+    } else if (this.position === 2 || this.position === 3) {
         return this.create(this.question, this.answer, type, space, text, scanner);
     }
 };
@@ -218,10 +242,8 @@ function ExpectLabel(story, path, parent, ends) {
 }
 
 ExpectLabel.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text') {
-        return readIdentifier(space, text, this, scanner);
     // istanbul ignore else
-    } else if (type === 'identifier') {
+    if (type === 'text') {
         var label = new Label(this.story, [text, 0], this.parent);
         return new Knot(this.story, [text, 0], label, this.ends.concat([label]));
     } else {
@@ -239,10 +261,8 @@ function Goto(story, path, parent, ends) {
 }
 
 Goto.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text') {
-        return readIdentifier(space, text, this, scanner);
     // istanbul ignore else
-    } else if (type === 'identifier') {
+    if (type === 'text') {
         tieName(this.ends, text);
         // TODO consider placing a guard here/somewhere to ensure that the
         // following route is traversable if further states are added.
@@ -251,27 +271,6 @@ Goto.prototype.next = function next(type, space, text, scanner) {
         throw new Error('Unexpected token after goto arrow: ' + type + ' ' + text + ' ' + scanner.position());
     }
 };
-
-function readIdentifier(space, text, node, scanner) {
-    var i = 0, c;
-    // eat identifier
-    while (c = text[i], i < text.length && c !== ' ' && c !== '\t') {
-        i++;
-    }
-    var end = i;
-    // eat following whitespace
-    while (c = text[i], i < text.length && (c === ' ' || c === '\t')) {
-        i++;
-    }
-    // istanbul ignore else
-    if (end > 0) {
-        node = node.next('identifier', space, text.slice(0, end), scanner);
-    }
-    if (i < text.length) {
-        node = node.next('text', text.slice(end + 1, i), text.slice(i), scanner);
-    }
-    return node;
-}
 
 function tie(ends, next) {
     var name = Path.toName(next);

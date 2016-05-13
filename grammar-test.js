@@ -542,6 +542,30 @@ test([
 });
 
 test([
+    'Hello, World!\n',
+    '->\n',
+    'start\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Hello, World!",
+        "next": "start"
+    }
+});
+
+test([
+    'Hello, World!\n',
+    '-> \n',
+    'start\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Hello, World!",
+        "next": "start"
+    }
+});
+
+test([
     '-> hi\n',
     '= hi\n'
 ], {

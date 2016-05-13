@@ -38,7 +38,7 @@ InlineLexLister.prototype.next = function next(type, space, text, scanner) {
         console.log("LL", scanner.position(), type, JSON.stringify(space), JSON.stringify(text));
     }
     if (space.length) {
-        this.list.push('SPACE', space);
+        this.list.push(space);
     }
     if (type !== 'text') {
         this.list.push(type.toUpperCase());
@@ -57,7 +57,15 @@ test([
     'x',
     'y'
 ], [
-    'x y',
+    'x', ' ', 'y',
+    'STOP',
+    'STOP'
+]);
+
+test([
+    'x '
+], [
+    'x',
     'STOP',
     'STOP'
 ]);
@@ -66,13 +74,13 @@ test([
     'You s[S]ay,', // the line break implies a single space
     '"Hello." -> bye',
 ], [
-    'You s',
+    'You', ' ', 's',
     'TOKEN', '[',
     'S',
     'TOKEN', ']',
-    'ay, "Hello."',
-    'TOKEN', '->',
-    'SPACE', ' ', 'bye',
+    'ay,', ' ', '"Hello."',
+    ' ', 'TOKEN', '->',
+    ' ', 'bye',
     'STOP',
     'STOP'
 ]);
@@ -83,7 +91,7 @@ test([
     'TOKEN', '[',
     'Alpha',
     'TOKEN', ']',
-    'SPACE', ' ', 'Omega',
+    ' ', 'Omega',
     'STOP',
     'STOP'
 ]);
@@ -95,7 +103,7 @@ test([
     'TOKEN', '[',
     'Alpha',
     'TOKEN', ']',
-    'SPACE', ' ', 'Omega',
+    ' ', 'Omega',
     'STOP',
     'STOP'
 ]);
@@ -107,9 +115,9 @@ test([
     'The End'
 ], [
 
-    'And they lived happily ever after.',
+    'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after.',
     'BREAK',
-    'The End',
+    'The', ' ', 'End',
     'STOP',
     'STOP'
 ]);
@@ -118,7 +126,7 @@ test([
     '-> hi',
 ], [
     'TOKEN', '->',
-    'SPACE', ' ', 'hi',
+    ' ', 'hi',
     'STOP',
     'STOP'
 ]);

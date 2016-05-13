@@ -11,22 +11,16 @@
 // states.
 // The final parse state captures the entire syntax tree.
 
-// TODO stop merging line tokens with the accumulator (merging text tokens
-// should occur during parsing or runtime). This will require passing forward
-// a flag indicating whether the token was preceeded by whitespace.
-// TODO create a Parser that just drives the generator state machine (instead
-// of doing the state monad here), and expose an API for capturing the AST from
-// a parse state, so this API can be proxied by the debug parser.
-
 module.exports = InlineLexer;
 
 var debug = process.env.DEBUG_INLINE_LEXER;
 
+var L1 = '=[]';
+var L2 = ['->'];
+
 function InlineLexer(generator) {
     this.generator = generator;
-    this.leading = true;
-    this.lead = ''; // leading space
-    this.space = ''; // following space
+    this.space = '';
     this.accumulator = '';
     this.debug = debug;
 }
@@ -34,69 +28,56 @@ function InlineLexer(generator) {
 InlineLexer.prototype.next = function next(type, text, scanner) {
     // istanbul ignore if
     if (this.debug) {
-        console.error(
-            'ILL', scanner.position(),
-            type,
-            JSON.stringify(this.lead),
-            JSON.stringify(this.space),
-            JSON.stringify(text)
-        );
+        console.log('ILL', type, JSON.stringify(text));
     }
+
     if (type !== 'text') {
+        this.generator.next(type, '', text, scanner);
         this.space = '';
-        this.flush(scanner);
-        this.generator = this.generator.next(type, this.space, text, scanner);
         return this;
     }
-    for (var i = 0; i < text.length; i++) {
+
+    for (var i = 0; i < text.length - 1; i++) {
         var c = text[i];
-        var d = text[i + 1];
+        var cc = c + text[i + 1];
         if (c === ' ' || c === '\t') {
-            if (this.leading) {
-                this.lead = ' ';
-            } else {
-                this.space = ' ';
-            }
-        } else if (c === '-' && d === '>') {
             this.flush(scanner);
-            this.generator = this.generator.next('token', this.lead, '->', scanner);
-            this.lead = '';
+            this.space = ' ';
+        } else if (L2.indexOf(cc) >= 0) {
+            this.flush(scanner);
+            this.generator.next('token', this.space, cc, scanner);
             this.space = '';
-            this.leading = true;
             i++;
-        } else if (
-            c === '=' || // named label
-            c === '[' || c === ']' // You a[Ask] a question.
-            // TODO c === '{' || c === '}' || // logic
-            // TODO c === '`' || // keyword
-            // TODO c === '*' || c === '_' // strength / emphasis
-        ) {
+        } else if (L1.indexOf(c) >= 0) {
             this.flush(scanner);
-            this.generator = this.generator.next('token', this.lead, c, scanner);
-            this.lead = '';
+            this.generator.next('token', this.space, c, scanner);
             this.space = '';
-            this.leading = true;
         } else {
-            this.accumulator += this.space + c;
-            this.space = '';
-            this.leading = false;
+            this.accumulator += c;
         }
     }
-    if (this.leading) {
-        this.lead = ' ';
-    } else {
-        this.space = ' ';
+
+    if (i < text.length) {
+        var c = text[i];
+        if (c === ' ' || c === '\t') {
+            // noop
+        } else if (L1.indexOf(c) >= 0) {
+            this.flush(scanner);
+            this.generator.next('token', this.space, c, scanner);
+        } else {
+            this.accumulator += c;
+        }
     }
+
+    this.flush(scanner);
+    this.space = ' ';
     return this;
 };
 
 InlineLexer.prototype.flush = function flush(scanner) {
     if (this.accumulator) {
-        this.generator = this.generator.next('text', this.lead, this.accumulator, scanner);
-        this.lead = '';
-        this.leading = true;
+        this.generator.next('text', this.space, this.accumulator, scanner);
         this.accumulator = '';
+        this.space = '';
     }
-    this.space = '';
-    this.leading = true;
 };
