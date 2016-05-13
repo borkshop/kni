@@ -82,6 +82,15 @@ ReadlineEngine.prototype.$jnz = function jnz() {
     }
 };
 
+ReadlineEngine.prototype.$sequence = function sequence() {
+    var next = this.read();
+    var index = this.read();
+    var branches = this.instruction.branches;
+    var next = branches[index];
+    this.write(Math.min(index + 1, branches.length - 1));
+    return this.goto(next);
+};
+
 ReadlineEngine.prototype.goto = function _goto(name) {
     if (this.debug) {
         console.log('GOTO', name);

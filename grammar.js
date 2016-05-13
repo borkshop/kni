@@ -306,6 +306,7 @@ Sequence.prototype.return = function _return(path, ends, scanner) {
 Sequence.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token' && text === '}') {
         return this.parent.return(this.returnPath, this.ends, scanner);
+    // istanbul ignore else
     } else if (type === 'token' && text === '|') {
         var name = Path.toName(this.path);
         var sequence = new Sequence(this.story, Path.next(this.path));
@@ -327,6 +328,9 @@ function SequenceKnot(story, path, parent, ends) {
 SequenceKnot.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text') {
         return new Text(this.story, this.path, text, this, this.ends);
+    // istanbul ignore else
+    } else if (type === 'token' && text === '->') {
+        return new Goto(this.story, this.path, this, this.ends);
     } else {
         return this.parent.return(this.path, this.ends, scanner)
             .next(type, space, text, scanner);
