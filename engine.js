@@ -67,10 +67,7 @@ ReadlineEngine.prototype.$prompt = function prompt() {
 };
 
 ReadlineEngine.prototype.$inc = function inc() {
-    if (this.variables[this.instruction.variable] == null) {
-        this.variables[this.instruction.variable] = 0;
-    }
-    this.variables[this.instruction.variable]++;
+    this.write(this.read() + 1);
     return this.goto(this.instruction.next);
 };
 
@@ -100,6 +97,19 @@ ReadlineEngine.prototype.goto = function _goto(name) {
     }
     this.instruction = next;
     return true;
+};
+
+ReadlineEngine.prototype.read = function read() {
+    var variable = this.instruction.variable;
+    if (this.variables[variable] === undefined) {
+        this.variables[variable] = 0;
+    }
+    return this.variables[variable];
+};
+
+ReadlineEngine.prototype.write = function write(value) {
+    var variable = this.instruction.variable;
+    this.variables[variable] = value;
 };
 
 ReadlineEngine.prototype.command = function command(command) {
