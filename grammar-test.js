@@ -843,3 +843,159 @@ test([
         "next": null
     }
 });
+
+test([
+    '{}\n'
+], {
+    "start": {
+        "type": "sequence",
+        "variable": "start",
+        "branches": ["start.0.1"]
+    },
+    "start.0.1": {
+        "type": "goto",
+        "next": null
+    }
+});
+
+test([
+    '{|}\n'
+], {
+    "start": {
+        "type": "sequence",
+        "variable": "start",
+        "branches": ["start.0.1", "start.0.2"]
+    },
+    "start.0.1": {
+        "type": "goto",
+        "next": null
+    },
+    "start.0.2": {
+        "type": "goto",
+        "next": null
+    }
+});
+
+test([
+    '{Alpha|Beta|Gamma}\n'
+], {
+    "start": {
+        "type": "sequence",
+        "variable": "start",
+        "branches": ["start.0.1", "start.0.2", "start.0.3"]
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "Alpha",
+        "next": null
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "Beta",
+        "next": null
+    },
+    "start.0.3": {
+        "type": "text",
+        "text": "Gamma",
+        "next": null
+    }
+});
+
+test([
+    '{Alpha|Bravo|Charlie}, Over\n'
+], {
+    "start": {
+        "type": "sequence",
+        "variable": "start",
+        "branches": ["start.0.1", "start.0.2", "start.0.3"]
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "Alpha",
+        "next": "start.1"
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "Bravo",
+        "next": "start.1"
+    },
+    "start.0.3": {
+        "type": "text",
+        "text": "Charlie",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": ", Over",
+        "next": null
+    }
+});
+
+test([
+    'Counting down, {Three|Two|One}, Lift-off\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Counting down,",
+        "next": "start.1",
+    },
+    "start.1": {
+        "type": "sequence",
+        "variable": "start.1",
+        "branches": ["start.1.1", "start.1.2", "start.1.3"]
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "Three",
+        "next": "start.2"
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": "Two",
+        "next": "start.2"
+    },
+    "start.1.3": {
+        "type": "text",
+        "text": "One",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": ", Lift-off",
+        "next": null
+    }
+});
+
+test([
+    'Counting down, {Three||One}, Lift-off\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Counting down,",
+        "next": "start.1",
+    },
+    "start.1": {
+        "type": "sequence",
+        "variable": "start.1",
+        "branches": ["start.1.1", "start.1.2", "start.1.3"]
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "Three",
+        "next": "start.2"
+    },
+    "start.1.2": {
+        "type": "goto",
+        "next": "start.2"
+    },
+    "start.1.3": {
+        "type": "text",
+        "text": "One",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": ", Lift-off",
+        "next": null
+    }
+});

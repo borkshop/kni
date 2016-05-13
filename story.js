@@ -96,6 +96,16 @@ function Inc(variable) {
 
 Inc.prototype.tie = tie;
 
+constructors.sequence = Sequence;
+function Sequence(variable) {
+    this.type = 'sequence';
+    this.variable = variable;
+    this.branches = [];
+    Object.seal(this);
+}
+
+Sequence.prototype.tie = tie;
+
 function tie(end) {
     this.next = end;
 }
