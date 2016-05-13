@@ -78,7 +78,7 @@ test([
     'TOKEN', '[',
     'S',
     'TOKEN', ']',
-    'ay,', ' ', '"Hello."',
+    'ay', ',', ' ', '"', 'Hello', '.', '"',
     ' ', 'TOKEN', '->',
     ' ', 'bye',
     'STOP',
@@ -115,7 +115,7 @@ test([
     'The End'
 ], [
 
-    'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after.',
+    'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after', '.',
     'BREAK',
     'The', ' ', 'End',
     'STOP',

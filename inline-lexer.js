@@ -17,6 +17,7 @@ var debug = process.env.DEBUG_INLINE_LEXER;
 
 var L1 = '=[]';
 var L2 = ['->'];
+var alpha = /\w/;
 
 function InlineLexer(generator) {
     this.generator = generator;
@@ -52,6 +53,10 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             this.flush(scanner);
             this.generator.next('token', this.space, c, scanner);
             this.space = '';
+        } else if (!alpha.test(c)) {
+            this.flush(scanner);
+            this.generator.next('text', this.space, c, scanner);
+            this.space = '';
         } else {
             this.accumulator += c;
         }
@@ -64,6 +69,10 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         } else if (L1.indexOf(c) >= 0) {
             this.flush(scanner);
             this.generator.next('token', this.space, c, scanner);
+        } else if (!alpha.test(c)) {
+            this.flush(scanner);
+            this.generator.next('text', this.space, c, scanner);
+            this.space = '';
         } else {
             this.accumulator += c;
         }
