@@ -81,7 +81,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         return sequence(this.story, this.path, this, this.ends, scanner);
     // istanbul ignore else
     } else if (type === 'token' && text === '->') {
-        return new Goto(this.story, this.path, this.parent, this.ends);
+        return new Goto(this.story, this.path, this, this.ends);
     } else {
         throw new Error(scanner.position() + ': no support for type in knot state: ' + type + ' ' + JSON.stringify(text));
     }
@@ -268,7 +268,7 @@ Goto.prototype.next = function next(type, space, text, scanner) {
         tieName(this.ends, text);
         // TODO consider placing a guard here/somewhere to ensure that the
         // following route is traversable if further states are added.
-        return new Knot(this.story, Path.next(this.path), this.parent, []);
+        return this.parent.return(Path.next(this.path), [], scanner);
     } else {
         throw new Error('Unexpected token after goto arrow: ' + type + ' ' + text + ' ' + scanner.position());
     }

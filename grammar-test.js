@@ -999,3 +999,18 @@ test([
         "next": null
     }
 });
+
+test([
+    '{Win! -> win}\n'
+], {
+    "start": {
+        "type": "sequence",
+        "variable": "start",
+        "branches": ["start.0.1"]
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "Win!",
+        "next": "win"
+    }
+});
