@@ -1,25 +1,52 @@
 {
     "start": {
         "type": "text",
-        "text": "Hello, World!",
-        "next": "start.1"
+        "text": "Hello, \"World!\"",
+        "next": "loop"
     },
-    "start.1": {
+    "loop": {
         "type": "option",
-        "keywords": ["hello"],
         "label": "Say, \"Hello\".",
-        "branch": "hello",
-        "next": "start.2"
+        "keywords": [],
+        "branch": "loop.0.1",
+        "next": "loop.1"
     },
-    "start.2": {
-        "type": "prompt"
-    },
-    "hello": {
+    "loop.0.1": {
         "type": "text",
         "text": "You say, \"Hello\".",
-        "next": "end"
+        "next": "loop.0.2"
     },
-    "end": {
-        "type": "end"
+    "loop.0.2": {
+        "type": "break",
+        "next": "loop.0.3"
+    },
+    "loop.0.3": {
+        "type": "text",
+        "text": "You are too kind, hello again to you too.",
+        "next": "loop"
+    },
+    "loop.1": {
+        "type": "option",
+        "label": "Say, \"Farewell.\"",
+        "keywords": [],
+        "branch": "loop.1.1",
+        "next": "loop.2"
+    },
+    "loop.1.1": {
+        "type": "text",
+        "text": "You say, \"Farewell.\"",
+        "next": "loop.3"
+    },
+    "loop.2": {
+        "type": "prompt"
+    },
+    "loop.3": {
+        "type": "break",
+        "next": "loop.4"
+    },
+    "loop.4": {
+        "type": "text",
+        "text": "The End.",
+        "next": null
     }
 }
