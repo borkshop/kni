@@ -97,6 +97,7 @@ ReadlineEngine.prototype.goto = function _goto(name) {
     }
     if (name === null) {
         this.display();
+        console.log('');
         this.readline.close();
         return false;
     }
