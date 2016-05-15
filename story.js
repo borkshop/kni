@@ -75,6 +75,17 @@ function Goto(next) {
 
 Goto.prototype.tie = tie;
 
+constructors.jz = Jz;
+function Jz(variable) {
+    this.type = 'jz';
+    this.variable = variable;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+
+Jz.prototype.tie = tie;
+
 constructors.jnz = Jnz;
 function Jnz(variable) {
     this.type = 'jnz';
@@ -85,6 +96,7 @@ function Jnz(variable) {
 }
 
 Jnz.prototype.tie = tie;
+
 
 constructors.inc = Inc;
 function Inc(variable) {
@@ -105,6 +117,17 @@ function Sequence(variable) {
 }
 
 Sequence.prototype.tie = tie;
+
+constructors.set = Set;
+function Set(variable) {
+    this.type = 'set';
+    this.variable = variable;
+    this.value = null;
+    this.next = null;
+    Object.seal(this);
+}
+
+Set.prototype.tie = tie;
 
 function tie(end) {
     this.next = end;

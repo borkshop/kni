@@ -59,7 +59,10 @@ Scanner.prototype.next = function next(text) {
             this.leading = false;
         }
     }
-    // TODO deal with remainder without \n
+
+    if (!this.leading) {
+        this.generator.next(text.slice(this.indentStart, i), this);
+    }
 };
 
 Scanner.prototype.return = function _return() {

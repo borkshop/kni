@@ -1014,3 +1014,88 @@ test([
         "next": "win"
     }
 });
+
+only([
+    '{=1 hi}'
+], {
+    "start": {
+        "type": "set",
+        "variable": "hi",
+        "value": 1,
+        "next": null
+    }
+});
+
+only([
+    '{=1 hi} Hello'
+], {
+    "start": {
+        "type": "set",
+        "variable": "hi",
+        "value": 1,
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Hello",
+        "next": null
+    }
+});
+
+only([
+    '{?hi} Hello'
+], {
+    "start": {
+        "type": "jz",
+        "variable": "hi",
+        "branch": null,
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Hello",
+        "next": null
+    }
+});
+
+only([
+    '{!hi} Hello'
+], {
+    "start": {
+        "type": "jnz",
+        "variable": "hi",
+        "branch": null,
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Hello",
+        "next": null
+    }
+});
+
+only([
+    '- {!hi} Hello\n',
+    'Bye\n',
+], {
+    "start": {
+        "type": "break",
+        "next": "start.1",
+    },
+    "start.1": {
+        "type": "jnz",
+        "variable": "hi",
+        "branch": "start.3",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Hello",
+        "next": "start.3"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "Bye",
+        "next": null
+    }
+});
