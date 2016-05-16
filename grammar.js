@@ -7,32 +7,10 @@ exports.start = start;
 
 function start(story) {
     var end = new End();
-    var label = new Label(story, ['start'], end);
-    return new Knot(story, ['start', 0], label, [label]);
+    var path = ['start'];
+    var start = story.create(path, 'goto', null);
+    return new Knot(story, ['start', 0], end, [start]);
 }
-
-function Label(story, path, parent) {
-    this.type = 'label';
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.tied = false;
-    this.next = null;
-    Object.seal(this);
-}
-
-Label.prototype.tie = function _tie(next) {
-    this.next = next;
-    this.tied = Path.toName(this.path) === next;
-};
-
-Label.prototype.return = function _return(path, ends, scanner) {
-    if (!this.tied) {
-        var label = this.story.create(this.path, 'goto', this.next);
-        ends.push(label);
-    }
-    return this.parent.return(path, ends, scanner);
-};
 
 function End() {
     this.type = 'end';
@@ -246,8 +224,10 @@ function ExpectLabel(story, path, parent, ends) {
 ExpectLabel.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
     if (type === 'text') {
-        var label = new Label(this.story, [text, 0], this.parent);
-        return new Knot(this.story, [text, 0], label, this.ends.concat([label]));
+        var path = [text, 0];
+        var label = this.story.create(path, 'goto', null);
+        tie(this.ends, path);
+        return new Knot(this.story, [text, 0], this.parent, this.ends.concat([label]));
     } else {
         // TODO produce a readable error using scanner
         throw new Error('expected label after =');
@@ -364,8 +344,8 @@ function sequence(story, path, parent, ends) {
     var first = Path.firstChild(path);
     node.branches.push(Path.toName(first));
     var sequence = new Sequence(story, Path.next(path), first, node, parent, []);
-    var label = new Label(story, first, sequence);
-    return new SequenceKnot(story, first, label, [label]);
+    var label = story.create(first, 'goto', null);
+    return new SequenceKnot(story, first, sequence, [label]);
 }
 
 function Sequence(story, returnPath, path, node, parent, ends) {
@@ -392,8 +372,8 @@ Sequence.prototype.next = function next(type, space, text, scanner) {
         var name = Path.toName(this.path);
         var sequence = new Sequence(this.story, Path.next(this.path));
         this.node.branches.push(name);
-        var label = new Label(this.story, this.path, this);
-        return new SequenceKnot(this.story, this.path, label, [label]);
+        var label = this.story.create(this.path, 'goto', null);
+        return new SequenceKnot(this.story, this.path, this, [label]);
     } else {
         throw new Error('expected } or |');
     }

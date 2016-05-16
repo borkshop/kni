@@ -46,7 +46,7 @@ test([
 test([
     '= end\n'
 ], {
-    start: {type: 'goto', next: null},
+    start: {type: 'goto', next: "end"},
     end: {type: 'goto', next: null}
 });
 
@@ -1015,7 +1015,7 @@ test([
     }
 });
 
-only([
+test([
     '{=1 hi}'
 ], {
     "start": {
@@ -1026,7 +1026,7 @@ only([
     }
 });
 
-only([
+test([
     '{=1 hi} Hello'
 ], {
     "start": {
@@ -1042,7 +1042,7 @@ only([
     }
 });
 
-only([
+test([
     '{?hi} Hello'
 ], {
     "start": {
@@ -1058,7 +1058,7 @@ only([
     }
 });
 
-only([
+test([
     '{!hi} Hello'
 ], {
     "start": {
@@ -1074,7 +1074,7 @@ only([
     }
 });
 
-only([
+test([
     '- {!hi} Hello\n',
     'Bye\n',
 ], {
@@ -1112,7 +1112,7 @@ test([
     "top": {
         "type": "text",
         "text": "Text",
-        "next": null
+        "next": "bottom"
     },
     "bottom": {
         "type": "goto",

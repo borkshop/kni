@@ -1,6 +1,5 @@
 'use strict';
 
-
 exports.toName = pathToName;
 
 function pathToName(path) {
