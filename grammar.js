@@ -230,7 +230,7 @@ ExpectLabel.prototype.next = function next(type, space, text, scanner) {
         return new Knot(this.story, [text, 0], this.parent, this.ends.concat([label]));
     } else {
         // TODO produce a readable error using scanner
-        throw new Error('expected label after =');
+        throw new Error('expected label after =, got ' + type + ' ' + text + ' ' + scanner.position());
     }
 };
 
@@ -267,7 +267,11 @@ Block.prototype.next = function next(type, space, text, scanner) {
     } else if (type === 'text' && text === '!') {
         return new Jump(this.story, this.path, this.parent, this.ends, 'jnz');
     } else if (type === 'token' && text === '=') {
-        return new Set(this.story, this.path, this.parent, this.ends);
+        return new Mutate(this.story, this.path, this.parent, this.ends, 'set');
+    } else if (type === 'text' && text === '+') {
+        return new Mutate(this.story, this.path, this.parent, this.ends, 'add');
+    } else if (type === 'text' && text === '-') {
+        return new Mutate(this.story, this.path, this.parent, this.ends, 'sub');
     } else {
         return sequence(this.story, this.path, this.parent, this.ends)
             .next(type, space, text, scanner);
@@ -290,14 +294,14 @@ Jump.prototype.next = function next(type, space, text, scanner) {
         this.variable = text;
         this.position++;
         return this;
+    // istanbul ignore else
     } else if (type === 'token' && this.position === 1 && text === '}') {
         this.node = this.story.create(this.path, this.type, this.variable);
         this.branch = new Branch(this.node);
         tie(this.ends, this.path);
         return new Knot(this.story, Path.next(this.path), this, [this.node]);
     } else {
-        console.log(type, text);
-        throw new Error('unexpected'); // TODO
+        throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
     }
 };
 
@@ -305,7 +309,8 @@ Jump.prototype.return = function _return(path, ends, scanner) {
     return this.parent.return(path, ends.concat([this.branch]), scanner);
 };
 
-function Set(story, path, parent, ends) {
+function Mutate(story, path, parent, ends, type) {
+    this.type = type;
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -315,7 +320,7 @@ function Set(story, path, parent, ends) {
     this.position = 0;
 }
 
-Set.prototype.next = function next(type, space, text, scanner) {
+Mutate.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text' && this.position === 0) {
         this.value = parseInt(text, 10);
         this.position++;
@@ -324,14 +329,14 @@ Set.prototype.next = function next(type, space, text, scanner) {
         this.variable = text;
         this.position++;
         return this;
+    // istanbul ignore else
     } else if (type === 'token' && this.position === 2 && text === '}') {
-        var node = this.story.create(this.path, 'set', this.variable);
+        var node = this.story.create(this.path, this.type, this.variable);
         node.value = this.value;
         tie(this.ends, this.path);
         return this.parent.return(Path.next(this.path), [node], scanner);
     } else {
-        console.log(type, text);
-        throw new Error('unexpected'); // TODO
+        throw new Error('Unexpected token in ' + this.type + ': ' + type + ' ' + text + ' ' + scanner.position());
     }
 };
 

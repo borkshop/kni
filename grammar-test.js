@@ -1101,6 +1101,23 @@ test([
 });
 
 test([
+    '{-10 gil} {+1 arrow}'
+], {
+    "start": {
+        "type": "sub",
+        "variable": "gil",
+        "value": 10,
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "add",
+        "variable": "arrow",
+        "value": 1,
+        "next": null
+    }
+});
+
+test([
     "= top\n",
     "Text\n",
     "= bottom\n"

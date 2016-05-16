@@ -76,6 +76,16 @@ ReadlineEngine.prototype.$set = function set() {
     return this.goto(this.instruction.next);
 };
 
+ReadlineEngine.prototype.$add = function add() {
+    this.write(this.read() + this.instruction.value);
+    return this.goto(this.instruction.next);
+};
+
+ReadlineEngine.prototype.$sub = function sub() {
+    this.write(this.read() - this.instruction.value);
+    return this.goto(this.instruction.next);
+};
+
 ReadlineEngine.prototype.$jz = function jz() {
     if (this.debug) {
         console.log('JZ', this.instruction.variable, this.variables[this.instruction.variable]);
