@@ -1099,3 +1099,35 @@ only([
         "next": null
     }
 });
+
+test([
+    "= top\n",
+    "Text\n",
+    "= bottom\n"
+], {
+    "start": {
+        "type": "goto",
+        "next": "top"
+    },
+    "top": {
+        "type": "text",
+        "text": "Text",
+        "next": null
+    },
+    "bottom": {
+        "type": "goto",
+        "next": null
+    }
+});
+
+test([
+    '# no comment\n'
+], {
+    start: {type: 'goto', next: null}
+});
+
+test([
+    'Comment # no comment\n'
+], {
+    start: {type: 'text', text: 'Comment', next: null}
+});

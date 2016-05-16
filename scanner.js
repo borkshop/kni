@@ -31,18 +31,18 @@ Scanner.prototype.next = function next(text) {
         if (this.debug) {
             console.error('SCN', this.position() + ':' + i, JSON.stringify(c + d));
         }
-        if (c === '\t') {
+        if (c === '#') {
+            this.newLine(text, i);
+            for (i++; i < text.length; i++) {
+                c = text[i];
+                if (c === '\n') {
+                    break;
+                }
+            }
+        } else if (c === '\t') {
             this.columnNo = nextTabStop(this.columnNo);
         } else if (c === '\n') {
-            if (this.leading) {
-                this.indentStart = i;
-            }
-            this.leading = true;
-            this.generator.next(text.slice(this.indentStart, i), this);
-            this.columnNo = 0;
-            this.lineNo++;
-            this.lineStart = i + 1;
-            this.leader = '';
+            this.newLine(text, i);
         } else if (c === ' ') {
             this.columnNo++;
         } else if (
@@ -63,6 +63,18 @@ Scanner.prototype.next = function next(text) {
     if (!this.leading) {
         this.generator.next(text.slice(this.indentStart, i), this);
     }
+};
+
+Scanner.prototype.newLine = function newLine(text, i) {
+    if (this.leading) {
+        this.indentStart = i;
+    }
+    this.leading = true;
+    this.generator.next(text.slice(this.indentStart, i), this);
+    this.columnNo = 0;
+    this.lineNo++;
+    this.lineStart = i + 1;
+    this.leader = '';
 };
 
 Scanner.prototype.return = function _return() {
