@@ -71,6 +71,22 @@ ReadlineEngine.prototype.$inc = function inc() {
     return this.goto(this.instruction.next);
 };
 
+ReadlineEngine.prototype.$set = function set() {
+    this.write(this.instruction.value);
+    return this.goto(this.instruction.next);
+};
+
+ReadlineEngine.prototype.$jz = function jz() {
+    if (this.debug) {
+        console.log('JZ', this.instruction.variable, this.variables[this.instruction.variable]);
+    }
+    if (!this.variables[this.instruction.variable]) {
+        return this.goto(this.instruction.branch);
+    } else {
+        return this.goto(this.instruction.next);
+    }
+};
+
 ReadlineEngine.prototype.$jnz = function jnz() {
     if (this.debug) {
         console.log('JNZ', this.instruction.variable, this.variables[this.instruction.variable]);
