@@ -75,15 +75,13 @@ test([
     '- Farewell.\n'
 ], {
     "start": {"type": "text", "text": "Hello, World!", "next": "start.1"},
-    "start.1": {"type": "break", "next": "start.2"},
-    "start.2": {"type": "text", "text": "Farewell.", "next": null},
+    "start.1": {"type": "text", "text": "Farewell.", "next": null},
 });
 
 test([
     '- Farewell.\n'
 ], {
-    "start": {"type": "break", "next": "start.1"},
-    "start.1": {"type": "text", "text": "Farewell.", "next": null},
+    "start": {"type": "text", "text": "Farewell.", "next": null},
 });
 
 test([
@@ -178,20 +176,16 @@ test([
         "next": "start.3"
     },
     "start.3": {
-        "type": "break",
+        "type": "text",
+        "text": "Four",
         "next": "start.4"
     },
     "start.4": {
         "type": "text",
-        "text": "Four",
+        "text": "Five",
         "next": "start.5"
     },
     "start.5": {
-        "type": "text",
-        "text": "Five",
-        "next": "start.6"
-    },
-    "start.6": {
         "type": "text",
         "text": "Six",
         "next": null
@@ -223,10 +217,7 @@ test([
         "label": "Apples",
         "keywords": [],
         "branch": null,
-        "next": "start.1"
-    },
-    "start.1": {
-        "type": "prompt"
+        "next": null
     }
 });
 
@@ -246,10 +237,7 @@ test([
         "label": "Oranges",
         "keywords": [],
         "branch": null,
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "prompt"
+        "next": null
     }
 });
 
@@ -262,20 +250,14 @@ test([
         "label": "Apples",
         "keywords": [],
         "branch": "start.0.1",
-        "next": "start.1"
+        "next": null
     },
     "start.0.1": {
         "type": "option",
         "label": "Honeycrisps",
         "keywords": [],
         "branch": null,
-        "next": "start.0.2"
-    },
-    "start.0.2": {
-        "type": "prompt"
-    },
-    "start.1": {
-        "type": "prompt"
+        "next": null
     }
 });
 
@@ -296,20 +278,14 @@ test([
         "label": "Honeycrisps",
         "keywords": [],
         "branch": null,
-        "next": "start.0.2"
-    },
-    "start.0.2": {
-        "type": "prompt"
+        "next": null
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
         "keywords": [],
         "branch": null,
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "prompt"
+        "next": null
     }
 });
 
@@ -339,7 +315,7 @@ test([
     "start.1.1": {
         "type": "text",
         "text": "Charlie",
-        "next": "start.4"
+        "next": "start.3"
     },
     "start.2": {
         "type": "option",
@@ -351,12 +327,9 @@ test([
     "start.2.1": {
         "type": "text",
         "text": "Echo",
-        "next": "start.4"
+        "next": "start.3"
     },
     "start.3": {
-        "type": "prompt"
-    },
-    "start.4": {
         "type": "text",
         "text": "Foxtrot",
         "next": null
@@ -378,20 +351,17 @@ test([
         "type": "option",
         "label": "Bravo",
         "keywords": [],
-        "branch": "start.4",
+        "branch": "start.3",
         "next": "start.2"
     },
     "start.2": {
         "type": "option",
         "label": "Charlie",
         "keywords": [],
-        "branch": "start.4",
+        "branch": "start.3",
         "next": "start.3"
     },
     "start.3": {
-        "type": "prompt"
-    },
-    "start.4": {
         "type": "text",
         "text": "Delta",
         "next": null
@@ -423,20 +393,14 @@ test([
         "label": "Braeburns",
         "keywords": [],
         "branch": null,
-        "next": "start.0.3"
-    },
-    "start.0.3": {
-        "type": "prompt"
+        "next": null
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
         "keywords": [],
         "branch": null,
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "prompt"
+        "next": null
     }
 });
 
@@ -474,30 +438,21 @@ test([
         "label": "Galas",
         "keywords": [],
         "branch": null,
-        "next": "start.0.1.3"
-    },
-    "start.0.1.3": {
-        "type": "prompt"
+        "next": null
     },
     "start.0.2": {
         "type": "option",
         "label": "Fujis",
         "keywords": [],
         "branch": null,
-        "next": "start.0.3"
-    },
-    "start.0.3": {
-        "type": "prompt"
+        "next": null
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
         "keywords": [],
         "branch": null,
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "prompt"
+        "next": null
     }
 });
 
@@ -604,15 +559,12 @@ test([
         "label": "Say, \"Hello, World!\"",
         "keywords": [],
         "branch": "start.0.1",
-        "next": "start.1"
+        "next": null
     },
     "start.0.1": {
         "type": "text",
         "text": "You say, \"Hello, World!\"",
         "next": null
-    },
-    "start.1": {
-        "type": "prompt"
     }
 });
 
@@ -637,15 +589,12 @@ test([
         "label": "Say, \"Good bye.\"",
         "keywords": [],
         "branch": "start.1.1",
-        "next": "start.2"
+        "next": null
     },
     "start.1.1": {
         "type": "text",
         "text": "You say, \"Good bye.\"",
         "next": null
-    },
-    "start.2": {
-        "type": "prompt"
     }
 });
 
@@ -658,22 +607,16 @@ test([
         "type": "option",
         "label": "Alpha",
         "next": "start.1",
-        "branch": "start.2",
+        "branch": "start.1",
         "keywords": []
     },
     "start.1": {
-        "type": "prompt"
-    },
-    "start.2": {
         "type": "option",
         "label": "Omega",
-        "next": "start.3",
+        "next": null,
         "branch": null,
         "keywords": []
     },
-    "start.3": {
-        "type": "prompt"
-    }
 });
 
 test([
@@ -691,12 +634,9 @@ test([
     "start.1": {
         "type": "option",
         "label": "Omega",
-        "next": "start.2",
+        "next": null,
         "branch": null,
         "keywords": []
-    },
-    "start.2": {
-        "type": "prompt"
     }
 });
 
@@ -707,21 +647,14 @@ test([
     "start": {
         "type": "option",
         "label": "Alpha",
-        "next": "start.1",
+        "next": null,
         "branch": "start.0.1",
         "keywords": []
     },
     "start.0.1": {
-        "type": "break",
-        "next": "start.0.2"
-    },
-    "start.0.2": {
         "type": "text",
         "text": "Omega",
         "next": null
-    },
-    "start.1": {
-        "type": "prompt"
     }
 });
 
@@ -734,15 +667,12 @@ test([
         "label": "Alpha Omega",
         "keywords": [],
         "branch": "start.0.1",
-        "next": "start.1"
+        "next": null
     },
     "start.0.1": {
         "type": "text",
         "text": "Omega",
         "next": null
-    },
-    "start.1": {
-        "type": "prompt"
     }
 });
 
@@ -754,10 +684,7 @@ test([
         "label": "Alpha",
         "keywords": [],
         "branch": null,
-        "next": "start.1"
-    },
-    "start.1": {
-        "type": "prompt"
+        "next": null
     }
 });
 
@@ -781,12 +708,9 @@ test([
     "start.0.2": {
         "type": "inc",
         "variable": "start",
-        "next": "start.2"
+        "next": "start.1"
     },
     "start.1": {
-        "type": "prompt"
-    },
-    "start.2": {
         "type": "text",
         "text": "Fin",
         "next": null
@@ -814,7 +738,7 @@ test([
     "start.0.2": {
         "type": "inc",
         "variable": "start",
-        "next": "start.3"
+        "next": "start.2"
     },
     "start.1": {
         "type": "jnz",
@@ -832,12 +756,9 @@ test([
     "start.1.2": {
         "type": "inc",
         "variable": "start.1",
-        "next": "start.3"
+        "next": "start.2"
     },
     "start.2": {
-        "type": "prompt"
-    },
-    "start.3": {
         "type": "text",
         "text": "Fin",
         "next": null
@@ -1079,21 +1000,17 @@ test([
     'Bye\n',
 ], {
     "start": {
-        "type": "break",
-        "next": "start.1",
-    },
-    "start.1": {
         "type": "jnz",
         "variable": "hi",
-        "branch": "start.3",
+        "branch": "start.2",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Hello",
         "next": "start.2"
     },
     "start.2": {
-        "type": "text",
-        "text": "Hello",
-        "next": "start.3"
-    },
-    "start.3": {
         "type": "text",
         "text": "Bye",
         "next": null

@@ -46,9 +46,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         tie(this.ends, this.path);
         return new Option(text, this.story, this.path, this, []);
     } else if (type === 'start' && text === '-') {
-        tie(this.ends, this.path);
-        var node = this.story.create(this.path, 'break');
-        return new Knot(this.story, Path.next(this.path), this, [node]);
+        return new Knot(this.story, this.path, this, this.ends);
     } else if (type === 'start' && text === '') {
         return new Knot(this.story, this.path, this, this.ends);
     } else if (type === 'break') {
@@ -196,10 +194,11 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
     if (type === 'start' && (text === '+' || text === '*')) {
         tie(this.continues, this.path);
         return new Option(text, this.story, this.path, this.parent, this.ends);
+    // TODO allow - prefixed sub-blocks interpolated in option lists for
+    // control flow (but perhaps for not extending narrative)
     } else {
-        tie(this.continues, this.path);
-        var prompt = this.story.create(this.path, 'prompt');
-        return this.parent.return(Path.next(this.path), this.ends, scanner).next(type, '', text, scanner);
+        return this.parent.return(this.path, this.ends.concat(this.continues), scanner)
+            .next(type, '', text, scanner);
     }
 };
 

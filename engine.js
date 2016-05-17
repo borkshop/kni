@@ -39,6 +39,12 @@ ReadlineEngine.prototype.continue = function _continue() {
 };
 
 ReadlineEngine.prototype.$text = function text() {
+    // Implicitly prompt if there are pending options before resuming the
+    // narrative.
+    if (this.options.length) {
+        this.prompt();
+        return false;
+    }
     this.blocks[this.blocks.length - 1].push(this.instruction.text);
     return this.goto(this.instruction.next);
 };
@@ -59,11 +65,6 @@ ReadlineEngine.prototype.$option = function option() {
         this.keywords[keyword] = this.instruction.branch;
     }
     return this.goto(this.instruction.next);
-};
-
-ReadlineEngine.prototype.$prompt = function prompt() {
-    this.prompt();
-    return false;
 };
 
 ReadlineEngine.prototype.$inc = function inc() {
@@ -117,15 +118,20 @@ ReadlineEngine.prototype.$sequence = function sequence() {
     return this.goto(next);
 };
 
-ReadlineEngine.prototype.goto = function _goto(name) {
+ReadlineEngine.prototype.goto = function _goto(name, fresh) {
     if (this.debug) {
         console.log('GOTO', name);
     }
     if (name === null) {
         this.display();
-        console.log('');
-        this.readline.close();
-        return false;
+        if (this.options.length && !fresh) {
+            this.prompt();
+            return false;
+        } else {
+            console.log('');
+            this.readline.close();
+            return false;
+        }
     }
     var next = this.story[name];
     if (!next) {
@@ -149,17 +155,22 @@ ReadlineEngine.prototype.write = function write(value) {
 };
 
 ReadlineEngine.prototype.command = function command(command) {
+    console.log('');
     if (command === 'quit') {
         this.readline.close();
+        return;
     }
-    console.log('');
     var n = +command;
     if (n >= 1 && n <= this.options.length) {
-        this.instruction = this.story[this.options[n - 1].branch];
-        this.flush();
+        if (this.goto(this.options[n - 1].branch, true)) {
+            this.flush();
+            this.continue();
+        }
     } else if (this.keywords[command]) {
-        this.instruction = this.story[this.keywords[command]];
-        this.flush();
+        if (this.goto(this.keywords[command], true)) {
+            this.flush();
+            this.continue();
+        }
     } else {
         console.log('?');
         this.prompt();
@@ -192,7 +203,6 @@ ReadlineEngine.prototype.flush = function flush() {
     this.options.length = 0;
     this.keywords = {};
     this.blocks = [[]];
-    this.continue();
 };
 
 function main() {

@@ -36,14 +36,6 @@ function Text(text) {
 }
 Text.prototype.tie = tie;
 
-constructors.break = Break;
-function Break() {
-    this.type = 'break';
-    this.next = null;
-    Object.seal(this);
-}
-Break.prototype.tie = tie;
-
 constructors.option = Option;
 function Option(label) {
     this.type = 'option';
@@ -54,13 +46,6 @@ function Option(label) {
     Object.seal(this);
 }
 Option.prototype.tie = tie;
-
-constructors.prompt = Prompt;
-function Prompt() {
-    this.type = 'prompt';
-    Object.seal(this);
-}
-Prompt.prototype.tie = tie;
 
 constructors.goto = Goto;
 function Goto(next) {
