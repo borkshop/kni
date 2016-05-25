@@ -36,6 +36,15 @@ function Text(text) {
 }
 Text.prototype.tie = tie;
 
+constructors.print = Print;
+function Print(variable) {
+    this.type = 'print';
+    this.variable = variable;
+    this.next = null;
+    Object.seal(this);
+}
+Print.prototype.tie = tie;
+
 constructors.option = Option;
 function Option(label) {
     this.type = 'option';

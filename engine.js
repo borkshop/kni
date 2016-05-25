@@ -38,15 +38,23 @@ ReadlineEngine.prototype.continue = function _continue() {
     } while (_continue);
 };
 
-ReadlineEngine.prototype.$text = function text() {
+ReadlineEngine.prototype.print = function print(text) {
     // Implicitly prompt if there are pending options before resuming the
     // narrative.
     if (this.options.length) {
         this.prompt();
         return false;
     }
-    this.blocks[this.blocks.length - 1].push(this.instruction.text);
+    this.blocks[this.blocks.length - 1].push(text);
     return this.goto(this.instruction.next);
+};
+
+ReadlineEngine.prototype.$text = function text() {
+    return this.print(this.instruction.text);
+};
+
+ReadlineEngine.prototype.$print = function print() {
+    return this.print('' + this.read());
 };
 
 ReadlineEngine.prototype.$break = function $break() {
@@ -144,7 +152,7 @@ ReadlineEngine.prototype.goto = function _goto(name, fresh) {
 
 ReadlineEngine.prototype.read = function read() {
     var variable = this.instruction.variable;
-    if (this.variables[variable] === undefined) {
+    if (this.variables[variable] == undefined) {
         this.variables[variable] = 0;
     }
     return this.variables[variable];

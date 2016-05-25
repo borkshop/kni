@@ -265,6 +265,8 @@ Block.prototype.next = function next(type, space, text, scanner) {
         return new Jump(this.story, this.path, this.parent, this.ends, 'jz');
     } else if (type === 'text' && text === '!') {
         return new Jump(this.story, this.path, this.parent, this.ends, 'jnz');
+    } else if (type === 'text' && text === '$') {
+        return new Print(this.story, this.path, this.parent, this.ends);
     } else if (type === 'token' && text === '=') {
         return new Mutate(this.story, this.path, this.parent, this.ends, 'set');
     } else if (type === 'text' && text === '+') {
@@ -306,6 +308,30 @@ Jump.prototype.next = function next(type, space, text, scanner) {
 
 Jump.prototype.return = function _return(path, ends, scanner) {
     return this.parent.return(path, ends.concat([this.branch]), scanner);
+};
+
+function Print(story, path, parent, ends) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.variable = null;
+    this.position = 0;
+}
+
+Print.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'text' && this.position === 0) {
+        this.variable = text;
+        this.position++;
+        return this;
+    // istanbul ignore else
+    } else if (type === 'token' && this.position === 1 && text === '}') {
+        var node = this.story.create(this.path, 'print', this.variable);
+        tie(this.ends, this.path);
+        return new Knot(this.story, Path.next(this.path), this.parent, [node]);
+    } else {
+        throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
+    }
 };
 
 function Mutate(story, path, parent, ends, type) {
