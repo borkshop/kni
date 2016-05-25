@@ -30,3 +30,11 @@ function firstChildPath(path) {
     path.push(1);
     return path;
 }
+
+exports.zerothChild = zerothChildPath;
+
+function zerothChildPath(path) {
+    path = path.slice();
+    path.push(0);
+    return path;
+}

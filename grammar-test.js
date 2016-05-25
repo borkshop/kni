@@ -1072,3 +1072,67 @@ test([
 ], {
     start: {type: 'text', text: 'Comment', next: null}
 });
+
+test([
+    '{#arrow|no arrows|an arrow|{$arrow} arrows}\n'
+], {
+    "start": {
+        "type": "switch",
+        "variable": "arrow",
+        "branches": [
+            "start.0.1",
+            "start.0.2",
+            "start.0.3"
+        ],
+        "value": 0
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "no arrows",
+        "next": null
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "an arrow",
+        "next": null
+    },
+    "start.0.3": {
+        "type": "print",
+        "variable": "arrow",
+        "next": "start.0.3.1"
+    },
+    "start.0.3.1": {
+        "type": "text",
+        "text": "arrows",
+        "next": null
+    }
+});
+
+test([
+    '{#arrow|{$arrow} arrows|some arrows}\n'
+], {
+    "start": {
+        "type": "switch",
+        "variable": "arrow",
+        "branches": [
+            "start.0.1",
+            "start.0.2"
+        ],
+        "value": 0
+    },
+    "start.0.1": {
+        "type": "print",
+        "variable": "arrow",
+        "next": "start.0.1.1"
+    },
+    "start.0.1.1": {
+        "type": "text",
+        "text": "arrows",
+        "next": null
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "some arrows",
+        "next": null
+    }
+});

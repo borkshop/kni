@@ -38,6 +38,11 @@ function Knot(story, path, parent, ends) {
 Knot.prototype.next = function next(type, space, text, scanner) {
     if (type === 'stop') {
         return this.parent.return(this.path, this.ends, scanner);
+    } else if (type === 'token' && text === '|') {
+        return this.parent.continue(this.path, this.ends, scanner);
+    } else if (type === 'token' && text === '}') {
+        // TODO differentiate stop and }
+        return this.parent.return(this.path, this.ends, scanner);
     } else if (type === 'text' && text === '-') {
         return this;
     } else if (type === 'text') {
@@ -65,6 +70,10 @@ Knot.prototype.next = function next(type, space, text, scanner) {
 
 Knot.prototype.return = function _return(path, ends, scanner) {
     return new Knot(this.story, path, this.parent, ends);
+};
+
+Knot.prototype.continue = function _continue(path, ends, scanner) {
+    return this.parent.continue(path, ends, scanner);
 };
 
 function Text(story, path, text, parent, ends) {
@@ -254,6 +263,7 @@ Goto.prototype.next = function next(type, space, text, scanner) {
 };
 
 function Block(story, path, parent, ends) {
+    this.type = 'block';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -273,6 +283,8 @@ Block.prototype.next = function next(type, space, text, scanner) {
         return new Mutate(this.story, this.path, this.parent, this.ends, 'add');
     } else if (type === 'text' && text === '-') {
         return new Mutate(this.story, this.path, this.parent, this.ends, 'sub');
+    } else if (type === 'text' && text === '#') {
+        return new Switch(this.story, this.path, this.parent, this.ends, 'sub');
     } else {
         return sequence(this.story, this.path, this.parent, this.ends)
             .next(type, space, text, scanner);
@@ -365,8 +377,55 @@ Mutate.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
+function Switch(story, path, parent, ends) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+}
+
+Switch.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'text') {
+        var variable = text;
+        var node = this.story.create(this.path, 'switch', variable);
+        tie(this.ends, this.path);
+        return new Case(this.story, Path.firstChild(this.path), this.parent, this.ends, node.branches);
+    } else {
+        throw new Error('TODO');
+    }
+};
+
+function Case(story, path, parent, ends, branches) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.branches = branches;
+}
+
+Case.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'token' && text === '|') {
+        return this.continue(this.path, this.ends, scanner);
+    } else {
+        throw new Error('for switch case expected | got ' + type + ' ' + text);
+    }
+};
+
+Case.prototype.return = function _return(path, ends, scanner) {
+    return this.parent.return(path, ends, scanner);
+};
+
+Case.prototype.continue = function _continue(path, ends, scanner) {
+    var path = Path.zerothChild(this.path);
+    var node = this.story.create(path, 'goto');
+    this.branches.push(Path.toName(path));
+    var next = new Case(this.story, Path.next(this.path), this.parent, this.ends.concat(ends), this.branches);
+    return new Knot(this.story, path, next, [node]);
+};
+
 function sequence(story, path, parent, ends) {
-    var node = story.create(path, 'sequence', Path.toName(path));
+    var node = story.create(path, 'switch', Path.toName(path));
+    node.value = 1;
     tie(ends, path);
 
     // parent <- sequence trampoline <- label <- sequence knot

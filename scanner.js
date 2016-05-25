@@ -31,7 +31,10 @@ Scanner.prototype.next = function next(text) {
         if (this.debug) {
             console.error('SCN', this.position() + ':' + i, JSON.stringify(c + d));
         }
-        if (c === '#') {
+        if (
+            ((c === '\t' || c === ' ') && d === '#') ||
+            (this.columnNo === 0 && c === '#')
+        ) {
             this.newLine(text, i);
             for (i++; i < text.length; i++) {
                 c = text[i];

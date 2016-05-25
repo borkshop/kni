@@ -130,3 +130,20 @@ test([
     'STOP',
     'STOP'
 ]);
+
+test([
+    '{#gold|no gold|{$gold} gold}'
+], [
+    'TOKEN', '{',
+    '#', 'gold',
+    'TOKEN', '|',
+    'no', ' ', 'gold',
+    'TOKEN', '|',
+    'TOKEN', '{',
+    '$', 'gold',
+    'TOKEN', '}',
+    ' ', 'gold',
+    'TOKEN', '}',
+    'STOP',
+    'STOP'
+]);
