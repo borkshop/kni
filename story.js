@@ -84,14 +84,15 @@ function Inc(variable) {
 }
 Inc.prototype.tie = tie;
 
-constructors.sequence = Sequence;
-function Sequence(variable) {
-    this.type = 'sequence';
+constructors.switch = Switch;
+function Switch(variable) {
+    this.type = 'switch';
     this.variable = variable;
     this.branches = [];
+    this.value = 0;
     Object.seal(this);
 }
-Sequence.prototype.tie = tie;
+Switch.prototype.tie = tie;
 
 constructors.set = Set;
 function Set(variable) {

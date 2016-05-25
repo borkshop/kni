@@ -769,9 +769,10 @@ test([
     '{}\n'
 ], {
     "start": {
-        "type": "sequence",
+        "type": "switch",
         "variable": "start",
-        "branches": ["start.0.1"]
+        "branches": ["start.0.1"],
+        "value": 1
     },
     "start.0.1": {
         "type": "goto",
@@ -783,9 +784,10 @@ test([
     '{|}\n'
 ], {
     "start": {
-        "type": "sequence",
+        "type": "switch",
         "variable": "start",
-        "branches": ["start.0.1", "start.0.2"]
+        "branches": ["start.0.1", "start.0.2"],
+        "value": 1
     },
     "start.0.1": {
         "type": "goto",
@@ -801,9 +803,10 @@ test([
     '{Alpha|Beta|Gamma}\n'
 ], {
     "start": {
-        "type": "sequence",
+        "type": "switch",
         "variable": "start",
-        "branches": ["start.0.1", "start.0.2", "start.0.3"]
+        "branches": ["start.0.1", "start.0.2", "start.0.3"],
+        "value": 1
     },
     "start.0.1": {
         "type": "text",
@@ -826,9 +829,10 @@ test([
     '{Alpha|Bravo|Charlie}, Over\n'
 ], {
     "start": {
-        "type": "sequence",
+        "type": "switch",
         "variable": "start",
-        "branches": ["start.0.1", "start.0.2", "start.0.3"]
+        "branches": ["start.0.1", "start.0.2", "start.0.3"],
+        "value": 1
     },
     "start.0.1": {
         "type": "text",
@@ -861,9 +865,10 @@ test([
         "next": "start.1",
     },
     "start.1": {
-        "type": "sequence",
+        "type": "switch",
         "variable": "start.1",
-        "branches": ["start.1.1", "start.1.2", "start.1.3"]
+        "branches": ["start.1.1", "start.1.2", "start.1.3"],
+        "value": 1
     },
     "start.1.1": {
         "type": "text",
@@ -896,9 +901,10 @@ test([
         "next": "start.1",
     },
     "start.1": {
-        "type": "sequence",
+        "type": "switch",
         "variable": "start.1",
-        "branches": ["start.1.1", "start.1.2", "start.1.3"]
+        "branches": ["start.1.1", "start.1.2", "start.1.3"],
+        "value": 1
     },
     "start.1.1": {
         "type": "text",
@@ -925,9 +931,10 @@ test([
     '{Win! -> win}\n'
 ], {
     "start": {
-        "type": "sequence",
+        "type": "switch",
         "variable": "start",
-        "branches": ["start.0.1"]
+        "branches": ["start.0.1"],
+        "value": 1
     },
     "start.0.1": {
         "type": "text",

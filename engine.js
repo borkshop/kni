@@ -109,12 +109,13 @@ ReadlineEngine.prototype.$jnz = function jnz() {
     }
 };
 
-ReadlineEngine.prototype.$sequence = function sequence() {
-    var next = this.read();
-    var index = this.read();
+ReadlineEngine.prototype.$switch = function _switch() {
+    var value = this.read();
     var branches = this.instruction.branches;
-    var next = branches[index];
-    this.write(Math.min(index + 1, branches.length - 1));
+    var next = branches[Math.min(value, branches.length - 1)];
+    if (this.instruction.value !== 0) {
+        this.write(value + this.instruction.value);
+    }
     return this.goto(next);
 };
 
