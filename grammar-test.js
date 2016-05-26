@@ -1136,3 +1136,135 @@ test([
         "next": null
     }
 });
+
+test([
+    'You see {#door|an open|a closed} door.\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "You see",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "switch",
+        "variable": "door",
+        "branches": [
+            "start.1.1",
+            "start.1.2"
+        ],
+        "value": 0
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "an open",
+        "next": "start.2"
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": "a closed",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "door.",
+        "next": null
+    }
+});
+
+test([
+    'You see {#door|an open|a closed} door.\n',
+    'The knob is wrought of {#knob|brass|iron}.\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "You see",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "switch",
+        "variable": "door",
+        "branches": [
+            "start.1.1",
+            "start.1.2"
+        ],
+        "value": 0
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "an open",
+        "next": "start.2"
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": "a closed",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "door. The knob is wrought of",
+        "next": "start.3"
+    },
+    "start.3": {
+        "type": "switch",
+        "variable": "knob",
+        "branches": [
+            "start.3.1",
+            "start.3.2"
+        ],
+        "value": 0
+    },
+    "start.3.1": {
+        "type": "text",
+        "text": "brass",
+        "next": "start.4"
+    },
+    "start.3.2": {
+        "type": "text",
+        "text": "iron",
+        "next": "start.4"
+    },
+    "start.4": {
+        "type": "text",
+        "text": ".",
+        "next": null
+    }
+});
+
+test([
+    'You have {#gold|no gold|{$gold} gold}.\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "You have",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "switch",
+        "variable": "gold",
+        "branches": [
+            "start.1.1",
+            "start.1.2"
+        ],
+        "value": 0
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "no gold",
+        "next": "start.2"
+    },
+    "start.1.2": {
+        "type": "print",
+        "variable": "gold",
+        "next": "start.1.2.1"
+    },
+    "start.1.2.1": {
+        "type": "text",
+        "text": "gold",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": ".",
+        "next": null
+    }
+});
