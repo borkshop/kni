@@ -15,7 +15,7 @@ module.exports = InlineLexer;
 
 var debug = process.env.DEBUG_INLINE_LEXER;
 
-var L1 = '=[]{}|';
+var L1 = '=[]{}|/';
 var L2 = ['->'];
 var alpha = /\w/;
 

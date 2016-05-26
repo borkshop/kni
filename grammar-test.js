@@ -1268,3 +1268,22 @@ test([
         "next": null
     }
 });
+
+test([
+    'Roses are red / Violets are blue'
+], {
+    "start": {
+        "type": "text",
+        "text": "Roses are red",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "break",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Violets are blue",
+        "next": null
+    }
+});

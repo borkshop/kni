@@ -133,6 +133,14 @@ function Sub(variable) {
 }
 Sub.prototype.tie = tie;
 
+constructors.break = Break;
+function Break(variable) {
+    this.type = 'break';
+    this.next = null;
+    Object.seal(this);
+}
+Break.prototype.tie = tie;
+
 function tie(end) {
     this.next = end;
 }
