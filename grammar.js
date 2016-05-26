@@ -189,6 +189,10 @@ Option.prototype.return = function _return(path, ends, scanner) {
     return new MaybeOption(this.story, Path.next(this.path), this.parent, this.continues, this.ends.concat(ends));
 };
 
+// Option.prototype.continue = function _continue(path, ends, scanner) {
+//     // TODO
+// };
+
 function MaybeOption(story, path, parent, continues, ends) {
     this.type = 'maybe-option';
     this.path = path;
@@ -284,7 +288,7 @@ Block.prototype.next = function next(type, space, text, scanner) {
     } else if (type === 'text' && text === '-') {
         return new Mutate(this.story, this.path, this.parent, this.ends, 'sub');
     } else if (type === 'text' && text === '#') {
-        return new Switch(this.story, this.path, this.parent, this.ends, 'sub');
+        return new Switch(this.story, this.path, this.parent, this.ends);
     } else {
         return sequence(this.story, this.path, this.parent, this.ends)
             .next(type, space, text, scanner);
@@ -321,6 +325,10 @@ Jump.prototype.next = function next(type, space, text, scanner) {
 Jump.prototype.return = function _return(path, ends, scanner) {
     return this.parent.return(path, ends.concat([this.branch]), scanner);
 };
+
+// Jump.prototype.continue = function _continue(path, ends, scanner) {
+//     // TODO
+// };
 
 function Print(story, path, parent, ends) {
     this.story = story;
@@ -377,6 +385,21 @@ Mutate.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
+function sequence(story, path, parent, ends) {
+    var switchNode = story.create(path, 'switch', Path.toName(path));
+    switchNode.value = 1;
+    tie(ends, path);
+
+    var firstPath = Path.firstChild(path);
+    var zerothChild = Path.zerothChild(firstPath);
+    var secondPath = Path.next(firstPath);
+
+    var caseNode = story.create(zerothChild, 'goto');
+    switchNode.branches.push(Path.toName(zerothChild));
+    var trampoline = new Case(story, secondPath, parent, [], switchNode.branches);
+    return new Knot(story, zerothChild, trampoline, [caseNode]);
+}
+
 function Switch(story, path, parent, ends) {
     this.story = story;
     this.path = path;
@@ -385,13 +408,14 @@ function Switch(story, path, parent, ends) {
 }
 
 Switch.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore else
     if (type === 'text') {
         var variable = text;
         var node = this.story.create(this.path, 'switch', variable);
         tie(this.ends, this.path);
         return new Case(this.story, Path.firstChild(this.path), this.parent, this.ends, node.branches);
     } else {
-        throw new Error('TODO');
+        throw new Error('expected variable name for {#switch} block, got ' + type + ' ' + text);
     }
 };
 
@@ -404,6 +428,7 @@ function Case(story, path, parent, ends, branches) {
 }
 
 Case.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore else
     if (type === 'token' && text === '|') {
         return this.continue(this.path, this.ends, scanner);
     } else {
@@ -412,83 +437,17 @@ Case.prototype.next = function next(type, space, text, scanner) {
 };
 
 Case.prototype.return = function _return(path, ends, scanner) {
-    return this.parent.return(path, ends, scanner);
+    // TODO reaching into the parent path is a bit odd,
+    // but works around Knot.return's behavior
+    return this.parent.return(Path.next(this.parent.path), this.ends.concat(ends), scanner);
 };
 
 Case.prototype.continue = function _continue(path, ends, scanner) {
     var path = Path.zerothChild(this.path);
-    var node = this.story.create(path, 'goto');
+    var node = this.story.create(path, 'goto', null);
     this.branches.push(Path.toName(path));
     var next = new Case(this.story, Path.next(this.path), this.parent, this.ends.concat(ends), this.branches);
     return new Knot(this.story, path, next, [node]);
-};
-
-function sequence(story, path, parent, ends) {
-    var node = story.create(path, 'switch', Path.toName(path));
-    node.value = 1;
-    tie(ends, path);
-
-    // parent <- sequence trampoline <- label <- sequence knot
-
-    var first = Path.firstChild(path);
-    node.branches.push(Path.toName(first));
-    var sequence = new Sequence(story, Path.next(path), first, node, parent, []);
-    var label = story.create(first, 'goto', null);
-    return new SequenceKnot(story, first, sequence, [label]);
-}
-
-function Sequence(story, returnPath, path, node, parent, ends) {
-    this.story = story;
-    this.returnPath = returnPath;
-    this.path = path;
-    this.node = node;
-    this.parent = parent;
-    this.branches = [];
-    this.ends = ends;
-}
-
-Sequence.prototype.return = function _return(path, ends, scanner) {
-    // collect loose ends
-    this.ends.push.apply(this.ends, ends);
-    return new Sequence(this.story, this.returnPath, Path.next(this.path), this.node, this.parent, this.ends);
-};
-
-Sequence.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'token' && text === '}') {
-        return this.parent.return(this.returnPath, this.ends, scanner);
-    // istanbul ignore else
-    } else if (type === 'token' && text === '|') {
-        var name = Path.toName(this.path);
-        var sequence = new Sequence(this.story, Path.next(this.path));
-        this.node.branches.push(name);
-        var label = this.story.create(this.path, 'goto', null);
-        return new SequenceKnot(this.story, this.path, this, [label]);
-    } else {
-        throw new Error('expected } or |');
-    }
-};
-
-function SequenceKnot(story, path, parent, ends) {
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.ends = ends;
-}
-
-SequenceKnot.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text') {
-        return new Text(this.story, this.path, text, this, this.ends);
-    // istanbul ignore else
-    } else if (type === 'token' && text === '->') {
-        return new Goto(this.story, this.path, this, this.ends);
-    } else {
-        return this.parent.return(this.path, this.ends, scanner)
-            .next(type, space, text, scanner);
-    }
-};
-
-SequenceKnot.prototype.return = function _return(path, ends, scanner) {
-    return new SequenceKnot(this.story, path, this.parent, ends);
 };
 
 function tie(ends, next) {
