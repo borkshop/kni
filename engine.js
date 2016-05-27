@@ -164,7 +164,6 @@ ReadlineEngine.prototype.goto = function _goto(name, fresh) {
         console.log('GOTO', name);
     }
     if (name === null) {
-        this.display();
         if (this.options.length && !fresh) {
             this.prompt();
             return false;
