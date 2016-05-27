@@ -569,6 +569,29 @@ test([
 });
 
 test([
+    '+ You s[S]ay, "Hello, World!" /\n',
+    '  They reply, "Good bye!"\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Say, \"Hello, World!\"",
+        "keywords": [],
+        "branch": "start.0.1",
+        "next": null
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "You say, \"Hello, World!\"",
+        "next": "start.0.2"
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "They reply, \"Good bye!\"",
+        "next": null
+    }
+});
+
+test([
     '+ You s[S]ay, "Hello, World!"\n',
     '+ You s[S]ay, "Good bye."\n'
 ], {

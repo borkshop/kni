@@ -196,8 +196,13 @@ Option.prototype.create = function create(question, answer, type, space, text, s
         prev = next;
     }
 
-    return new Knot(this.story, path, new Indent(this), [prev])
-        .next(type, space, text, scanner);
+    var state = new Knot(this.story, path, new Indent(this), [prev]);
+
+    if (text !== '/') {
+        state = state.next(type, space, text, scanner);
+    }
+
+    return state;
 };
 
 Option.prototype.return = function _return(path, ends, scanner) {
