@@ -97,9 +97,9 @@ ReadlineEngine.prototype.$sub = function sub() {
 
 ReadlineEngine.prototype.$jz = function jz() {
     if (this.debug) {
-        console.log('JZ', this.instruction.variable, this.variables[this.instruction.variable]);
+        console.log('JZ', this.instruction.variable, this.read());
     }
-    if (!this.variables[this.instruction.variable]) {
+    if (!this.read()) {
         return this.goto(this.instruction.branch);
     } else {
         return this.goto(this.instruction.next);
@@ -108,12 +108,44 @@ ReadlineEngine.prototype.$jz = function jz() {
 
 ReadlineEngine.prototype.$jnz = function jnz() {
     if (this.debug) {
-        console.log('JNZ', this.instruction.variable, this.variables[this.instruction.variable]);
+        console.log('JNZ', this.instruction.variable, this.read());
     }
-    if (this.variables[this.instruction.variable]) {
+    if (this.read()) {
         return this.goto(this.instruction.branch);
     } else {
         return this.goto(this.instruction.next);
+    }
+};
+
+ReadlineEngine.prototype.$jlt = function jlt() {
+    if (this.read() < this.instruction.value) {
+        return this.goto(this.instruction.next);
+    } else {
+        return this.goto(this.instruction.branch);
+    }
+};
+
+ReadlineEngine.prototype.$jgt = function jgt() {
+    if (this.read() > this.instruction.value) {
+        return this.goto(this.instruction.next);
+    } else {
+        return this.goto(this.instruction.branch);
+    }
+};
+
+ReadlineEngine.prototype.$jge = function jge() {
+    if (this.read() >= this.instruction.value) {
+        return this.goto(this.instruction.next);
+    } else {
+        return this.goto(this.instruction.branch);
+    }
+};
+
+ReadlineEngine.prototype.$jle = function jle() {
+    if (this.read() <= this.instruction.value) {
+        return this.goto(this.instruction.next);
+    } else {
+        return this.goto(this.instruction.branch);
     }
 };
 

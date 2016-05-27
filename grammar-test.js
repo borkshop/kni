@@ -1270,6 +1270,144 @@ test([
 });
 
 test([
+    '- {!=0 gold} You are rich!\n',
+    'Get on with it.\n'
+], {
+    "start": {
+        "type": "jne",
+        "variable": "gold",
+        "value": 0,
+        "next": "start.1",
+        "branch": "start.2"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "You are rich!",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Get on with it.",
+        "next": null
+    }
+});
+
+test([
+    '- {==0 gold} You are poor!\n',
+    'Get on with it.\n'
+], {
+    "start": {
+        "type": "jeq",
+        "variable": "gold",
+        "value": 0,
+        "next": "start.1",
+        "branch": "start.2"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "You are poor!",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Get on with it.",
+        "next": null
+    }
+});
+
+test([
+    '- {>=10 gold} You are rich!\n',
+    'Get on with it.\n'
+], {
+    "start": {
+        "type": "jge",
+        "variable": "gold",
+        "value": 10,
+        "next": "start.1",
+        "branch": "start.2"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "You are rich!",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Get on with it.",
+        "next": null
+    }
+});
+
+test([
+    '- {<=10 gold} You are poor!\n',
+    'Get on with it.\n'
+], {
+    "start": {
+        "type": "jle",
+        "variable": "gold",
+        "value": 10,
+        "next": "start.1",
+        "branch": "start.2"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "You are poor!",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Get on with it.",
+        "next": null
+    }
+});
+
+test([
+    '- {>10 gold} You are rich!\n',
+    'Get on with it.\n'
+], {
+    "start": {
+        "type": "jgt",
+        "variable": "gold",
+        "value": 10,
+        "next": "start.1",
+        "branch": "start.2"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "You are rich!",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Get on with it.",
+        "next": null
+    }
+});
+
+test([
+    '- {<10 gold} You are poor!\n',
+    'Get on with it.\n'
+], {
+    "start": {
+        "type": "jlt",
+        "variable": "gold",
+        "value": 10,
+        "next": "start.1",
+        "branch": "start.2"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "You are poor!",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Get on with it.",
+        "next": null
+    }
+});
+
+test([
     'Roses are red / Violets are blue'
 ], {
     "start": {

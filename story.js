@@ -84,6 +84,72 @@ function Jnz(variable) {
 }
 Jnz.prototype.tie = tie;
 
+constructors.jeq = Jeq;
+function Jeq(variable) {
+    this.type = 'jeq';
+    this.variable = variable;
+    this.value = 0;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+Jeq.prototype.tie = tie;
+
+constructors.jne = Jne;
+function Jne(variable) {
+    this.type = 'jne';
+    this.variable = variable;
+    this.value = 0;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+Jne.prototype.tie = tie;
+
+constructors.jlt = Jlt;
+function Jlt(variable) {
+    this.type = 'jlt';
+    this.variable = variable;
+    this.value = 0;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+Jlt.prototype.tie = tie;
+
+constructors.jgt = Jgt;
+function Jgt(variable) {
+    this.type = 'jgt';
+    this.variable = variable;
+    this.value = 0;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+Jgt.prototype.tie = tie;
+
+constructors.jle = Jle;
+function Jle(variable) {
+    this.type = 'jle';
+    this.variable = variable;
+    this.value = 0;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+Jle.prototype.tie = tie;
+
+constructors.jge = Jge;
+function Jge(variable) {
+    this.type = 'jge';
+    this.variable = variable;
+    this.value = 0;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+Jge.prototype.tie = tie;
+
 constructors.inc = Inc;
 function Inc(variable) {
     this.type = 'inc';
