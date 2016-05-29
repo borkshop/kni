@@ -209,6 +209,13 @@ function Break(variable) {
 }
 Break.prototype.tie = tie;
 
+constructors.prompt = Prompt;
+function Prompt(variable) {
+    this.type = 'prompt';
+    Object.seal(this);
+}
+Break.prototype.tie = tie;
+
 function tie(end) {
     this.next = end;
 }

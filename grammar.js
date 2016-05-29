@@ -54,6 +54,10 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         return new Knot(this.story, Path.next(this.path), this.parent, [node]);
     } else if (type === 'text' && text === '-') {
         return this;
+    } else if (type === 'token' && text === '>') {
+        var node = this.story.create(this.path, 'prompt');
+        tie(this.ends, this.path);
+        return new Knot(this.story, Path.next(this.path), this.parent, []);
     } else if (type === 'text') {
         return new Text(this.story, this.path, space, text, this, this.ends);
     } else if (type === 'start' && (text === '+' || text === '*')) {

@@ -163,6 +163,11 @@ ReadlineEngine.prototype.$switch = function _switch() {
     return this.goto(next);
 };
 
+ReadlineEngine.prototype.$prompt = function prompt() {
+    this.prompt();
+    return false;
+};
+
 ReadlineEngine.prototype.goto = function _goto(name, fresh) {
     if (this.debug) {
         console.log('GOTO', name);

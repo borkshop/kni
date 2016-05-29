@@ -779,6 +779,30 @@ test([
 
 test([
     '+ Alpha\n',
+    '>\n',
+    '+ Omega\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Alpha",
+        "next": "start.1",
+        "branch": "start.1",
+        "keywords": []
+    },
+    "start.1": {
+        "type": "prompt"
+    },
+    "start.2": {
+        "type": "option",
+        "label": "Omega",
+        "next": null,
+        "branch": null,
+        "keywords": []
+    }
+});
+
+test([
+    '+ Alpha\n',
     '  - Omega\n'
 ], {
     "start": {
