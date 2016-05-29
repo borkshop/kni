@@ -33,7 +33,7 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
     }
 
     if (type !== 'text') {
-        this.generator.next(type, '', text, scanner);
+        this.generator.next(type, ' ', text, scanner);
         this.space = '';
         return this;
     }

@@ -55,13 +55,13 @@ Knot.prototype.next = function next(type, space, text, scanner) {
     } else if (type === 'text' && text === '-') {
         return this;
     } else if (type === 'text') {
-        return new Text(this.story, this.path, text, this, this.ends);
+        return new Text(this.story, this.path, space, text, this, this.ends);
     } else if (type === 'start' && (text === '+' || text === '*')) {
         tie(this.ends, this.path);
         return new Option(text, this.story, this.path, this, []);
     } else if (type === 'start' && text === '-') {
         return new Knot(this.story, this.path, new Indent(this), this.ends);
-    } else if (type === 'start' && text === '') {
+    } else if (type === 'start') {
         return new Knot(this.story, this.path, new Indent(this), this.ends);
     } else if (type === 'token' && text === '=') {
         return new ExpectLabel(this.story, this.path, this.parent, this.ends);
@@ -90,10 +90,11 @@ Indent.prototype.return = function _return(path, ends, scanner) {
     return new Expect('stop', '', path, this.parent, ends);
 };
 
-function Text(story, path, text, parent, ends) {
+function Text(story, path, lift, text, parent, ends) {
     this.type = 'text';
     this.story = story;
     this.path = path;
+    this.lift = lift;
     this.text = text;
     this.parent = parent;
     this.ends = ends;
@@ -106,10 +107,18 @@ Text.prototype.next = function next(type, space, text, scanner) {
     } else {
         tie(this.ends, this.path);
         var node = this.story.create(this.path, 'text', this.text);
+        node.lift = this.lift;
+        node.drop = space;
         return this.parent.return(Path.next(this.path), [node], scanner)
             .next(type, space, text, scanner);
     }
 };
+
+function Pretext(lift, text, drop) {
+    this.lift = lift || '';;
+    this.text = text || '';
+    this.drop = drop || '';
+}
 
 function Option(leader, story, path, parent, ends) {
     this.type = 'option';
@@ -120,45 +129,67 @@ function Option(leader, story, path, parent, ends) {
     this.parent = parent;
     this.ends = ends; // to tie off to the next node after the entire option list
     this.continues = []; // to tie off to the next option
-    this.question = '';
-    this.answer = '';
+    this.question = new Pretext();
+    this.answer = new Pretext();
+    this.common = new Pretext();
     this.position = 0;
     Object.seal(this);
 }
 
+//    You then s   [S]      ay Hello, World!
+//    0   1    1    2 3     4  5      5
+//    Answer  Question Common
 Option.prototype.next = function next(type, space, text, scanner) {
-    // istanbul ignore else
     if (type === 'text' && this.position === 0) {
-        this.answer += space + text;
-        return this;
-    } else if (type === 'token' && text === '[' && this.position === 0) {
+        this.answer.lift = space;
+        this.answer.text = text;
         this.position = 1;
         return this;
     } else if (type === 'text' && this.position === 1) {
-        this.question += space + text;
+        this.answer.text += space + text;
         return this;
-    } else if (type === 'token' && text === ']' && this.position === 1) {
+    } else if (type === 'token' && text === '[' && (this.position === 0 || this.position === 1)) {
         this.position = 2;
         return this;
     } else if (type === 'text' && this.position === 2) {
-        this.question += space + text;
-        this.answer += text;
+        this.answer.drop = space;
+        this.question.lift = space;
+        this.question.text = text;
         this.position = 3;
         return this;
     } else if (type === 'text' && this.position === 3) {
-        this.question += space + text;
-        this.answer += space + text;
+        this.question.text += space + text;
         return this;
-    } else if (this.position === 0) {
-        return this.create(this.answer, '', type, space, text, scanner);
-    } else if (this.position === 1) {
-        throw new Error('expected matching ]');
+    } else if (type === 'token' && text === ']' && (this.position === 2 || this.position === 3)) {
+        this.question.drop = space;
+        this.position = 4;
+        return this;
+    } else if (type === 'text' && this.position === 4) {
+        this.question.drop = space;
+        this.common.lift = space;
+        this.common.text = text;
+        this.position = 5;
+        return this;
+    } else if (type === 'text' && this.position === 5) {
+        this.common.text += space + text;
+        return this;
+    } else if (this.position === 0 || this.position === 1) {
+        this.answer.drop = space;
+        // If we get here, it means we only populated the answer, and didn't
+        // see any bracket notation.
+        // In this case, the "answer" we collected is actually the "common",
+        // meaning it serves for both the question and answer for the option.
+        return this.create(null, null, this.answer, type, space, text, scanner);
+    // istanbul ignore next
     } else if (this.position === 2 || this.position === 3) {
-        return this.create(this.question, this.answer, type, space, text, scanner);
+        throw new Error('expected matching ]');
+    } else {
+        this.common.drop = space;
+        return this.create(this.answer, this.question, this.common, type, space, text, scanner);
     }
 };
 
-Option.prototype.create = function create(question, answer, type, space, text, scanner) {
+Option.prototype.create = function create(answer, question, common, type, space, text, scanner) {
     var variable = Path.toName(this.path);
     var path = this.path;
 
@@ -170,7 +201,12 @@ Option.prototype.create = function create(question, answer, type, space, text, s
         tie([jnz], path);
     }
 
-    var option = this.story.create(path, 'option', question);
+    var option;
+    if (question) {
+        option = this.story.create(path, 'option', question.text + question.drop + common.text);
+    } else {
+        option = this.story.create(path, 'option', common.text);
+    }
     this.continues.push(option);
 
     if (this.leader === '*') {
@@ -189,8 +225,19 @@ Option.prototype.create = function create(question, answer, type, space, text, s
         prev = next;
     }
 
-    if (answer) {
-        next = this.story.create(path, 'text', answer);
+    if (answer && answer.text) {
+        next = this.story.create(path, 'text', answer.text);
+        next.lift = answer.lift;
+        next.drop = answer.drop;
+        tie([prev], path);
+        path = Path.next(path);
+        prev = next;
+    }
+
+    if (question && common.text) {
+        next = this.story.create(path, 'text', common.text);
+        next.lift = common.lift;
+        next.drop = common.drop;
         tie([prev], path);
         path = Path.next(path);
         prev = next;

@@ -31,6 +31,8 @@ constructors.text = Text;
 function Text(text) {
     this.type = 'text';
     this.text = text;
+    this.lift = ' ';
+    this.drop = ' ';
     this.next = null;
     Object.seal(this);
 }

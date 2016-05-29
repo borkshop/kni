@@ -58,16 +58,16 @@ test([
     'y'
 ], [
     'x', ' ', 'y',
-    'STOP',
-    'STOP'
+    ' ', 'STOP',
+    ' ', 'STOP'
 ]);
 
 test([
     'x '
 ], [
     'x',
-    'STOP',
-    'STOP'
+    ' ', 'STOP',
+    ' ', 'STOP'
 ]);
 
 test([
@@ -81,8 +81,8 @@ test([
     'ay', ',', ' ', '"', 'Hello', '.', '"',
     ' ', 'TOKEN', '->',
     ' ', 'bye',
-    'STOP',
-    'STOP'
+    ' ', 'STOP',
+    ' ', 'STOP'
 ]);
 
 test([
@@ -92,8 +92,8 @@ test([
     'Alpha',
     'TOKEN', ']',
     ' ', 'Omega',
-    'STOP',
-    'STOP'
+    ' ', 'STOP',
+    ' ', 'STOP'
 ]);
 
 test([
@@ -104,8 +104,8 @@ test([
     'Alpha',
     'TOKEN', ']',
     ' ', 'Omega',
-    'STOP',
-    'STOP'
+    ' ', 'STOP',
+    ' ', 'STOP'
 ]);
 
 test([
@@ -116,10 +116,10 @@ test([
 ], [
 
     'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after', '.',
-    'BREAK',
+    ' ', 'BREAK',
     'The', ' ', 'End',
-    'STOP',
-    'STOP'
+    ' ', 'STOP',
+    ' ', 'STOP'
 ]);
 
 test([
@@ -127,8 +127,8 @@ test([
 ], [
     'TOKEN', '->',
     ' ', 'hi',
-    'STOP',
-    'STOP'
+    ' ', 'STOP',
+    ' ', 'STOP'
 ]);
 
 test([
@@ -144,6 +144,6 @@ test([
     'TOKEN', '}',
     ' ', 'gold',
     'TOKEN', '}',
-    'STOP',
-    'STOP'
+    ' ', 'STOP',
+    ' ', 'STOP'
 ]);

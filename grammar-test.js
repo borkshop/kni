@@ -55,33 +55,51 @@ test([
     'The End\n'
 ], {
     start: {type: 'goto', next: 'end'},
-    end: {type: 'text', text: 'The End', next: null}
+    end: {type: 'text', text: 'The End', lift: ' ', drop: ' ', next: null}
 });
 
 test([
     'Hello, World!\n'
 ], {
-    start: {type: 'text', text: 'Hello, World!', next: null}
+    start: {type: 'text', text: 'Hello, World!', lift: '', drop: ' ', next: null}
 });
 
 test([
     '  Hello, World!\n'
 ], {
-    start: {type: 'text', text: 'Hello, World!', next: null}
+    start: {type: 'text', text: 'Hello, World!', lift: '', drop: ' ', next: null}
 });
 
 test([
     'Hello, World!\n',
     '- Farewell.\n'
 ], {
-    "start": {"type": "text", "text": "Hello, World!", "next": "start.1"},
-    "start.1": {"type": "text", "text": "Farewell.", "next": null},
+    "start": {
+        "type": "text",
+        "text": "Hello, World!",
+        "lift": "",
+        "drop": " ",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Farewell.",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
 });
 
 test([
     '- Farewell.\n'
 ], {
-    "start": {"type": "text", "text": "Farewell.", "next": null},
+    "start": {
+        "type": "text",
+        "text": "Farewell.",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
 });
 
 test([
@@ -92,11 +110,15 @@ test([
     "start": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
         "type": "text",
         "text": "Farewell, World!",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -109,11 +131,15 @@ test([
     "start": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
         "type": "text",
         "text": "Farewell, World!",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -128,26 +154,36 @@ test([
     "start": {
         "type": "text",
         "text": "One",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
         "type": "text",
         "text": "Two",
+        "lift": "",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Three",
+        "lift": "",
+        "drop": " ",
         "next": "start.3"
     },
     "start.3": {
         "type": "text",
         "text": "Four",
+        "lift": "",
+        "drop": " ",
         "next": "start.4"
     },
     "start.4": {
         "type": "text",
         "text": "Five",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -163,31 +199,43 @@ test([
     "start": {
         "type": "text",
         "text": "One",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
         "type": "text",
         "text": "Two",
+        "lift": "",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Three",
+        "lift": "",
+        "drop": " ",
         "next": "start.3"
     },
     "start.3": {
         "type": "text",
         "text": "Four",
+        "lift": "",
+        "drop": " ",
         "next": "start.4"
     },
     "start.4": {
         "type": "text",
         "text": "Five",
+        "lift": "",
+        "drop": " ",
         "next": "start.5"
     },
     "start.5": {
         "type": "text",
         "text": "Six",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -200,11 +248,15 @@ test([
     "start": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
         "type": "text",
         "text": "Farewell, World!",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -303,6 +355,8 @@ test([
     "start": {
         "type": "text",
         "text": "Alpha",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
@@ -315,6 +369,8 @@ test([
     "start.1.1": {
         "type": "text",
         "text": "Charlie",
+        "lift": "",
+        "drop": " ",
         "next": "start.3"
     },
     "start.2": {
@@ -327,11 +383,15 @@ test([
     "start.2.1": {
         "type": "text",
         "text": "Echo",
+        "lift": "",
+        "drop": " ",
         "next": "start.3"
     },
     "start.3": {
         "type": "text",
         "text": "Foxtrot",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -345,6 +405,8 @@ test([
     "start": {
         "type": "text",
         "text": "Alpha",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
@@ -364,6 +426,8 @@ test([
     "start.3": {
         "type": "text",
         "text": "Delta",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -467,6 +531,8 @@ test([
     "hi": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -481,6 +547,8 @@ test([
     "hi": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -492,6 +560,8 @@ test([
     "start": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": "",
+        "drop": " ",
         "next": "start"
     }
 });
@@ -504,6 +574,8 @@ test([
     "start": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": "",
+        "drop": " ",
         "next": "start"
     }
 });
@@ -516,6 +588,8 @@ test([
     "start": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": "",
+        "drop": " ",
         "next": "start"
     }
 });
@@ -547,6 +621,8 @@ test([
     "hi": {
         "type": "text",
         "text": "Hello, World!",
+        "lift": " ",
+        "drop": " ",
         "next": "hi"
     }
 });
@@ -563,7 +639,16 @@ test([
     },
     "start.0.1": {
         "type": "text",
-        "text": "You say, \"Hello, World!\"",
+        "text": "You s",
+        "lift": "",
+        "drop": "",
+        "next": "start.0.2"
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "ay, \"Hello, World!\"",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -581,12 +666,23 @@ test([
     },
     "start.0.1": {
         "type": "text",
-        "text": "You say, \"Hello, World!\"",
+        "text": "You s",
+        "lift": "",
+        "drop": "",
         "next": "start.0.2"
     },
     "start.0.2": {
         "type": "text",
+        "text": "ay, \"Hello, World!\"",
+        "lift": "",
+        "drop": " ",
+        "next": "start.0.3"
+    },
+    "start.0.3": {
+        "type": "text",
         "text": "They reply, \"Good bye!\"",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -604,7 +700,16 @@ test([
     },
     "start.0.1": {
         "type": "text",
-        "text": "You say, \"Hello, World!\"",
+        "text": "You s",
+        "lift": "",
+        "drop": "",
+        "next": "start.0.2",
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "ay, \"Hello, World!\"",
+        "lift": "",
+        "drop": " ",
         "next": null
     },
     "start.1": {
@@ -616,7 +721,16 @@ test([
     },
     "start.1.1": {
         "type": "text",
-        "text": "You say, \"Good bye.\"",
+        "text": "You s",
+        "lift": "",
+        "drop": "",
+        "next": "start.1.2"
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": "ay, \"Good bye.\"",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -677,6 +791,8 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "Omega",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -695,6 +811,8 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "Omega",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -736,6 +854,8 @@ test([
     "start.1": {
         "type": "text",
         "text": "Fin",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -784,6 +904,8 @@ test([
     "start.2": {
         "type": "text",
         "text": "Fin",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -834,16 +956,22 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "Alpha",
+        "lift": "",
+        "drop": "",
         "next": null
     },
     "start.0.2": {
         "type": "text",
         "text": "Beta",
+        "lift": "",
+        "drop": "",
         "next": null
     },
     "start.0.3": {
         "type": "text",
         "text": "Gamma",
+        "lift": "",
+        "drop": "",
         "next": null
     }
 });
@@ -860,21 +988,29 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "Alpha",
+        "lift": "",
+        "drop": "",
         "next": "start.1"
     },
     "start.0.2": {
         "type": "text",
         "text": "Bravo",
+        "lift": "",
+        "drop": "",
         "next": "start.1"
     },
     "start.0.3": {
         "type": "text",
         "text": "Charlie",
+        "lift": "",
+        "drop": "",
         "next": "start.1"
     },
     "start.1": {
         "type": "text",
         "text": ", Over",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -885,6 +1021,8 @@ test([
     "start": {
         "type": "text",
         "text": "Counting down,",
+        "lift": "",
+        "drop": " ",
         "next": "start.1",
     },
     "start.1": {
@@ -896,21 +1034,29 @@ test([
     "start.1.1": {
         "type": "text",
         "text": "Three",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.1.2": {
         "type": "text",
         "text": "Two",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.1.3": {
         "type": "text",
         "text": "One",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": ", Lift-off",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -921,6 +1067,8 @@ test([
     "start": {
         "type": "text",
         "text": "Counting down,",
+        "lift": "",
+        "drop": " ",
         "next": "start.1",
     },
     "start.1": {
@@ -932,6 +1080,8 @@ test([
     "start.1.1": {
         "type": "text",
         "text": "Three",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.1.2": {
@@ -941,11 +1091,15 @@ test([
     "start.1.3": {
         "type": "text",
         "text": "One",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": ", Lift-off",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -962,6 +1116,26 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "Win!",
+        "lift": "",
+        "drop": " ",
+        "next": "win"
+    }
+});
+
+test([
+    '{Win!-> win}\n'
+], {
+    "start": {
+        "type": "switch",
+        "variable": "start",
+        "branches": ["start.0.1"],
+        "value": 1
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "Win!",
+        "lift": "",
+        "drop": "",
         "next": "win"
     }
 });
@@ -989,6 +1163,8 @@ test([
     "start.1": {
         "type": "text",
         "text": "Hello",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -1005,6 +1181,8 @@ test([
     "start.1": {
         "type": "text",
         "text": "Hello",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -1021,6 +1199,8 @@ test([
     "start.1": {
         "type": "text",
         "text": "Hello",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -1038,11 +1218,15 @@ test([
     "start.1": {
         "type": "text",
         "text": "Hello",
+        "lift": " ",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Bye",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1076,6 +1260,8 @@ test([
     "top": {
         "type": "text",
         "text": "Text",
+        "lift": " ",
+        "drop": " ",
         "next": "bottom"
     },
     "bottom": {
@@ -1093,7 +1279,7 @@ test([
 test([
     'Comment # no comment\n'
 ], {
-    start: {type: 'text', text: 'Comment', next: null}
+    start: {type: 'text', text: 'Comment', lift: '', drop: ' ', next: null}
 });
 
 test([
@@ -1112,11 +1298,15 @@ test([
     "start.0.1": {
         "type": "text",
         "text": "no arrows",
+        "lift": "",
+        "drop": "",
         "next": null
     },
     "start.0.2": {
         "type": "text",
         "text": "an arrow",
+        "lift": "",
+        "drop": "",
         "next": null
     },
     "start.0.3": {
@@ -1127,6 +1317,8 @@ test([
     "start.0.3.1": {
         "type": "text",
         "text": "arrows",
+        "lift": " ",
+        "drop": "",
         "next": null
     }
 });
@@ -1151,11 +1343,15 @@ test([
     "start.0.1.1": {
         "type": "text",
         "text": "arrows",
+        "lift": " ",
+        "drop": "",
         "next": null
     },
     "start.0.2": {
         "type": "text",
         "text": "some arrows",
+        "lift": "",
+        "drop": "",
         "next": null
     }
 });
@@ -1166,6 +1362,8 @@ test([
     "start": {
         "type": "text",
         "text": "You see",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
@@ -1180,16 +1378,22 @@ test([
     "start.1.1": {
         "type": "text",
         "text": "an open",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.1.2": {
         "type": "text",
         "text": "a closed",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "door.",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -1201,6 +1405,8 @@ test([
     "start": {
         "type": "text",
         "text": "You see",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
@@ -1215,16 +1421,22 @@ test([
     "start.1.1": {
         "type": "text",
         "text": "an open",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.1.2": {
         "type": "text",
         "text": "a closed",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "door. The knob is wrought of",
+        "lift": " ",
+        "drop": " ",
         "next": "start.3"
     },
     "start.3": {
@@ -1239,16 +1451,22 @@ test([
     "start.3.1": {
         "type": "text",
         "text": "brass",
+        "lift": "",
+        "drop": "",
         "next": "start.4"
     },
     "start.3.2": {
         "type": "text",
         "text": "iron",
+        "lift": "",
+        "drop": "",
         "next": "start.4"
     },
     "start.4": {
         "type": "text",
         "text": ".",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1259,6 +1477,8 @@ test([
     "start": {
         "type": "text",
         "text": "You have",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
@@ -1273,6 +1493,8 @@ test([
     "start.1.1": {
         "type": "text",
         "text": "no gold",
+        "lift": "",
+        "drop": "",
         "next": "start.2"
     },
     "start.1.2": {
@@ -1283,11 +1505,15 @@ test([
     "start.1.2.1": {
         "type": "text",
         "text": "gold",
+        "lift": " ",
+        "drop": "",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": ".",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1306,11 +1532,15 @@ test([
     "start.1": {
         "type": "text",
         "text": "You are rich!",
+        "lift": " ",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Get on with it.",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1329,11 +1559,15 @@ test([
     "start.1": {
         "type": "text",
         "text": "You are poor!",
+        "lift": " ",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Get on with it.",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1352,11 +1586,15 @@ test([
     "start.1": {
         "type": "text",
         "text": "You are rich!",
+        "lift": " ",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Get on with it.",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1375,11 +1613,15 @@ test([
     "start.1": {
         "type": "text",
         "text": "You are poor!",
+        "lift": " ",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Get on with it.",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1398,11 +1640,15 @@ test([
     "start.1": {
         "type": "text",
         "text": "You are rich!",
+        "lift": " ",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Get on with it.",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1421,11 +1667,15 @@ test([
     "start.1": {
         "type": "text",
         "text": "You are poor!",
+        "lift": " ",
+        "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
         "text": "Get on with it.",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });
@@ -1436,6 +1686,8 @@ test([
     "start": {
         "type": "text",
         "text": "Roses are red",
+        "lift": "",
+        "drop": " ",
         "next": "start.1"
     },
     "start.1": {
@@ -1445,6 +1697,8 @@ test([
     "start.2": {
         "type": "text",
         "text": "Violets are blue",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });

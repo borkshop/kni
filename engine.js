@@ -1,6 +1,8 @@
 'use strict';
 
 var readline = require('readline');
+var Excerpt = require('./excerpt');
+var Wrapper = require('./wrapper');
 
 module.exports = ReadlineEngine;
 
@@ -9,11 +11,13 @@ var debug = process.env.DEBUG_READLINE_ENGINE;
 function ReadlineEngine(story, start) {
     var self = this;
     this.story = story;
-    this.blocks = [[]];
     this.options = [];
     this.keywords = {};
     this.variables = {};
     this.instruction = {type: 'goto', next: start || 'start'};
+    this.wrapper = new Wrapper(process.stdout);
+    this.excerpt = new Excerpt();
+    this.query = new Excerpt();
     this.readline = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -45,7 +49,7 @@ ReadlineEngine.prototype.print = function print(text) {
         this.prompt();
         return false;
     }
-    this.blocks[this.blocks.length - 1].push(text);
+    this.excerpt.digest(this.instruction.lift, text, this.instruction.drop);
     return this.goto(this.instruction.next);
 };
 
@@ -58,7 +62,7 @@ ReadlineEngine.prototype.$print = function print() {
 };
 
 ReadlineEngine.prototype.$break = function $break() {
-    this.blocks.push([]);
+    this.excerpt.break();
     return this.goto(this.instruction.next);
 };
 
@@ -168,6 +172,7 @@ ReadlineEngine.prototype.goto = function _goto(name, fresh) {
             this.prompt();
             return false;
         } else {
+            this.display();
             console.log('');
             this.readline.close();
             return false;
@@ -218,12 +223,7 @@ ReadlineEngine.prototype.command = function command(command) {
 };
 
 ReadlineEngine.prototype.display = function display() {
-    var blocks = this.blocks.filter(getLength);
-    for (var i = 0; i < blocks.length; i++) {
-        var block = blocks[i];
-        // TODO line wrap at min of termios width or 60
-        console.log(block.join(' '));
-    }
+    this.excerpt.write(this.wrapper);
 };
 
 function getLength(array) {
@@ -234,7 +234,13 @@ ReadlineEngine.prototype.prompt = function prompt() {
     this.display();
     for (var i = 0; i < this.options.length; i++) {
         var option = this.options[i];
-        console.log((i + 1) + '. ' + option.label);
+        var lead = ((i + 1) + '.    ').slice(0, 4);
+        this.wrapper.word(lead);
+        this.wrapper.flush = true;
+        this.wrapper.push('    ', '   ');
+        this.wrapper.words(option.label);
+        this.wrapper.pop();
+        this.wrapper.break();
     }
     this.readline.question('> ', this.boundCommand);
 };
@@ -242,7 +248,7 @@ ReadlineEngine.prototype.prompt = function prompt() {
 ReadlineEngine.prototype.flush = function flush() {
     this.options.length = 0;
     this.keywords = {};
-    this.blocks = [[]];
+    this.excerpt = new Excerpt();
 };
 
 function main() {
