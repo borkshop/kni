@@ -66,6 +66,25 @@ function Goto(next) {
 }
 Goto.prototype.tie = tie;
 
+constructors.call = Call;
+function Call(label) {
+    this.type = 'call';
+    this.label = label;
+    this.branch = null;
+    this.next = null;
+    Object.seal(this);
+}
+Call.prototype.tie = tie;
+
+constructors.subroutine = Subroutine;
+function Subroutine(locals) {
+    this.type = 'subroutine';
+    this.locals = locals;
+    this.next = null;
+    Object.seal(this);
+};
+Subroutine.prototype.tie = tie;
+
 constructors.jz = Jz;
 function Jz(variable) {
     this.type = 'jz';

@@ -1848,3 +1848,104 @@ test([
         "next": null
     }
 });
+
+test([
+    'Good bye. <-\n',
+    'Stranded text.'
+], {
+    "start": {
+        "type": "text",
+        "text": "Good bye.",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Stranded text.",
+        "lift": " ",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '=hello() Hello.',
+], {
+    "start": {
+        "type": "goto",
+        "next": null
+    },
+    "hello": {
+        "type": "subroutine",
+        "locals": [],
+        "next": "hello.1"
+    },
+    "hello.1": {
+        "type": "text",
+        "text": "Hello.",
+        "lift": " ",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '- =hello(name) Hello, {$name}.\n',
+    'Good bye'
+], {
+    "start": {
+        "type": "goto",
+        "next": "start.1"
+    },
+    "hello": {
+        "type": "subroutine",
+        "locals": [
+            "name"
+        ],
+        "next": "hello.1"
+    },
+    "hello.1": {
+        "type": "text",
+        "text": "Hello,",
+        "lift": " ",
+        "drop": " ",
+        "next": "hello.2"
+    },
+    "hello.2": {
+        "type": "print",
+        "variable": "name",
+        "next": "hello.3"
+    },
+    "hello.3": {
+        "type": "text",
+        "text": ".",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Good bye",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '{->hello {=10 world}}'
+], {
+    "start": {
+        "type": "call",
+        "label": "hello",
+        "branch": "start.0.1",
+        "next": null
+    },
+    "start.0.1": {
+        "type": "set",
+        "variable": "world",
+        "value": 10,
+        "next": "hello"
+    }
+});

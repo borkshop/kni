@@ -79,6 +79,11 @@ function main() {
 
         if (interactive) {
             var engine = new ReadlineEngine(states, config.start);
+
+            if (config.debugRuntime) {
+                engine.debug = true;
+            }
+
             engine.continue();
         }
     }

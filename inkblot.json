@@ -10,10 +10,11 @@
     "[-j|--json]      Dump compiled script as JSON instead of running interactively.",
     "[--dot]          Dump the final parse tree in Graphviz DOT format.",
     "[--di]           Log input file before processing",
+    "[--dr]           Enable runtime debug logging",
     "[--dp]           Enable parser debug logging",
     "[--dil]          Enable inline lexer debug logging",
     "[--dol]          Enable outline lexer debug logging",
-    "[--ds]           Enable scanner debug loggin"
+    "[--ds]           Enable scanner debug logging"
   ],
   "terms": {
     "script": {
@@ -111,6 +112,22 @@
       "maxLength": null,
       "help": "Log input file before processing"
     },
+    "debugRuntime": {
+      "flags": [
+        {
+          "flag": "--dr",
+          "long": true
+        }
+      ],
+      "arg": null,
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Enable runtime debug logging"
+    },
     "debugParser": {
       "flags": [
         {
@@ -173,7 +190,7 @@
       "required": false,
       "minLength": null,
       "maxLength": null,
-      "help": "Enable scanner debug loggin"
+      "help": "Enable scanner debug logging"
     }
   },
   "parsers": {},

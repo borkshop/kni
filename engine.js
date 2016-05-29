@@ -8,12 +8,51 @@ module.exports = ReadlineEngine;
 
 var debug = process.env.DEBUG_READLINE_ENGINE;
 
+function Global() {
+    this.scope = Object.create(null);
+    this.next = null;
+}
+
+Global.prototype.get = function get(name) {
+    return this.scope[name] || 0;
+};
+
+Global.prototype.set = function set(name, value) {
+    this.scope[name] = value;
+};
+
+function Frame(parent, locals, next) {
+    this.locals = locals;
+    this.scope = Object.create(null);
+    for (var i = 0; i < locals.length; i++) {
+        this.scope[locals[i]] = 0;
+    }
+    this.parent = parent;
+    this.next = next;
+}
+
+Frame.prototype.get = function get(name) {
+    if (this.locals.indexOf(name) >= 0) {
+        return this.scope[name];
+    }
+    return this.parent.get(name);
+};
+
+Frame.prototype.set = function set(name, value) {
+    if (this.locals.indexOf(name) >= 0) {
+        this.scope[name] = value;
+    }
+    return this.parent.set(name, value);
+};
+
 function ReadlineEngine(story, start) {
     var self = this;
     this.story = story;
     this.options = [];
     this.keywords = {};
     this.variables = {};
+    this.top = new Global();
+    this.stack = [this.top];
     this.instruction = {type: 'goto', next: start || 'start'};
     this.wrapper = new Wrapper(process.stdout);
     this.excerpt = new Excerpt();
@@ -33,7 +72,7 @@ ReadlineEngine.prototype.continue = function _continue() {
     var _continue;
     do {
         if (this.debug) {
-            console.log(this.instruction);
+            console.log(JSON.stringify(this.instruction));
         }
         if (!this['$' + this.instruction.type]) {
             throw new Error('Unexpected instruction type: ' + this.instruction.type);
@@ -67,6 +106,25 @@ ReadlineEngine.prototype.$break = function $break() {
 };
 
 ReadlineEngine.prototype.$goto = function $goto() {
+    return this.goto(this.instruction.next);
+};
+
+ReadlineEngine.prototype.$call = function $call() {
+    var routine = this.story[this.instruction.label];
+    if (!routine) {
+        throw new Error('no such routine ' + this.instruction.label);
+    }
+    this.top = new Frame(this.top, routine.locals, this.instruction.next);
+    this.stack.push(this.top);
+    if (this.debug) {
+        console.log('PUSH', this.instruction.label, JSON.stringify(routine.locals), this.instruction.next);
+    }
+    return this.goto(this.instruction.branch);
+};
+
+ReadlineEngine.prototype.$subroutine = function $subroutine() {
+    // Subroutines exist as targets for labels as well as for reference to
+    // locals in calls.
     return this.goto(this.instruction.next);
 };
 
@@ -187,10 +245,19 @@ ReadlineEngine.prototype.$prompt = function prompt() {
 
 ReadlineEngine.prototype.goto = function _goto(name, fresh) {
     if (this.debug) {
-        console.log('GOTO', name);
+        console.log('GO TO', name);
     }
     if (name === null) {
-        if (this.options.length && !fresh) {
+        if (this.debug) {
+            console.log('STACK', this.stack.map(getNext).join(', '), 'OPTIONS', this.options.length);
+        }
+        if (this.stack.length > 1 && this.options.length === 0) {
+            this.top = this.stack.pop();
+            name = this.top.next;
+            if (this.debug) {
+                console.log('POP', 'GO TO', name);
+            }
+        } else if (this.options.length && !fresh) {
             this.prompt();
             return false;
         } else {
@@ -200,6 +267,9 @@ ReadlineEngine.prototype.goto = function _goto(name, fresh) {
             return false;
         }
     }
+    if (this.debug) {
+        console.log('GOING TO', name);
+    }
     var next = this.story[name];
     if (!next) {
         throw new Error('Story missing knot for name: ' + name);
@@ -207,6 +277,10 @@ ReadlineEngine.prototype.goto = function _goto(name, fresh) {
     this.instruction = next;
     return true;
 };
+
+function getNext(frame) {
+    return frame.next;
+}
 
 ReadlineEngine.prototype.read = function read() {
     var variable = this.instruction.variable;

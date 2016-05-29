@@ -7,7 +7,8 @@ toJson:            [-j|--json]      Dump compiled script as JSON instead of runn
 dot:               [--dot]          Dump the final parse tree in Graphviz DOT format.
 
 debugInput:        [--di]           Log input file before processing
+debugRuntime:      [--dr]           Enable runtime debug logging
 debugParser:       [--dp]           Enable parser debug logging
 debugInlineLexer:  [--dil]          Enable inline lexer debug logging
 debugOutlineLexer: [--dol]          Enable outline lexer debug logging
-debugScanner:      [--ds]           Enable scanner debug loggin
+debugScanner:      [--ds]           Enable scanner debug logging
