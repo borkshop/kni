@@ -361,6 +361,17 @@ var mutators = {
     '-': 'sub'
 };
 
+var variables = {
+    '$': 'walk',
+    '@': 'loop',
+    '#': 'hash'
+};
+
+var switches = {
+    '%': 'loop',
+    '~': 'rand'
+};
+
 Block.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text' && jumps[text]) {
         return new Jump(this.story, this.path, this.parent, this.ends, jumps[text]);
@@ -368,12 +379,16 @@ Block.prototype.next = function next(type, space, text, scanner) {
         return new JumpCompare(this.story, this.path, this.parent, this.ends, comparators[text]);
     } else if (mutators[text]) {
         return new Write(this.story, this.path, this.parent, this.ends, mutators[text]);
-    } else if (text === '$') {
-        return new Print(this.story, this.path, this.parent, this.ends);
-    } else if (text === '#') {
-        return new Switch(this.story, this.path, this.parent, this.ends);
+    } else if (variables[text]) {
+        return new Variable(this.story, this.path, this.parent, this.ends, variables[text]);
+    } else if (switches[text]) {
+        return new Switch(this.story, this.path, this.parent, this.ends)
+            .start(null, null, switches[text])
+            .case();
     } else {
-        return sequence(this.story, this.path, this.parent, this.ends)
+        return new Switch(this.story, this.path, this.parent, this.ends)
+            .start(null, 1, 'walk') // with variable and value, waiting for case to start
+            .case() // first case
             .next(type, space, text, scanner);
     }
 };
@@ -477,8 +492,9 @@ Write.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-function Print(story, path, parent, ends) {
-    this.type = 'print';
+function Variable(story, path, parent, ends, mode) {
+    this.type = 'variable';
+    this.mode = mode;
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -487,13 +503,17 @@ function Print(story, path, parent, ends) {
     this.position = 0;
 }
 
-Print.prototype.next = function next(type, space, text, scanner) {
+Variable.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text' && this.position === 0) {
         this.variable = text;
         this.position++;
         return this;
     // istanbul ignore else
-    } else if (type === 'token' && this.position === 1 && text === '}') {
+    } else if (this.position === 1 && type === 'token' && text === '|') {
+        return new Switch(this.story, this.path, this.parent, this.ends)
+            .start(this.variable, 0, this.mode)
+            .case();
+    } else if (this.position === 1 && this.mode === 'walk' && type === 'token' && text === '}') {
         var node = this.story.create(this.path, 'print', this.variable);
         tie(this.ends, this.path);
         return new Knot(this.story, Path.next(this.path), this.parent, [node]);
@@ -501,21 +521,6 @@ Print.prototype.next = function next(type, space, text, scanner) {
         throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
     }
 };
-
-function sequence(story, path, parent, ends) {
-    var switchNode = story.create(path, 'switch', Path.toName(path));
-    switchNode.value = 1;
-    tie(ends, path);
-    var switchState = new Switch(story, path, parent, []);
-
-    var firstPath = Path.firstChild(path);
-    var zerothChild = Path.zerothChild(firstPath);
-
-    var caseNode = story.create(zerothChild, 'goto');
-    switchNode.branches.push(Path.toName(zerothChild));
-    var caseState = new Case(story, firstPath, switchState, [], switchNode.branches);
-    return new Knot(story, zerothChild, caseState, [caseNode]);
-}
 
 function Switch(story, path, parent, ends) {
     this.type = 'switch';
@@ -526,17 +531,18 @@ function Switch(story, path, parent, ends) {
     this.branches = [];
 }
 
-Switch.prototype.next = function next(type, space, text, scanner) {
-    // istanbul ignore else
-    if (type === 'text') {
-        var variable = text;
-        var node = this.story.create(this.path, 'switch', variable);
-        tie(this.ends, this.path);
-        node.branches = this.branches;
-        return new Case(this.story, Path.firstChild(this.path), this, [], this.branches);
-    } else {
-        throw new Error('expected variable name for {#switch} block, got ' + type + ' ' + text);
+Switch.prototype.start = function start(variable, value, mode) {
+    variable = variable || Path.toName(this.path);
+    value = value || 0;
+    if (mode === 'loop') {
+        value = 1;
     }
+    var node = this.story.create(this.path, 'switch', variable);
+    node.value = value;
+    node.mode = mode;
+    tie(this.ends, this.path);
+    node.branches = this.branches;
+    return new Case(this.story, Path.firstChild(this.path), this, [], this.branches);
 };
 
 Switch.prototype.return = function _return(path, ends, scanner) {
@@ -554,14 +560,18 @@ function Case(story, path, parent, ends, branches) {
 
 Case.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token' && text === '|') {
-        var path = Path.zerothChild(this.path);
-        var node = this.story.create(path, 'goto', null);
-        this.branches.push(Path.toName(path));
-        return new Knot(this.story, path, this, [node]);
+        return this.case();
     } else {
         return this.parent.return(this.path, this.ends, scanner)
             .next(type, space, text, scanner);
     }
+};
+
+Case.prototype.case = function _case() {
+    var path = Path.zerothChild(this.path);
+    var node = this.story.create(path, 'goto', null);
+    this.branches.push(Path.toName(path));
+    return new Knot(this.story, path, this, [node]);
 };
 
 Case.prototype.return = function _return(path, ends, scanner) {

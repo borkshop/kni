@@ -154,14 +154,31 @@ ReadlineEngine.prototype.$jle = function jle() {
 };
 
 ReadlineEngine.prototype.$switch = function _switch() {
-    var value = this.read();
     var branches = this.instruction.branches;
-    var next = branches[Math.min(value, branches.length - 1)];
-    if (this.instruction.value !== 0) {
-        this.write(value + this.instruction.value);
+    var value;
+    if (this.instruction.mode === 'rand') {
+        value = Math.floor(Math.random() * branches.length);
+    } else {
+        value = this.read();
+        if (this.instruction.value !== 0) {
+            this.write(value + this.instruction.value);
+        }
     }
+    if (this.instruction.mode === 'loop') {
+        value = value % branches.length;
+    } else if (this.instruction.mode === 'hash') {
+        value = hash(value) % branches.length;
+    }
+    var next = branches[Math.min(value, branches.length - 1)];
     return this.goto(next);
 };
+
+function hash(x) {
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x);
+    return x >>> 0;
+}
 
 ReadlineEngine.prototype.$prompt = function prompt() {
     this.prompt();

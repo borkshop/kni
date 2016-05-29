@@ -941,6 +941,7 @@ test([
         "type": "switch",
         "variable": "start",
         "branches": ["start.0.1"],
+        "mode": "walk",
         "value": 1
     },
     "start.0.1": {
@@ -956,7 +957,8 @@ test([
         "type": "switch",
         "variable": "start",
         "branches": ["start.0.1", "start.0.2"],
-        "value": 1
+        "value": 1,
+        "mode": "walk"
     },
     "start.0.1": {
         "type": "goto",
@@ -975,6 +977,7 @@ test([
         "type": "switch",
         "variable": "start",
         "branches": ["start.0.1", "start.0.2", "start.0.3"],
+        "mode": "walk",
         "value": 1
     },
     "start.0.1": {
@@ -1007,7 +1010,8 @@ test([
         "type": "switch",
         "variable": "start",
         "branches": ["start.0.1", "start.0.2", "start.0.3"],
-        "value": 1
+        "value": 1,
+        "mode": "walk"
     },
     "start.0.1": {
         "type": "text",
@@ -1053,7 +1057,8 @@ test([
         "type": "switch",
         "variable": "start.1",
         "branches": ["start.1.1", "start.1.2", "start.1.3"],
-        "value": 1
+        "value": 1,
+        "mode": "walk"
     },
     "start.1.1": {
         "type": "text",
@@ -1099,7 +1104,8 @@ test([
         "type": "switch",
         "variable": "start.1",
         "branches": ["start.1.1", "start.1.2", "start.1.3"],
-        "value": 1
+        "value": 1,
+        "mode": "walk"
     },
     "start.1.1": {
         "type": "text",
@@ -1135,7 +1141,8 @@ test([
         "type": "switch",
         "variable": "start",
         "branches": ["start.0.1"],
-        "value": 1
+        "value": 1,
+        "mode": "walk"
     },
     "start.0.1": {
         "type": "text",
@@ -1153,7 +1160,8 @@ test([
         "type": "switch",
         "variable": "start",
         "branches": ["start.0.1"],
-        "value": 1
+        "value": 1,
+        "mode": "walk"
     },
     "start.0.1": {
         "type": "text",
@@ -1307,7 +1315,7 @@ test([
 });
 
 test([
-    '{#arrow|no arrows|an arrow|{$arrow} arrows}\n'
+    '{$arrow|no arrows|an arrow|{$arrow} arrows}\n'
 ], {
     "start": {
         "type": "switch",
@@ -1317,7 +1325,8 @@ test([
             "start.0.2",
             "start.0.3"
         ],
-        "value": 0
+        "value": 0,
+        "mode": "walk"
     },
     "start.0.1": {
         "type": "text",
@@ -1348,7 +1357,7 @@ test([
 });
 
 test([
-    '{#arrow|{$arrow} arrows|some arrows}\n'
+    '{$arrow|{$arrow} arrows|some arrows}\n'
 ], {
     "start": {
         "type": "switch",
@@ -1357,7 +1366,8 @@ test([
             "start.0.1",
             "start.0.2"
         ],
-        "value": 0
+        "value": 0,
+        "mode": "walk"
     },
     "start.0.1": {
         "type": "print",
@@ -1381,7 +1391,7 @@ test([
 });
 
 test([
-    'You see {#door|an open|a closed} door.\n'
+    'You see {$door|an open|a closed} door.\n'
 ], {
     "start": {
         "type": "text",
@@ -1397,7 +1407,8 @@ test([
             "start.1.1",
             "start.1.2"
         ],
-        "value": 0
+        "value": 0,
+        "mode": "walk"
     },
     "start.1.1": {
         "type": "text",
@@ -1423,8 +1434,8 @@ test([
 });
 
 test([
-    'You see {#door|an open|a closed} door.\n',
-    'The knob is wrought of {#knob|brass|iron}.\n'
+    'You see {$door|an open|a closed} door.\n',
+    'The knob is wrought of {$knob|brass|iron}.\n'
 ], {
     "start": {
         "type": "text",
@@ -1440,7 +1451,8 @@ test([
             "start.1.1",
             "start.1.2"
         ],
-        "value": 0
+        "value": 0,
+        "mode": "walk"
     },
     "start.1.1": {
         "type": "text",
@@ -1470,7 +1482,8 @@ test([
             "start.3.1",
             "start.3.2"
         ],
-        "value": 0
+        "value": 0,
+        "mode": "walk"
     },
     "start.3.1": {
         "type": "text",
@@ -1496,7 +1509,7 @@ test([
 });
 
 test([
-    'You have {#gold|no gold|{$gold} gold}.\n'
+    'You have {$gold|no gold|{$gold} gold}.\n'
 ], {
     "start": {
         "type": "text",
@@ -1512,7 +1525,8 @@ test([
             "start.1.1",
             "start.1.2"
         ],
-        "value": 0
+        "value": 0,
+        "mode": "walk"
     },
     "start.1.1": {
         "type": "text",
@@ -1723,6 +1737,114 @@ test([
         "text": "Violets are blue",
         "lift": " ",
         "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    'My favorite color is blue{~.|, no yellow!}'
+], {
+    "start": {
+        "type": "text",
+        "text": "My favorite color is blue",
+        "lift": "",
+        "drop": "",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "switch",
+        "variable": "start.1",
+        "value": 0,
+        "mode": "rand",
+        "branches": [
+            "start.1.1",
+            "start.1.2"
+        ]
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": ".",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": ", no yellow!",
+        "lift": "",
+        "drop": "",
+        "next": null
+    }
+});
+
+test([
+    'My favorite color is blue{%.|, no yellow!}'
+], {
+    "start": {
+        "type": "text",
+        "text": "My favorite color is blue",
+        "lift": "",
+        "drop": "",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "switch",
+        "variable": "start.1",
+        "value": 1,
+        "mode": "loop",
+        "branches": [
+            "start.1.1",
+            "start.1.2"
+        ]
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": ".",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": ", no yellow!",
+        "lift": "",
+        "drop": "",
+        "next": null
+    }
+});
+
+test([
+    'My favorite color is blue{@color|.|, no yellow!}'
+], {
+    "start": {
+        "type": "text",
+        "text": "My favorite color is blue",
+        "lift": "",
+        "drop": "",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "switch",
+        "variable": "color",
+        "value": 1,
+        "mode": "loop",
+        "branches": [
+            "start.1.1",
+            "start.1.2"
+        ]
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": ".",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": ", no yellow!",
+        "lift": "",
+        "drop": "",
         "next": null
     }
 });

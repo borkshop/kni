@@ -165,8 +165,9 @@ constructors.switch = Switch;
 function Switch(variable) {
     this.type = 'switch';
     this.variable = variable;
-    this.branches = [];
     this.value = 0;
+    this.mode = null;
+    this.branches = [];
     Object.seal(this);
 }
 Switch.prototype.tie = tie;
