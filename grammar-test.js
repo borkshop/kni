@@ -735,6 +735,32 @@ test([
     }
 });
 
+only([
+    '+ "Hello, World]!"[," you reply.\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "\"Hello, World!\"",
+        "keywords": [],
+        "branch": "start.0.1",
+        "next": null
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "\"Hello, World",
+        "lift": "",
+        "drop": "",
+        "next": "start.0.2"
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": ",\" you reply.",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
 test([
     '+ Alpha\n',
     '-\n',

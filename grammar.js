@@ -138,12 +138,17 @@ function Option(leader, story, path, parent, ends) {
     this.answer = new Pretext();
     this.common = new Pretext();
     this.position = 0;
+    this.direction = 1;
     Object.seal(this);
 }
 
 //    You then s   [S]      ay Hello, World!
 //    0   1    1    2 3     4  5      5
 //    Answer  Question Common
+//
+//    "Hello, World ]!"        [," you reply.
+//    0       1     -2      -3 4   5   5
+//    Common         Question  Answer
 Option.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text' && this.position === 0) {
         this.answer.lift = space;
@@ -156,16 +161,24 @@ Option.prototype.next = function next(type, space, text, scanner) {
     } else if (type === 'token' && text === '[' && (this.position === 0 || this.position === 1)) {
         this.position = 2;
         return this;
-    } else if (type === 'text' && this.position === 2) {
+    } else if (type === 'token' && text === ']' && (this.position === 0 || this.position === 1)) {
+        this.direction = -1;
+        this.position = -2;
+        return this;
+    } else if (type === 'text' && this.position === 2 * this.direction) {
         this.answer.drop = space;
         this.question.lift = space;
         this.question.text = text;
-        this.position = 3;
+        this.position = 3 * this.direction;
         return this;
-    } else if (type === 'text' && this.position === 3) {
+    } else if (type === 'text' && this.position === 3 * this.direction) {
         this.question.text += space + text;
         return this;
     } else if (type === 'token' && text === ']' && (this.position === 2 || this.position === 3)) {
+        this.question.drop = space;
+        this.position = 4;
+        return this;
+    } else if (type === 'token' && text === '[' && (this.position === -2 || this.position === -3)) {
         this.question.drop = space;
         this.position = 4;
         return this;
@@ -184,17 +197,17 @@ Option.prototype.next = function next(type, space, text, scanner) {
         // see any bracket notation.
         // In this case, the "answer" we collected is actually the "common",
         // meaning it serves for both the question and answer for the option.
-        return this.create(null, null, this.answer, type, space, text, scanner);
+        return this.create(null, null, this.answer, this.direction, type, space, text, scanner);
     // istanbul ignore next
     } else if (this.position === 2 || this.position === 3) {
         throw new Error('expected matching ]');
     } else {
         this.common.drop = space;
-        return this.create(this.answer, this.question, this.common, type, space, text, scanner);
+        return this.create(this.answer, this.question, this.common, this.direction, type, space, text, scanner);
     }
 };
 
-Option.prototype.create = function create(answer, question, common, type, space, text, scanner) {
+Option.prototype.create = function create(answer, question, common, direction, type, space, text, scanner) {
     var variable = Path.toName(this.path);
     var path = this.path;
 
@@ -208,7 +221,11 @@ Option.prototype.create = function create(answer, question, common, type, space,
 
     var option;
     if (question) {
-        option = this.story.create(path, 'option', question.text + question.drop + common.text);
+        if (this.direction > 0) {
+            option = this.story.create(path, 'option', question.text + question.drop + common.text);
+        } else {
+            option = this.story.create(path, 'option', answer.text + answer.drop + question.text);
+        }
     } else {
         option = this.story.create(path, 'option', common.text);
     }
