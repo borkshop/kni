@@ -17,6 +17,7 @@
   },
   "files": [
     "engine.js",
+    "excerpt.js",
     "grammar.js",
     "inkblot.js",
     "inkblot.json",
@@ -25,7 +26,8 @@
     "parser.js",
     "path.js",
     "scanner.js",
-    "story.js"
+    "story.js",
+    "wrapper.js"
   ],
   "scripts": {
     "test": "npm ls -s && npm run lint && npm run cover -s",
