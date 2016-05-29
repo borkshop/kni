@@ -1,3 +1,2 @@
-- {Three... |Two.. |One. |Liftoff! -> liftoff}
+{Three... |Two.. |One. |Liftoff! <-} /
 -> start
-= liftoff
