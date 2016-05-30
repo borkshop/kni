@@ -211,6 +211,17 @@ Roses are red /
 Violets are blue
 ```
 
+## Divider
+
+A horizontal rule of dashes, more than one, indicates that the narrative
+should have a break between paragraphs.
+
+```
+And they lived merrily for ever after.
+---
+The end.
+```
+
 ## Goto
 
 The forward arrow ``->`` followed by a label sends the narrative to another
@@ -246,22 +257,42 @@ You take one down and pass it around. {-1 bottles} /
 {#bottles||->refrain}
 ```
 
+Additionally, the `=` sign can be used as a bullet to start a thread with a
+label, as seen in the next example of declaring and calling a procedure.
+
 ## Calling a procedure
 
+A procedure is a label that can be called and returned from.
+Procedures can be used as goto targets, but with the special syntax for calling
+a procedure, they can introduce a scope with local variables and
+return to the next transition after where they were called.
+
 ```
-- =greet(time)
+= greet(time)
   {$time|Hello|Good bye}, World!
 
 {-> greet {=0 time}}
 {-> greet {=1 time}}
 ```
 
+A forward arrow within a block signifies calling a procedure and returning
+instead of going to a label.
+The thread remaining inside the block executes inside the scope of the
+procedure, so you can use this space to convey parameters.
+
+At present, it is best to assume that you can only write values to the local
+scope.
+I expect that in a future version, values will be read exclusively from the
+caller scope and written only into the callee scope.
+
 ## Returning or exiting
 
+In the above example, the greet procedure impicitly returns at the end of the thread.
 The reverse arrow will skip to the end of a procedure.
 For the main narrative, this means exiting out the bottom of the file.
-Within a procedure, this means exiting out the end of the procedure,
-popping the stack, and proceeding from where the procedure was called.
+Within a procedure, this means exiting out the end of the procedure.
+Regardless, the reverse arrow pops the stack and proceeds after the call site,
+or ends the narrative.
 
 ```
 <-
