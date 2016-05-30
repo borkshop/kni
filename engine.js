@@ -2,7 +2,7 @@
 
 module.exports = Engine;
 
-var debug = process.env.DEBUG_ENGINE;
+var debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
 function Engine(story, start, render, interlocutor) {
     var self = this;

@@ -5,8 +5,9 @@
 
 = shop
 
-  You have {$arrow|no arrows|an arrow|{$arrow} arrows} and {$gold|no gold|a
-  gold piece|{$gold} gold}.
+  You have {$arrow|no arrows|an arrow|{$arrow} arrows}
+  {$arrow|{$gold| and | but }| and }
+  {$gold|no gold|a gold piece|{$gold} gold}.
   
   - {!gold} {!arrow} -> exit
   
@@ -25,10 +26,11 @@
 
   - {?arrow}
     + You s[S]hoot an arrow {-1 arrow}
-      {~and hit the target and win 1 gold! {+1 gold} {+1 hit} -> range||}
+      {~and hit the target, winning 1 gold piece!
+      {+1 gold} {+1 hit} -> range||}
       and miss. -> range
   + You r[R]eturn to the archery shop. -> shop
 
 = exit
   You depart the store through the back door.
-  All told, you scored {$hit} hit{$hit|s||s}.
+  {?hit} All told, you scored {$hit} hit{$hit|s||s}.

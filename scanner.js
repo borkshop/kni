@@ -6,7 +6,7 @@
 // The scanner feeds into an outline lexer.
 
 var tabWidth = 4;
-var debug = process.env.DEBUG_SCANNER;
+var debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
 
 module.exports = Scanner;
 

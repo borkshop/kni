@@ -1,0 +1,57 @@
+body {
+    font-family: Libre Baskerville, Book Antiqua, serif;
+    font-size: 200%;
+}
+
+.parent {
+    position: absolute;
+    display: table;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    outline: dotted blue 1px;
+}
+
+.child {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 1em;
+    width: 40ex;
+}
+
+.outer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.inner {
+    display: flex-item;
+    flex: 0 1 auto;
+    max-width: 40ex;
+    text-align: justify;
+}
+
+li {
+    list-style-type: decimal;
+}
+
+a {
+    text-decoration: none;
+    /* font-style: italic; */
+}
+
+a:link {
+    color: black;
+}
+
+a:hover {
+    color: black;
+}
+
+a:visited {
+    color: black;
+}

@@ -2,7 +2,7 @@
 
 module.exports = Parser;
 
-var debug = process.env.DEBUG_PARSER;
+var debug = typeof process === 'object' && process.env.DEBUG_PARSER;
 
 function Parser(generator) {
     this.generator = generator;

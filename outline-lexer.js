@@ -11,7 +11,7 @@
 
 module.exports = OutlineLexer;
 
-var debug = process.env.DEBUG_OUTLINE_LEXER;
+var debug = typeof process === 'object' && process.env.DEBUG_OUTLINE_LEXER;
 
 function OutlineLexer(generator) {
     this.generator = generator;

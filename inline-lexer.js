@@ -13,7 +13,7 @@
 
 module.exports = InlineLexer;
 
-var debug = process.env.DEBUG_INLINE_LEXER;
+var debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER;
 
 var L1 = '=[]{}|/<>';
 var L2 = ['->', '<-', '==', '!=', '>=', '<='];

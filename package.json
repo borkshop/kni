@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "pop-equals": "^1.0.0",
-    "shon": "^3.0.5"
+    "shon": "^3.0.5",
+    "system": "^1.0.6"
   },
   "devDependencies": {
     "eslint": "^2.7.0",
@@ -17,6 +18,7 @@
   },
   "files": [
     "console.js",
+    "document.js",
     "engine.js",
     "excerpt.js",
     "grammar.js",
@@ -34,10 +36,14 @@
   "scripts": {
     "test": "npm ls -s && npm run lint && npm run cover -s",
     "lint": "eslint .",
+    "build": "node inkblot.js examples/archery.ink -j > examples/archery.json && bundle index.js > bundle.js",
     "cover": "istanbul cover --report html --print node -- test.js && istanbul report text && npm run check-cover -s",
     "check-cover": "istanbul check-coverage",
     "view-cover": "opn ./coverage/index.html",
     "usage": "usage2json inkblot.usage > inkblot.json"
+  },
+  "translators": {
+    "json": "./translate-json.js"
   },
   "repository": {
     "type": "git",
