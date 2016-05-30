@@ -62,6 +62,7 @@ Document.prototype.flush = function flush() {
 };
 
 Document.prototype.pardon = function pardon() {
+    this.clear();
     // No-op (for console only)
 };
 
