@@ -37,7 +37,12 @@ body {
     text-align: justify;
 }
 
+th {
+    vertical-align: top;
+}
+
 td {
+    vertical-align: top;
     cursor: pointer;
 }
 
