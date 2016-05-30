@@ -84,8 +84,8 @@ Document.prototype.clear = function clear() {
 Document.prototype.question = function question() {
 };
 
-Document.prototype.answer = function answer(answer) {
-    this.engine.answer(answer);
+Document.prototype.answer = function answer(text) {
+    this.engine.answer(text);
 };
 
 Document.prototype.close = function close() {

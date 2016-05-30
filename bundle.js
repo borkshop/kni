@@ -149,8 +149,8 @@ Document.prototype.clear = function clear() {
 Document.prototype.question = function question() {
 };
 
-Document.prototype.answer = function answer(answer) {
-    this.engine.answer(answer);
+Document.prototype.answer = function answer(text) {
+    this.engine.answer(text);
 };
 
 Document.prototype.close = function close() {
@@ -417,20 +417,20 @@ Engine.prototype.write = function write(value) {
     this.variables[variable] = value;
 };
 
-Engine.prototype.answer = function answer(answer) {
+Engine.prototype.answer = function answer(text) {
     this.render.flush();
-    if (answer === 'quit') {
+    if (text === 'quit') {
         this.interlocutor.close();
         return;
     }
-    var n = +answer;
+    var n = +text;
     if (n >= 1 && n <= this.options.length) {
         if (this.goto(this.options[n - 1].branch, true)) {
             this.flush();
             this.continue();
         }
-    } else if (this.keywords[answer]) {
-        if (this.goto(this.keywords[answer], true)) {
+    } else if (this.keywords[text]) {
+        if (this.goto(this.keywords[text], true)) {
             this.flush();
             this.continue();
         }

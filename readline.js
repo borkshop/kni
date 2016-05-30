@@ -13,8 +13,8 @@ function Interlocutor() {
     this.engine = null;
     this.boundAnswer = answer;
     Object.seal(this);
-    function answer(answer) {
-        self.answer(answer);
+    function answer(text) {
+        self.answer(text);
     }
 }
 
@@ -22,8 +22,8 @@ Interlocutor.prototype.question = function question() {
     this.readline.question('> ', this.boundAnswer);
 };
 
-Interlocutor.prototype.answer = function answer(answer) {
-    this.engine.answer(answer);
+Interlocutor.prototype.answer = function answer(text) {
+    this.engine.answer(text);
 };
 
 Interlocutor.prototype.close = function close() {
