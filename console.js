@@ -32,6 +32,14 @@ Console.prototype.option = function option(number, label) {
         this.wrapper.break();
 };
 
+Console.prototype.flush = function flush() {
+    console.log('');
+};
+
+Console.prototype.pardon = function pardon() {
+    console.log('?');
+};
+
 Console.prototype.display = function display() {
     this.excerpt.write(this.wrapper);
 };

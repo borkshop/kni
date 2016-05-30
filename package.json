@@ -26,6 +26,7 @@
     "outline-lexer.js",
     "parser.js",
     "path.js",
+    "readline.js",
     "scanner.js",
     "story.js",
     "wrapper.js"

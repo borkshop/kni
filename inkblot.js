@@ -4,6 +4,7 @@
 
 var fs = require('fs');
 var Console = require('./console');
+var Readline = require('./readline');
 var Engine = require('./engine');
 var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
@@ -79,8 +80,9 @@ function main() {
         }
 
         if (interactive) {
+            var readline = new Readline();
             var render = new Console(process.stdout);
-            var engine = new Engine(states, config.start, render);
+            var engine = new Engine(states, config.start, render, readline);
 
             if (config.debugRuntime) {
                 engine.debug = true;

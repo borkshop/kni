@@ -1,12 +1,10 @@
 'use strict';
 
-var readline = require('readline');
-
 module.exports = Engine;
 
 var debug = process.env.DEBUG_ENGINE;
 
-function Engine(story, start, render) {
+function Engine(story, start, render, interlocutor) {
     var self = this;
     this.story = story;
     this.options = [];
@@ -17,16 +15,10 @@ function Engine(story, start, render) {
     this.label = null;
     this.instruction = {type: 'goto', next: start || 'start'};
     this.render = render;
-    this.readline = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
+    this.interlocutor = interlocutor;
+    this.interlocutor.engine = this;
     this.debug = debug;
-    this.boundCommand = command;
     Object.seal(this);
-    function command(answer) {
-        self.command(answer);
-    }
 }
 
 Engine.prototype.continue = function _continue() {
@@ -228,8 +220,8 @@ Engine.prototype.goto = function _goto(name, fresh) {
             return false;
         } else {
             this.display();
-            console.log('');
-            this.readline.close();
+            this.render.break();
+            this.interlocutor.close();
             return false;
         }
     }
@@ -262,25 +254,25 @@ Engine.prototype.write = function write(value) {
     this.variables[variable] = value;
 };
 
-Engine.prototype.command = function command(command) {
-    console.log('');
-    if (command === 'quit') {
-        this.readline.close();
+Engine.prototype.answer = function answer(answer) {
+    this.render.flush();
+    if (answer === 'quit') {
+        this.interlocutor.close();
         return;
     }
-    var n = +command;
+    var n = +answer;
     if (n >= 1 && n <= this.options.length) {
         if (this.goto(this.options[n - 1].branch, true)) {
             this.flush();
             this.continue();
         }
-    } else if (this.keywords[command]) {
-        if (this.goto(this.keywords[command], true)) {
+    } else if (this.keywords[answer]) {
+        if (this.goto(this.keywords[answer], true)) {
             this.flush();
             this.continue();
         }
     } else {
-        console.log('?');
+        this.render.pardon();
         this.prompt();
     }
 };
@@ -299,7 +291,7 @@ Engine.prototype.prompt = function prompt() {
         var option = this.options[i];
         this.render.option(i + 1, option.label);
     }
-    this.readline.question('> ', this.boundCommand);
+    this.interlocutor.question();
 };
 
 Engine.prototype.flush = function flush() {
