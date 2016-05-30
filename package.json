@@ -16,6 +16,7 @@
     "opn": "^1.0.1"
   },
   "files": [
+    "console.js",
     "engine.js",
     "excerpt.js",
     "grammar.js",

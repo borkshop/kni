@@ -1,12 +1,10 @@
 'use strict';
 
 var readline = require('readline');
-var Excerpt = require('./excerpt');
-var Wrapper = require('./wrapper');
 
-module.exports = ReadlineEngine;
+module.exports = Engine;
 
-var debug = process.env.DEBUG_READLINE_ENGINE;
+var debug = process.env.DEBUG_ENGINE;
 
 function Global() {
     this.scope = Object.create(null);
@@ -45,7 +43,7 @@ Frame.prototype.set = function set(name, value) {
     return this.parent.set(name, value);
 };
 
-function ReadlineEngine(story, start) {
+function Engine(story, start, render) {
     var self = this;
     this.story = story;
     this.options = [];
@@ -55,9 +53,9 @@ function ReadlineEngine(story, start) {
     this.stack = [this.top];
     this.label = null;
     this.instruction = {type: 'goto', next: start || 'start'};
-    this.wrapper = new Wrapper(process.stdout);
-    this.excerpt = new Excerpt();
-    this.query = new Excerpt();
+    this.render = render;
+    // this.wrapper = new Wrapper(process.stdout);
+    // this.excerpt = new Excerpt();
     this.readline = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -70,7 +68,7 @@ function ReadlineEngine(story, start) {
     }
 }
 
-ReadlineEngine.prototype.continue = function _continue() {
+Engine.prototype.continue = function _continue() {
     var _continue;
     do {
         if (this.debug) {
@@ -83,40 +81,43 @@ ReadlineEngine.prototype.continue = function _continue() {
     } while (_continue);
 };
 
-ReadlineEngine.prototype.print = function print(text) {
+Engine.prototype.print = function print(text) {
     // Implicitly prompt if there are pending options before resuming the
     // narrative.
     if (this.options.length) {
         this.prompt();
         return false;
     }
-    this.excerpt.digest(this.instruction.lift, text, this.instruction.drop);
+    this.render.write(this.instruction.lift, text, this.instruction.drop);
+    // this.excerpt.digest(this.instruction.lift, text, this.instruction.drop);
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$text = function text() {
+Engine.prototype.$text = function text() {
     return this.print(this.instruction.text);
 };
 
-ReadlineEngine.prototype.$print = function print() {
+Engine.prototype.$print = function print() {
     return this.print('' + this.read());
 };
 
-ReadlineEngine.prototype.$break = function $break() {
-    this.excerpt.break();
+Engine.prototype.$break = function $break() {
+    this.render.break();
+    // this.excerpt.break();
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$paragraph = function $paragraph() {
-    this.excerpt.paragraph();
+Engine.prototype.$paragraph = function $paragraph() {
+    this.render.paragraph();
+    // this.excerpt.paragraph();
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$goto = function $goto() {
+Engine.prototype.$goto = function $goto() {
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$call = function $call() {
+Engine.prototype.$call = function $call() {
     var routine = this.story[this.instruction.label];
     if (!routine) {
         throw new Error('no such routine ' + this.instruction.label);
@@ -129,13 +130,13 @@ ReadlineEngine.prototype.$call = function $call() {
     return this.goto(this.instruction.branch);
 };
 
-ReadlineEngine.prototype.$subroutine = function $subroutine() {
+Engine.prototype.$subroutine = function $subroutine() {
     // Subroutines exist as targets for labels as well as for reference to
     // locals in calls.
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$option = function option() {
+Engine.prototype.$option = function option() {
     this.options.push(this.instruction);
     for (var i = 0; i < this.instruction.keywords.length; i++) {
         var keyword = this.instruction.keywords[i];
@@ -144,27 +145,27 @@ ReadlineEngine.prototype.$option = function option() {
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$inc = function inc() {
+Engine.prototype.$inc = function inc() {
     this.write(this.read() + 1);
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$set = function set() {
+Engine.prototype.$set = function set() {
     this.write(this.instruction.value);
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$add = function add() {
+Engine.prototype.$add = function add() {
     this.write(this.read() + this.instruction.value);
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$sub = function sub() {
+Engine.prototype.$sub = function sub() {
     this.write(this.read() - this.instruction.value);
     return this.goto(this.instruction.next);
 };
 
-ReadlineEngine.prototype.$jz = function jz() {
+Engine.prototype.$jz = function jz() {
     if (this.debug) {
         console.log('JZ', this.instruction.variable, this.read());
     }
@@ -175,7 +176,7 @@ ReadlineEngine.prototype.$jz = function jz() {
     }
 };
 
-ReadlineEngine.prototype.$jnz = function jnz() {
+Engine.prototype.$jnz = function jnz() {
     if (this.debug) {
         console.log('JNZ', this.instruction.variable, this.read());
     }
@@ -186,7 +187,7 @@ ReadlineEngine.prototype.$jnz = function jnz() {
     }
 };
 
-ReadlineEngine.prototype.$jlt = function jlt() {
+Engine.prototype.$jlt = function jlt() {
     if (this.read() < this.instruction.value) {
         return this.goto(this.instruction.next);
     } else {
@@ -194,7 +195,7 @@ ReadlineEngine.prototype.$jlt = function jlt() {
     }
 };
 
-ReadlineEngine.prototype.$jgt = function jgt() {
+Engine.prototype.$jgt = function jgt() {
     if (this.read() > this.instruction.value) {
         return this.goto(this.instruction.next);
     } else {
@@ -202,7 +203,7 @@ ReadlineEngine.prototype.$jgt = function jgt() {
     }
 };
 
-ReadlineEngine.prototype.$jge = function jge() {
+Engine.prototype.$jge = function jge() {
     if (this.read() >= this.instruction.value) {
         return this.goto(this.instruction.next);
     } else {
@@ -210,7 +211,7 @@ ReadlineEngine.prototype.$jge = function jge() {
     }
 };
 
-ReadlineEngine.prototype.$jle = function jle() {
+Engine.prototype.$jle = function jle() {
     if (this.read() <= this.instruction.value) {
         return this.goto(this.instruction.next);
     } else {
@@ -218,7 +219,7 @@ ReadlineEngine.prototype.$jle = function jle() {
     }
 };
 
-ReadlineEngine.prototype.$switch = function _switch() {
+Engine.prototype.$switch = function _switch() {
     var branches = this.instruction.branches;
     var value;
     if (this.instruction.mode === 'rand') {
@@ -245,12 +246,12 @@ function hash(x) {
     return x >>> 0;
 }
 
-ReadlineEngine.prototype.$prompt = function prompt() {
+Engine.prototype.$prompt = function prompt() {
     this.prompt();
     return false;
 };
 
-ReadlineEngine.prototype.goto = function _goto(name, fresh) {
+Engine.prototype.goto = function _goto(name, fresh) {
     if (this.debug) {
         if (name === null) {
             console.log('STACK', this.stack.map(getNext), 'OPTIONS', this.options.length);
@@ -290,7 +291,7 @@ function getNext(frame) {
     return frame.next;
 }
 
-ReadlineEngine.prototype.read = function read() {
+Engine.prototype.read = function read() {
     var variable = this.instruction.variable;
     if (this.variables[variable] == undefined) {
         this.variables[variable] = 0;
@@ -298,12 +299,12 @@ ReadlineEngine.prototype.read = function read() {
     return this.variables[variable];
 };
 
-ReadlineEngine.prototype.write = function write(value) {
+Engine.prototype.write = function write(value) {
     var variable = this.instruction.variable;
     this.variables[variable] = value;
 };
 
-ReadlineEngine.prototype.command = function command(command) {
+Engine.prototype.command = function command(command) {
     console.log('');
     if (command === 'quit') {
         this.readline.close();
@@ -326,38 +327,41 @@ ReadlineEngine.prototype.command = function command(command) {
     }
 };
 
-ReadlineEngine.prototype.display = function display() {
-    this.excerpt.write(this.wrapper);
+Engine.prototype.display = function display() {
+    this.render.display();
+    // this.excerpt.write(this.wrapper);
 };
 
 function getLength(array) {
     return array.length;
 }
 
-ReadlineEngine.prototype.prompt = function prompt() {
+Engine.prototype.prompt = function prompt() {
     this.display();
     for (var i = 0; i < this.options.length; i++) {
         var option = this.options[i];
-        var lead = ((i + 1) + '.    ').slice(0, 4);
-        this.wrapper.word(lead);
-        this.wrapper.flush = true;
-        this.wrapper.push('    ', '   ');
-        this.wrapper.words(option.label);
-        this.wrapper.pop();
-        this.wrapper.break();
+        this.render.option(i + 1, option.label);
+        // var lead = ((i + 1) + '.    ').slice(0, 4);
+        // this.wrapper.word(lead);
+        // this.wrapper.flush = true;
+        // this.wrapper.push('    ', '   ');
+        // this.wrapper.words(option.label);
+        // this.wrapper.pop();
+        // this.wrapper.break();
     }
     this.readline.question('> ', this.boundCommand);
 };
 
-ReadlineEngine.prototype.flush = function flush() {
+Engine.prototype.flush = function flush() {
     this.options.length = 0;
     this.keywords = {};
-    this.excerpt = new Excerpt();
+    this.render.clear();
+    // this.excerpt = new Excerpt();
 };
 
 function main() {
     var story = require('./hello.json');
-    var engine = new ReadlineEngine(story);
+    var engine = new Engine(story);
     engine.continue();
 }
 

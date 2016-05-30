@@ -3,7 +3,8 @@
 'use strict';
 
 var fs = require('fs');
-var ReadlineEngine = require('./engine');
+var Console = require('./console');
+var Engine = require('./engine');
 var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
 var InlineLexer = require('./inline-lexer');
@@ -78,7 +79,8 @@ function main() {
         }
 
         if (interactive) {
-            var engine = new ReadlineEngine(states, config.start);
+            var render = new Console(process.stdout);
+            var engine = new Engine(states, config.start, render);
 
             if (config.debugRuntime) {
                 engine.debug = true;
