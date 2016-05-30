@@ -1341,6 +1341,16 @@ test([
 });
 
 test([
+    '{$start.1}\n'
+], {
+    "start": {
+        "type": "print",
+        "variable": "start.1",
+        "next": null
+    }
+});
+
+test([
     '{$arrow|no arrows|an arrow|{$arrow} arrows}\n'
 ], {
     "start": {

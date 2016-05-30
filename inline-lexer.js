@@ -17,13 +17,18 @@ var debug = process.env.DEBUG_INLINE_LEXER;
 
 var L1 = '=[]{}|/<>';
 var L2 = ['->', '<-', '==', '!=', '>=', '<='];
-var alpha = /\w/;
+var num = /\d/;
+var space = /\s/;
+var alpha = /[\w\d_\.]/;
 
 function InlineLexer(generator) {
     this.generator = generator;
     this.space = '';
     this.accumulator = '';
+    this.numeric = false;
+    this.alphanumeric = false;
     this.debug = debug;
+    Object.seal(this);
 }
 
 InlineLexer.prototype.next = function next(type, text, scanner) {
@@ -41,6 +46,8 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
     for (var i = 0; i < text.length - 1; i++) {
         var c = text[i];
         var cc = c + text[i + 1];
+        var numeric = num.test(c);
+        var alphanumeric = alpha.test(c);
         if (c === ' ' || c === '\t') {
             this.flush(scanner);
             this.space = ' ';
@@ -53,12 +60,20 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             this.flush(scanner);
             this.generator.next('token', this.space, c, scanner);
             this.space = '';
-        } else if (!alpha.test(c)) {
+        } else if (!this.alphanumeric && numeric) {
+            this.accumulator += c;
+            this.numeric = true;
+        } else if (alphanumeric) {
+            if (!this.alphanumeric) {
+                this.flush(scanner);
+            }
+            this.accumulator += c;
+            this.numeric = true;
+            this.alphanumeric = true;
+        } else {
             this.flush(scanner);
             this.generator.next('text', this.space, c, scanner);
             this.space = '';
-        } else {
-            this.accumulator += c;
         }
     }
 
@@ -89,4 +104,6 @@ InlineLexer.prototype.flush = function flush(scanner) {
         this.accumulator = '';
         this.space = '';
     }
+    this.numeric = false;
+    this.alphanumeric = false;
 };

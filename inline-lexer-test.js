@@ -78,7 +78,7 @@ test([
     'TOKEN', '[',
     'S',
     'TOKEN', ']',
-    'ay', ',', ' ', '"', 'Hello', '.', '"',
+    'ay', ',', ' ', '"', 'Hello.', '"',
     ' ', 'TOKEN', '->',
     ' ', 'bye',
     ' ', 'STOP',
@@ -115,7 +115,7 @@ test([
     'The End'
 ], [
 
-    'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after', '.',
+    'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after.',
     ' ', 'BREAK',
     'The', ' ', 'End',
     ' ', 'STOP',
@@ -144,6 +144,48 @@ test([
     'TOKEN', '}',
     ' ', 'gold',
     'TOKEN', '}',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
+    'hello10'
+], [
+    'hello10',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
+    '10hello'
+], [
+    '10',
+    'hello',
+    ' ', 'STOP',
+    ' ', 'STOP'
+])
+
+test([
+    '10hel_lo10'
+], [
+    '10', 'hel_lo10',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
+    '10hel_lo10 20'
+], [
+    '10', 'hel_lo10',
+    ' ', '20',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+test([
+    '10hel_lo10|20alpha'
+], [
+    '10', 'hel_lo10',
+    'TOKEN', '|', '20', 'alpha',
     ' ', 'STOP',
     ' ', 'STOP'
 ]);
