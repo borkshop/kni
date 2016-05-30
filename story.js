@@ -229,6 +229,14 @@ function Break(variable) {
 }
 Break.prototype.tie = tie;
 
+constructors.paragraph = Paragraph;
+function Paragraph(variable) {
+    this.type = 'paragraph';
+    this.next = null;
+    Object.seal(this);
+}
+Paragraph.prototype.tie = tie;
+
 constructors.prompt = Prompt;
 function Prompt(variable) {
     this.type = 'prompt';

@@ -60,6 +60,16 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             this.flush(scanner);
             this.generator.next('token', this.space, c, scanner);
             this.space = '';
+        } else if (cc === '--') {
+            this.flush(scanner);
+            for (var j = i + 2; j < text.length; j++) {
+                c = text[j];
+                if (c !== '-') {
+                    break;
+                }
+            }
+            this.generator.next('dash', this.space, text.slice(i, j), scanner);
+            i = j - 1;
         } else if (!this.alphanumeric && numeric) {
             this.accumulator += c;
             this.numeric = true;

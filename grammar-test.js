@@ -1778,6 +1778,31 @@ test([
 });
 
 test([
+    'And they lived happily ever after.\n',
+    '----\n',
+    'The end.\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "And they lived happily ever after.",
+        "lift": "",
+        "drop": " ",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "paragraph",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "The end.",
+        "lift": " ",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
     'My favorite color is blue{~.|, no yellow!}'
 ], {
     "start": {

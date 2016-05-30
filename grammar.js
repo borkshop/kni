@@ -52,6 +52,10 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         var node = this.story.create(this.path, 'break');
         tie(this.ends, this.path);
         return new Knot(this.story, Path.next(this.path), this.parent, [node]);
+    } else if (type === 'dash') {
+        var node = this.story.create(this.path, 'paragraph');
+        tie(this.ends, this.path);
+        return new Knot(this.story, Path.next(this.path), this.parent, [node]);
     } else if (type === 'text' && text === '-') {
         return this;
     } else if (type === 'token' && text === '>') {

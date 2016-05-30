@@ -105,6 +105,11 @@ ReadlineEngine.prototype.$break = function $break() {
     return this.goto(this.instruction.next);
 };
 
+ReadlineEngine.prototype.$paragraph = function $paragraph() {
+    this.excerpt.paragraph();
+    return this.goto(this.instruction.next);
+};
+
 ReadlineEngine.prototype.$goto = function $goto() {
     return this.goto(this.instruction.next);
 };
