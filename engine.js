@@ -53,6 +53,7 @@ function ReadlineEngine(story, start) {
     this.variables = {};
     this.top = new Global();
     this.stack = [this.top];
+    this.label = null;
     this.instruction = {type: 'goto', next: start || 'start'};
     this.wrapper = new Wrapper(process.stdout);
     this.excerpt = new Excerpt();
@@ -63,6 +64,7 @@ function ReadlineEngine(story, start) {
     });
     this.debug = debug;
     this.boundCommand = command;
+    Object.seal(this);
     function command(answer) {
         self.command(answer);
     }
@@ -250,19 +252,19 @@ ReadlineEngine.prototype.$prompt = function prompt() {
 
 ReadlineEngine.prototype.goto = function _goto(name, fresh) {
     if (this.debug) {
-        console.log('GO TO', name);
+        if (name === null) {
+            console.log('STACK', this.stack.map(getNext), 'OPTIONS', this.options.length);
+        }
+    }
+    while (name === null && this.stack.length > 1 && this.options.length === 0) {
+        this.top = this.stack.pop();
+        name = this.top.next;
+        if (this.debug) {
+            console.log('POP', name, this.stack.map(getNext));
+        }
     }
     if (name === null) {
-        if (this.debug) {
-            console.log('STACK', this.stack.map(getNext).join(', '), 'OPTIONS', this.options.length);
-        }
-        if (this.stack.length > 1 && this.options.length === 0) {
-            this.top = this.stack.pop();
-            name = this.top.next;
-            if (this.debug) {
-                console.log('POP', 'GO TO', name);
-            }
-        } else if (this.options.length && !fresh) {
+        if (this.options.length && !fresh) {
             this.prompt();
             return false;
         } else {
@@ -273,12 +275,13 @@ ReadlineEngine.prototype.goto = function _goto(name, fresh) {
         }
     }
     if (this.debug) {
-        console.log('GOING TO', name);
+        console.log('GO TO', name);
     }
     var next = this.story[name];
     if (!next) {
         throw new Error('Story missing knot for name: ' + name);
     }
+    this.label = name;
     this.instruction = next;
     return true;
 };
