@@ -65,10 +65,12 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         return new Option(text, this.story, this.path, this, []);
     } else if (type === 'start' && text === '-') {
         return new Knot(this.story, this.path, new Indent(this), this.ends);
-    } else if (type === 'start') {
-        return new Knot(this.story, this.path, new Indent(this), this.ends);
     } else if (type === 'token' && text === '=') {
         return new ExpectLabel(this.story, this.path, this.parent, this.ends);
+    } else if (type === 'start' && text === '=') {
+        return new LabelThread(this.story, this.path, this, this.ends);
+    } else if (type === 'start') {
+        return new Knot(this.story, this.path, new Indent(this), this.ends);
     } else if (type === 'token' && text === '{') {
         return new Block(this.story, this.path, this, this.ends);
     } else if (type === 'token' && text === '->') {
@@ -328,7 +330,30 @@ ExpectLabel.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
+function LabelThread(story, path, parent, ends) {
+    this.type = 'label-thread';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+}
+
+LabelThread.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore else
+    if (type === 'text') {
+        return new MaybeSubroutine(this.story, this.path, this, this.ends, text);
+    } else {
+        // TODO produce a readable error using scanner
+        throw new Error('expected label after =, got ' + type + ' ' + text + ' ' + scanner.position());
+    }
+};
+
+LabelThread.prototype.return = function _return(path, ends, scanner) {
+    return new Expect('stop', '', path, this.parent, ends);
+};
+
 function MaybeSubroutine(story, path, parent, ends, label) {
+    this.type = 'maybe-subroutine';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -349,6 +374,7 @@ MaybeSubroutine.prototype.next = function next(type, space, text, scanner) {
 };
 
 function Subroutine(story, path, parent, ends, label) {
+    this.type = 'subroutine';
     this.story = story;
     this.path = path;
     this.parent = parent;

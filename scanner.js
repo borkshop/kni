@@ -50,7 +50,7 @@ Scanner.prototype.next = function next(text) {
             this.columnNo++;
         } else if (
             this.leading &&
-            (c === '-' || c === '+' || c === '*') &&
+            (c === '-' || c === '+' || c === '*' || c === '=') &&
             (d === ' ' || d === '\t')
         ) {
             this.leader += c;

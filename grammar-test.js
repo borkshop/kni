@@ -55,7 +55,7 @@ test([
     'The End\n'
 ], {
     start: {type: 'goto', next: 'end'},
-    end: {type: 'text', text: 'The End', lift: ' ', drop: ' ', next: null}
+    end: {type: 'text', text: 'The End', lift: '', drop: ' ', next: null}
 });
 
 test([
@@ -531,7 +531,7 @@ test([
     "hi": {
         "type": "text",
         "text": "Hello, World!",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -621,7 +621,7 @@ test([
     "hi": {
         "type": "text",
         "text": "Hello, World!",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": "hi"
     }
@@ -735,7 +735,7 @@ test([
     }
 });
 
-only([
+test([
     '+ "Hello, World]!"[," you reply.\n'
 ], {
     "start": {
@@ -1318,7 +1318,7 @@ test([
     "top": {
         "type": "text",
         "text": "Text",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": "bottom"
     },
