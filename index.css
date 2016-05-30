@@ -37,6 +37,10 @@ body {
     text-align: justify;
 }
 
+td {
+    cursor: pointer;
+}
+
 li {
     list-style-type: decimal;
 }
