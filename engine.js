@@ -17,8 +17,6 @@ function Engine(story, start, render) {
     this.label = null;
     this.instruction = {type: 'goto', next: start || 'start'};
     this.render = render;
-    // this.wrapper = new Wrapper(process.stdout);
-    // this.excerpt = new Excerpt();
     this.readline = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -52,7 +50,6 @@ Engine.prototype.print = function print(text) {
         return false;
     }
     this.render.write(this.instruction.lift, text, this.instruction.drop);
-    // this.excerpt.digest(this.instruction.lift, text, this.instruction.drop);
     return this.goto(this.instruction.next);
 };
 
@@ -66,13 +63,11 @@ Engine.prototype.$print = function print() {
 
 Engine.prototype.$break = function $break() {
     this.render.break();
-    // this.excerpt.break();
     return this.goto(this.instruction.next);
 };
 
 Engine.prototype.$paragraph = function $paragraph() {
     this.render.paragraph();
-    // this.excerpt.paragraph();
     return this.goto(this.instruction.next);
 };
 
@@ -292,7 +287,6 @@ Engine.prototype.command = function command(command) {
 
 Engine.prototype.display = function display() {
     this.render.display();
-    // this.excerpt.write(this.wrapper);
 };
 
 function getLength(array) {
@@ -304,13 +298,6 @@ Engine.prototype.prompt = function prompt() {
     for (var i = 0; i < this.options.length; i++) {
         var option = this.options[i];
         this.render.option(i + 1, option.label);
-        // var lead = ((i + 1) + '.    ').slice(0, 4);
-        // this.wrapper.word(lead);
-        // this.wrapper.flush = true;
-        // this.wrapper.push('    ', '   ');
-        // this.wrapper.words(option.label);
-        // this.wrapper.pop();
-        // this.wrapper.break();
     }
     this.readline.question('> ', this.boundCommand);
 };
@@ -319,7 +306,6 @@ Engine.prototype.flush = function flush() {
     this.options.length = 0;
     this.keywords = {};
     this.render.clear();
-    // this.excerpt = new Excerpt();
 };
 
 function Global() {
