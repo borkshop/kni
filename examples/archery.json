@@ -15,6 +15,17 @@
         "type": "set",
         "variable": "hit",
         "value": 0,
+        "next": "start.3"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "You enter the fletcher’s shop. The fletcher beckons, “There are arrows for sale and a range out back to try your skill and fortune. For each score hit, you win more gold!”",
+        "lift": "",
+        "drop": " ",
+        "next": "start.4"
+    },
+    "start.4": {
+        "type": "paragraph",
         "next": "shop"
     },
     "shop": {

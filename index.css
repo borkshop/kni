@@ -1,6 +1,8 @@
 body {
     font-family: Libre Baskerville, Book Antiqua, serif;
     font-size: 200%;
+    background-color: hsla(60, 42.00%, 66.00%, 1);
+    color: hsla(240, 42.00%, 25.00%, 1);
 }
 
 .parent {
@@ -40,18 +42,25 @@ li {
 }
 
 a {
-    text-decoration: none;
-    /* font-style: italic; */
+    color: hsla(240, 42.00%, 25.00%, 1);
 }
 
 a:link {
-    color: black;
+    color: hsla(240, 42.00%, 25.00%, 1);
 }
 
 a:hover {
-    color: black;
+    color: hsla(240, 42.00%, 25.00%, 1);
 }
 
 a:visited {
-    color: black;
+    color: hsla(240, 42.00%, 25.00%, 1);
+}
+
+.about {
+    position: absolute;
+    height: 1em;
+    bottom: 0;
+    right: 0;
+    margin: 10px;
 }
