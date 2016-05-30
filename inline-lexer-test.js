@@ -114,7 +114,6 @@ test([
     '',
     'The End'
 ], [
-
     'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after.',
     ' ', 'BREAK',
     'The', ' ', 'End',
@@ -163,7 +162,7 @@ test([
     'hello',
     ' ', 'STOP',
     ' ', 'STOP'
-])
+]);
 
 test([
     '10hel_lo10'
@@ -181,6 +180,7 @@ test([
     ' ', 'STOP',
     ' ', 'STOP'
 ]);
+
 test([
     '10hel_lo10|20alpha'
 ], [
