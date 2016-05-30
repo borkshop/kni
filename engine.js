@@ -6,43 +6,6 @@ module.exports = Engine;
 
 var debug = process.env.DEBUG_ENGINE;
 
-function Global() {
-    this.scope = Object.create(null);
-    this.next = null;
-}
-
-Global.prototype.get = function get(name) {
-    return this.scope[name] || 0;
-};
-
-Global.prototype.set = function set(name, value) {
-    this.scope[name] = value;
-};
-
-function Frame(parent, locals, next) {
-    this.locals = locals;
-    this.scope = Object.create(null);
-    for (var i = 0; i < locals.length; i++) {
-        this.scope[locals[i]] = 0;
-    }
-    this.parent = parent;
-    this.next = next;
-}
-
-Frame.prototype.get = function get(name) {
-    if (this.locals.indexOf(name) >= 0) {
-        return this.scope[name];
-    }
-    return this.parent.get(name);
-};
-
-Frame.prototype.set = function set(name, value) {
-    if (this.locals.indexOf(name) >= 0) {
-        this.scope[name] = value;
-    }
-    return this.parent.set(name, value);
-};
-
 function Engine(story, start, render) {
     var self = this;
     this.story = story;
@@ -358,6 +321,44 @@ Engine.prototype.flush = function flush() {
     this.render.clear();
     // this.excerpt = new Excerpt();
 };
+
+function Global() {
+    this.scope = Object.create(null);
+    this.next = null;
+}
+
+Global.prototype.get = function get(name) {
+    return this.scope[name] || 0;
+};
+
+Global.prototype.set = function set(name, value) {
+    this.scope[name] = value;
+};
+
+function Frame(parent, locals, next) {
+    this.locals = locals;
+    this.scope = Object.create(null);
+    for (var i = 0; i < locals.length; i++) {
+        this.scope[locals[i]] = 0;
+    }
+    this.parent = parent;
+    this.next = next;
+}
+
+Frame.prototype.get = function get(name) {
+    if (this.locals.indexOf(name) >= 0) {
+        return this.scope[name];
+    }
+    return this.parent.get(name);
+};
+
+Frame.prototype.set = function set(name, value) {
+    if (this.locals.indexOf(name) >= 0) {
+        this.scope[name] = value;
+    }
+    return this.parent.set(name, value);
+};
+
 
 function main() {
     var story = require('./hello.json');
