@@ -499,26 +499,27 @@ var switches = {
 };
 
 Block.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' && jumps[text]) {
-        return new Jump(this.story, this.path, this.parent, this.ends, jumps[text]);
-    } else if (comparators[text]) {
-        return new JumpCompare(this.story, this.path, this.parent, this.ends, comparators[text]);
-    } else if (mutators[text]) {
-        return new Write(this.story, this.path, this.parent, this.ends, mutators[text]);
-    } else if (variables[text]) {
-        return new Variable(this.story, this.path, this.parent, this.ends, variables[text]);
-    } else if (switches[text]) {
-        return new Switch(this.story, this.path, this.parent, this.ends)
-            .start(null, null, switches[text])
-            .case();
-    } else if (type === 'token' && text === '->') {
-        return new Call(this.story, this.path, this.parent, this.ends);
-    } else {
-        return new Switch(this.story, this.path, this.parent, this.ends)
-            .start(null, 1, 'walk') // with variable and value, waiting for case to start
-            .case() // first case
-            .next(type, space, text, scanner);
+    if (type === 'token' || type === 'text') {
+        if (jumps[text]) {
+            return new Jump(this.story, this.path, this.parent, this.ends, jumps[text]);
+        } else if (comparators[text]) {
+            return new JumpCompare(this.story, this.path, this.parent, this.ends, comparators[text]);
+        } else if (mutators[text]) {
+            return new Write(this.story, this.path, this.parent, this.ends, mutators[text]);
+        } else if (variables[text]) {
+            return new Variable(this.story, this.path, this.parent, this.ends, variables[text]);
+        } else if (switches[text]) {
+            return new Switch(this.story, this.path, this.parent, this.ends)
+                .start(null, null, switches[text])
+                .case();
+        } else if (text === '->') {
+            return new Call(this.story, this.path, this.parent, this.ends);
+        }
     }
+    return new Switch(this.story, this.path, this.parent, this.ends)
+        .start(null, 1, 'walk') // with variable and value, waiting for case to start
+        .case() // first case
+        .next(type, space, text, scanner);
 };
 
 function JumpCompare(story, path, parent, ends, type) {
@@ -534,24 +535,27 @@ function JumpCompare(story, path, parent, ends, type) {
 }
 
 JumpCompare.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' && this.position === 0) {
-        this.value = parseInt(text, 10);
-        this.position++;
-        return this;
-    } else if (type === 'text' && this.position === 1) {
-        this.variable = text;
-        this.position++;
-        return this;
-    // istanbul ignore else
-    } else if (type === 'token' && this.position === 2 && text === '}') {
+    if (this.position === 0) {
+        if (type === 'text') {
+            this.value = parseInt(text, 10);
+            this.position = 1;
+            return this;
+        }
+    } else if (this.position === 1) {
+        if (type === 'text') {
+            this.variable = text;
+            this.position = 2;
+            return this;
+        }
+    } else if (this.position === 2) {
         var node = this.story.create(this.path, this.type, this.variable);
         this.branch = new Branch(node);
         node.value = this.value;
         tie(this.ends, this.path);
         return new Knot(this.story, Path.next(this.path), this, [node]);
-    } else {
-        throw new Error('Unexpected token in ' + this.type + ': ' + type + ' ' + text + ' ' + scanner.position());
     }
+    // istanbul ignore next
+    throw new Error('Unexpected token in ' + this.type + ': ' + type + ' ' + text + ' ' + scanner.position());
 };
 
 JumpCompare.prototype.return = function _return(path, ends, scanner) {
@@ -570,19 +574,22 @@ function Jump(story, path, parent, ends, type) {
 }
 
 Jump.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' && this.position === 0) {
-        this.variable = text;
-        this.position++;
-        return this;
-    // istanbul ignore else
-    } else if (type === 'token' && this.position === 1 && text === '}') {
-        this.node = this.story.create(this.path, this.type, this.variable);
-        this.branch = new Branch(this.node);
-        tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), this, [this.node]);
-    } else {
-        throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
+    if (this.position === 0) {
+        if (type === 'text') {
+            this.variable = text;
+            this.position = 1;
+            return this;
+        }
+    } else if (this.position === 1) {
+        if (text === '}') {
+            this.node = this.story.create(this.path, this.type, this.variable);
+            this.branch = new Branch(this.node);
+            tie(this.ends, this.path);
+            return new Knot(this.story, Path.next(this.path), this, [this.node]);
+        }
     }
+    // istanbul ignore next
+    throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
 };
 
 Jump.prototype.return = function _return(path, ends, scanner) {
@@ -601,23 +608,28 @@ function Write(story, path, parent, ends, type) {
 }
 
 Write.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' && this.position === 0) {
-        this.value = parseInt(text, 10);
-        this.position++;
-        return this;
-    } else if (type === 'text' && this.position === 1) {
-        this.variable = text;
-        this.position++;
-        return this;
-    // istanbul ignore else
-    } else if (type === 'token' && this.position === 2 && text === '}') {
-        var node = this.story.create(this.path, this.type, this.variable);
-        node.value = this.value;
-        tie(this.ends, this.path);
-        return this.parent.return(Path.next(this.path), [node], scanner);
-    } else {
-        throw new Error('Unexpected token in ' + this.type + ': ' + type + ' ' + text + ' ' + scanner.position());
+    if (this.position === 0) {
+        if (type === 'text') {
+            this.value = parseInt(text, 10);
+            this.position = 1;
+            return this;
+        }
+    } else if (this.position === 1) {
+        if (type === 'text') {
+            this.variable = text;
+            this.position = 2;
+            return this;
+        }
+    } else if (this.position === 2) {
+        if (text === '}') {
+            var node = this.story.create(this.path, this.type, this.variable);
+            node.value = this.value;
+            tie(this.ends, this.path);
+            return this.parent.return(Path.next(this.path), [node], scanner);
+        }
     }
+    // istanbul ignore next
+    throw new Error('Unexpected token in ' + this.type + ': ' + type + ' ' + text + ' ' + scanner.position());
 };
 
 function Variable(story, path, parent, ends, mode) {
@@ -632,22 +644,28 @@ function Variable(story, path, parent, ends, mode) {
 }
 
 Variable.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' && this.position === 0) {
-        this.variable = text;
-        this.position++;
-        return this;
-    // istanbul ignore else
-    } else if (this.position === 1 && type === 'token' && text === '|') {
-        return new Switch(this.story, this.path, this.parent, this.ends)
-            .start(this.variable, 0, this.mode)
-            .case();
-    } else if (this.position === 1 && this.mode === 'walk' && type === 'token' && text === '}') {
-        var node = this.story.create(this.path, 'print', this.variable);
-        tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), this.parent, [node]);
-    } else {
-        throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
+    if (this.position === 0) {
+        if (type === 'text') {
+            this.variable = text;
+            this.position++;
+            return this;
+        }
+    } else if (this.position === 1) {
+        if (text === '|') {
+            return new Switch(this.story, this.path, this.parent, this.ends)
+                .start(this.variable, 0, this.mode)
+                .case();
+        } else if (text === '}') {
+            if (this.mode === 'walk') {
+                var node = this.story.create(this.path, 'print', this.variable);
+                tie(this.ends, this.path);
+                return new Knot(this.story, Path.next(this.path), this.parent, [node]);
+            } else {
+                // TODO error, unexpected
+            }
+        }
     }
+    throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
 };
 
 function Switch(story, path, parent, ends) {
@@ -687,7 +705,7 @@ function Case(story, path, parent, ends, branches) {
 }
 
 Case.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'token' && text === '|') {
+    if (text === '|') {
         return this.case();
     } else {
         return this.parent.return(this.path, this.ends, scanner)
