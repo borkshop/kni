@@ -48,45 +48,46 @@ function Knot(story, path, parent, ends) {
 }
 
 Knot.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'token' && text === '/') {
-        var node = this.story.create(this.path, 'break');
-        tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), this.parent, [node]);
+    if (type === 'text') {
+        return new Text(this.story, this.path, space, text, this, this.ends);
+    }  else if (type === 'token') {
+        if (text === '{') {
+            return new Block(this.story, this.path, this, this.ends);
+        } else if (text === '=') {
+            return new ExpectLabel(this.story, this.path, this.parent, this.ends);
+        } else if (text === '->') {
+            return new Goto(this.story, this.path, this, this.ends);
+        } else if (text === '<-') {
+            return new Knot(this.story, this.path, this.parent, []);
+        } else if (text === '/') {
+            var node = this.story.create(this.path, 'break');
+            tie(this.ends, this.path);
+            return new Knot(this.story, Path.next(this.path), this.parent, [node]);
+        } else if (text === '>') {
+            var node = this.story.create(this.path, 'prompt');
+            tie(this.ends, this.path);
+            return new Knot(this.story, Path.next(this.path), this.parent, []);
+        }
+    } else if (type === 'start') {
+        if (text === '+' || text === '*') {
+            tie(this.ends, this.path);
+            return new Option(text, this.story, this.path, this, []);
+        } else if (text === '-') {
+            return new Knot(this.story, this.path, new Indent(this), this.ends);
+        } else if (text === '=') {
+            return new LabelThread(this.story, this.path, this, this.ends);
+        } else {
+            return new Knot(this.story, this.path, new Indent(this), this.ends);
+        }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'paragraph');
         tie(this.ends, this.path);
         return new Knot(this.story, Path.next(this.path), this.parent, [node]);
-    } else if (type === 'text' && text === '-') {
-        return this;
-    } else if (type === 'token' && text === '>') {
-        var node = this.story.create(this.path, 'prompt');
-        tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), this.parent, []);
-    } else if (type === 'text') {
-        return new Text(this.story, this.path, space, text, this, this.ends);
-    } else if (type === 'start' && (text === '+' || text === '*')) {
-        tie(this.ends, this.path);
-        return new Option(text, this.story, this.path, this, []);
-    } else if (type === 'start' && text === '-') {
-        return new Knot(this.story, this.path, new Indent(this), this.ends);
-    } else if (type === 'token' && text === '=') {
-        return new ExpectLabel(this.story, this.path, this.parent, this.ends);
-    } else if (type === 'start' && text === '=') {
-        return new LabelThread(this.story, this.path, this, this.ends);
-    } else if (type === 'start') {
-        return new Knot(this.story, this.path, new Indent(this), this.ends);
-    } else if (type === 'token' && text === '{') {
-        return new Block(this.story, this.path, this, this.ends);
-    } else if (type === 'token' && text === '->') {
-        return new Goto(this.story, this.path, this, this.ends);
-    } else if (type === 'token' && text === '<-') {
-        return new Knot(this.story, this.path, this.parent, []);
     } else if (type === 'break') {
         return this;
-    } else {
-        return this.parent.return(this.path, this.ends, scanner)
-            .next(type, space, text, scanner);
     }
+    return this.parent.return(this.path, this.ends, scanner)
+        .next(type, space, text, scanner);
 };
 
 Knot.prototype.return = function _return(path, ends, scanner) {
@@ -298,8 +299,6 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
     if (type === 'start' && (text === '+' || text === '*')) {
         tie(this.continues, this.path);
         return new Option(text, this.story, this.path, this.parent, this.ends);
-    // TODO allow - prefixed sub-blocks interpolated in option lists for
-    // control flow (but perhaps for not extending narrative)
     } else {
         return this.parent.return(this.path, this.ends.concat(this.continues), scanner)
             .next(type, '', text, scanner);
