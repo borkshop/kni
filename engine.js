@@ -1,5 +1,7 @@
 'use strict';
 
+var Story = require('./story');
+
 module.exports = Engine;
 
 var debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
@@ -12,8 +14,8 @@ function Engine(story, start, render, interlocutor) {
     this.variables = {};
     this.top = new Global();
     this.stack = [this.top];
-    this.label = null;
-    this.instruction = {type: 'goto', next: start || 'start'};
+    this.label = '';
+    this.instruction = new Story.constructors.goto(start || 'start');
     this.render = render;
     this.interlocutor = interlocutor;
     this.interlocutor.engine = this;
@@ -25,7 +27,7 @@ Engine.prototype.continue = function _continue() {
     var _continue;
     do {
         if (this.debug) {
-            console.log(JSON.stringify(this.instruction));
+            console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.type + ' ' + this.instruction.describe());
         }
         if (!this['$' + this.instruction.type]) {
             throw new Error('Unexpected instruction type: ' + this.instruction.type);
@@ -72,11 +74,8 @@ Engine.prototype.$call = function $call() {
     if (!routine) {
         throw new Error('no such routine ' + this.instruction.label);
     }
-    this.top = new Frame(this.top, routine.locals, this.instruction.next);
+    this.top = new Frame(this.top, routine.locals, this.instruction.next, this.instruction.branch);
     this.stack.push(this.top);
-    if (this.debug) {
-        console.log('PUSH', this.instruction.label, JSON.stringify(routine.locals), this.instruction.next);
-    }
     return this.goto(this.instruction.branch);
 };
 
@@ -116,9 +115,6 @@ Engine.prototype.$sub = function sub() {
 };
 
 Engine.prototype.$jz = function jz() {
-    if (this.debug) {
-        console.log('JZ', this.instruction.variable, this.read());
-    }
     if (!this.read()) {
         return this.goto(this.instruction.branch);
     } else {
@@ -127,9 +123,6 @@ Engine.prototype.$jz = function jz() {
 };
 
 Engine.prototype.$jnz = function jnz() {
-    if (this.debug) {
-        console.log('JNZ', this.instruction.variable, this.read());
-    }
     if (this.read()) {
         return this.goto(this.instruction.branch);
     } else {
@@ -202,17 +195,10 @@ Engine.prototype.$prompt = function prompt() {
 };
 
 Engine.prototype.goto = function _goto(name, fresh) {
-    if (this.debug) {
-        if (name === null) {
-            console.log('STACK', this.stack.map(getNext), 'OPTIONS', this.options.length);
-        }
-    }
     while (name === null && this.stack.length > 1 && this.options.length === 0) {
-        this.top = this.stack.pop();
-        name = this.top.next;
-        if (this.debug) {
-            console.log('POP', name, this.stack.map(getNext));
-        }
+        var top = this.stack.pop();
+        this.top = this.stack[this.stack.length - 1];
+        name = top.next;
     }
     if (name === null) {
         if (this.options.length && !fresh) {
@@ -225,9 +211,6 @@ Engine.prototype.goto = function _goto(name, fresh) {
             return false;
         }
     }
-    if (this.debug) {
-        console.log('GO TO', name);
-    }
     var next = this.story[name];
     if (!next) {
         throw new Error('Story missing knot for name: ' + name);
@@ -236,10 +219,6 @@ Engine.prototype.goto = function _goto(name, fresh) {
     this.instruction = next;
     return true;
 };
-
-function getNext(frame) {
-    return frame.next;
-}
 
 Engine.prototype.read = function read() {
     var variable = this.instruction.variable;
@@ -258,6 +237,11 @@ Engine.prototype.answer = function answer(text) {
     this.render.flush();
     if (text === 'quit') {
         this.interlocutor.close();
+        return;
+    }
+    if (text === 'bt') {
+        this.top.log();
+        this.prompt();
         return;
     }
     var n = +text;
@@ -313,7 +297,20 @@ Global.prototype.set = function set(name, value) {
     this.scope[name] = value;
 };
 
-function Frame(parent, locals, next) {
+Global.prototype.log = function log() {
+    var globals = Object.keys(this.scope);
+    for (var i = 0; i < globals.length; i++) {
+        var name = globals[i];
+        var value = this.scope[name];
+        console.log(name, value);
+    }
+};
+
+Global.prototype.at = function at() {
+    return '';
+};
+
+function Frame(parent, locals, next, branch) {
     this.locals = locals;
     this.scope = Object.create(null);
     for (var i = 0; i < locals.length; i++) {
@@ -321,6 +318,7 @@ function Frame(parent, locals, next) {
     }
     this.parent = parent;
     this.next = next;
+    this.branch = branch;
 }
 
 Frame.prototype.get = function get(name) {
@@ -333,17 +331,21 @@ Frame.prototype.get = function get(name) {
 Frame.prototype.set = function set(name, value) {
     if (this.locals.indexOf(name) >= 0) {
         this.scope[name] = value;
+        return;
     }
     return this.parent.set(name, value);
 };
 
+Frame.prototype.log = function log() {
+    this.parent.log();
+    console.log('---', this.branch, '->', this.next);
+    for (var i = 0; i < this.locals.length; i++) {
+        var name = this.locals[i];
+        var value = this.scope[name];
+        console.log(name, value);
+    }
+};
 
-function main() {
-    var story = require('./hello.json');
-    var engine = new Engine(story);
-    engine.continue();
-}
-
-if (require.main === module) {
-    main();
-}
+Frame.prototype.at = function at() {
+    return this.parent.at() + '/' + this.branch;
+};
