@@ -1,6 +1,6 @@
 {
   "name": "inkblot",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "A text adventure language and runtime inspired by inkle/ink",
   "main": "index.js",
   "bin": {
