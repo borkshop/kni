@@ -229,19 +229,6 @@ Jge.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
 
-constructors.inc = Inc;
-function Inc(variable) {
-    this.type = 'inc';
-    this.variable = variable;
-    this.next = null;
-    Object.seal(this);
-}
-Inc.prototype.tie = tie;
-// istanbul ignore next
-Inc.prototype.describe = function describe() {
-    return this.variable;
-};
-
 constructors.switch = Switch;
 function Switch(variable) {
     this.type = 'switch';

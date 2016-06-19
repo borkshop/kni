@@ -249,7 +249,8 @@ Option.prototype.create = function create(answer, question, common, direction, t
     var next;
 
     if (this.leader === '*') {
-        next = this.story.create(path, 'inc', variable);
+        next = this.story.create(path, 'add', variable);
+        next.value = 1;
         tie([prev], path);
         path = Path.next(path);
         prev = next;

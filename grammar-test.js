@@ -876,8 +876,9 @@ test([
         "keywords": []
     },
     "start.0.2": {
-        "type": "inc",
+        "type": "add",
         "variable": "start",
+        "value": 1,
         "next": "start.1"
     },
     "start.1": {
@@ -908,8 +909,9 @@ test([
         "keywords": []
     },
     "start.0.2": {
-        "type": "inc",
+        "type": "add",
         "variable": "start",
+        "value": 1,
         "next": "start.2"
     },
     "start.1": {
@@ -926,8 +928,9 @@ test([
         "keywords": []
     },
     "start.1.2": {
-        "type": "inc",
+        "type": "add",
         "variable": "start.1",
+        "value": 1,
         "next": "start.2"
     },
     "start.2": {

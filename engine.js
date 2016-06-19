@@ -88,11 +88,6 @@ Engine.prototype.$option = function option() {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$inc = function inc() {
-    this.write(this.read() + 1);
-    return this.goto(this.instruction.next);
-};
-
 Engine.prototype.$set = function set() {
     this.write(this.instruction.value);
     return this.goto(this.instruction.next);
