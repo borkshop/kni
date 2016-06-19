@@ -47,7 +47,7 @@ Engine.prototype.$text = function text() {
 };
 
 Engine.prototype.$print = function print() {
-    return this.print('' + this.read());
+    return this.print('' + evaluate(this.top, this.instruction.expression));
 };
 
 Engine.prototype.$break = function $break() {
@@ -109,7 +109,7 @@ Engine.prototype.$switch = function _switch() {
     if (this.instruction.mode === 'rand') {
         value = Math.floor(Math.random() * branches.length);
     } else {
-        value = this.read();
+        value = evaluate(this.top, this.instruction.expression);
         if (this.instruction.value !== 0) {
             this.write(value + this.instruction.value);
         }

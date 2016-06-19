@@ -45,9 +45,9 @@ Text.prototype.describe = function describe() {
 };
 
 constructors.print = Print;
-function Print(variable) {
+function Print(expression) {
     this.type = 'print';
-    this.variable = variable;
+    this.expression = expression;
     this.next = null;
     Object.seal(this);
 }
@@ -126,9 +126,9 @@ Jump.prototype.describe = function describe() {
 };
 
 constructors.switch = Switch;
-function Switch(variable) {
+function Switch(expression) {
     this.type = 'switch';
-    this.variable = variable;
+    this.expression = expression;
     this.value = 0;
     this.mode = null;
     this.branches = [];

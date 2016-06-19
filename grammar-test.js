@@ -947,7 +947,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "start",
+        "expression": ["get", "start"],
         "branches": ["start.0.1"],
         "mode": "walk",
         "value": 1
@@ -963,7 +963,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "start",
+        "expression": ["get", "start"],
         "branches": ["start.0.1", "start.0.2"],
         "value": 1,
         "mode": "walk"
@@ -983,7 +983,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "start",
+        "expression": ["get", "start"],
         "branches": ["start.0.1", "start.0.2", "start.0.3"],
         "mode": "walk",
         "value": 1
@@ -1016,7 +1016,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "start",
+        "expression": ["get", "start"],
         "branches": ["start.0.1", "start.0.2", "start.0.3"],
         "value": 1,
         "mode": "walk"
@@ -1063,7 +1063,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "start.1",
+        "expression": ["get", "start.1"],
         "branches": ["start.1.1", "start.1.2", "start.1.3"],
         "value": 1,
         "mode": "walk"
@@ -1110,7 +1110,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "start.1",
+        "expression": ["get", "start.1"],
         "branches": ["start.1.1", "start.1.2", "start.1.3"],
         "value": 1,
         "mode": "walk"
@@ -1157,7 +1157,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "start.1",
+        "expression": ["get", "start.1"],
         "branches": ["start.1.1", "start.1.2", "start.1.3"],
         "value": 1,
         "mode": "walk"
@@ -1194,7 +1194,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "start",
+        "expression": ["get", "start"],
         "branches": ["start.0.1"],
         "value": 1,
         "mode": "walk"
@@ -1213,7 +1213,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "start",
+        "expression": ["get", "start"],
         "branches": ["start.0.1"],
         "value": 1,
         "mode": "walk"
@@ -1357,7 +1357,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "start",
+        "expression": ["get", "start"],
         "value": 1,
         "mode": "walk",
         "branches": [
@@ -1366,7 +1366,7 @@ test([
     },
     "start.0.1": {
         "type": "switch",
-        "variable": "start.0.1",
+        "expression": ["get", "start.0.1"],
         "value": 1,
         "mode": "walk",
         "branches": [
@@ -1397,7 +1397,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "start",
+        "expression": ["get", "start"],
         "value": 1,
         "mode": "walk",
         "branches": [
@@ -1452,7 +1452,7 @@ test([
 ], {
     "start": {
         "type": "print",
-        "variable": "start.1",
+        "expression": ["get", "start.1"],
         "next": null
     }
 });
@@ -1462,7 +1462,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "arrow",
+        "expression": ["get", "arrow"],
         "branches": [
             "start.0.1",
             "start.0.2",
@@ -1487,7 +1487,7 @@ test([
     },
     "start.0.3": {
         "type": "print",
-        "variable": "arrow",
+        "expression": ["get", "arrow"],
         "next": "start.0.3.1"
     },
     "start.0.3.1": {
@@ -1504,7 +1504,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "variable": "arrow",
+        "expression": ["get", "arrow"],
         "branches": [
             "start.0.1",
             "start.0.2"
@@ -1514,7 +1514,7 @@ test([
     },
     "start.0.1": {
         "type": "print",
-        "variable": "arrow",
+        "expression": ["get", "arrow"],
         "next": "start.0.1.1"
     },
     "start.0.1.1": {
@@ -1545,7 +1545,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "door",
+        "expression": ["get", "door"],
         "branches": [
             "start.1.1",
             "start.1.2"
@@ -1589,7 +1589,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "door",
+        "expression": ["get", "door"],
         "branches": [
             "start.1.1",
             "start.1.2"
@@ -1620,7 +1620,7 @@ test([
     },
     "start.3": {
         "type": "switch",
-        "variable": "knob",
+        "expression": ["get", "knob"],
         "branches": [
             "start.3.1",
             "start.3.2"
@@ -1663,7 +1663,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "gold",
+        "expression": ["get", "gold"],
         "branches": [
             "start.1.1",
             "start.1.2"
@@ -1680,7 +1680,7 @@ test([
     },
     "start.1.2": {
         "type": "print",
-        "variable": "gold",
+        "expression": ["get", "gold"],
         "next": "start.1.2.1"
     },
     "start.1.2.1": {
@@ -1915,7 +1915,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "start.1",
+        "expression": ["get", "start.1"],
         "value": 0,
         "mode": "rand",
         "branches": [
@@ -1951,7 +1951,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "start.1",
+        "expression": ["get", "start.1"],
         "value": 1,
         "mode": "loop",
         "branches": [
@@ -1987,7 +1987,7 @@ test([
     },
     "start.1": {
         "type": "switch",
-        "variable": "color",
+        "expression": ["get", "color"],
         "value": 0,
         "mode": "loop",
         "branches": [
@@ -2076,7 +2076,7 @@ test([
     },
     "hello.2": {
         "type": "print",
-        "variable": "name",
+        "expression": ["get", "name"],
         "next": "hello.3"
     },
     "hello.3": {
@@ -2187,7 +2187,7 @@ test([
     }
 });
 
-only([
+test([
     '{=(a+b*c)m}'
 ], {
     "start": {
@@ -2197,6 +2197,16 @@ only([
             ["get", "a"],
             ["*", ["get", "b"], ["get", "c"]]
         ],
+        "next": null
+    }
+});
+
+test([
+    '{$a + b}\n'
+], {
+    "start": {
+        "type": "print",
+        "expression": ["+", ["get", "a"], ["get", "b"]],
         "next": null
     }
 });

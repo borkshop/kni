@@ -521,7 +521,7 @@ Block.prototype.next = function next(type, space, text, scanner) {
         } else if (mutators[text]) {
             return new Set(this.story, this.path, this.parent, this.ends, text);
         } else if (variables[text]) {
-            return new Variable(this.story, this.path, this.parent, this.ends, variables[text]);
+            return expression(new ExpressionSwitch(this.story, this.path, this.parent, this.ends, variables[text]));
         } else if (switches[text]) {
             return new Switch(this.story, this.path, this.parent, this.ends)
                 .start(null, null, switches[text])
@@ -637,39 +637,43 @@ ExpectSetVariable.prototype.next = function next(type, space, text, scanner) {
     throw new Error('Expected variable name, got ' + type + ' ' + text);
 };
 
-function Variable(story, path, parent, ends, mode) {
-    this.type = 'variable';
-    this.mode = mode;
+
+function ExpressionSwitch(story, path, parent, ends, mode) {
+    this.type = 'expression-switch';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    this.variable = null;
-    this.position = 0;
+    this.mode = mode;
+}
+
+ExpressionSwitch.prototype.return = function _return(expression) {
+    return new Variable(this.story, this.path, this.parent, this.ends, this.mode, expression);
+};
+
+function Variable(story, path, parent, ends, mode, expression) {
+    this.type = 'variable';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.mode = mode;
+    this.expression = expression;
+    Object.seal(this);
 }
 
 Variable.prototype.next = function next(type, space, text, scanner) {
-    if (this.position === 0) {
-        // istanbul ignore else
-        if (type === 'text') {
-            this.variable = text;
-            this.position++;
-            return this;
-        }
+    if (text === '|') {
+        return new Switch(this.story, this.path, this.parent, this.ends)
+            .start(this.expression, 0, this.mode)
+            .case();
     // istanbul ignore else
-    } else if (this.position === 1) {
-        if (text === '|') {
-            return new Switch(this.story, this.path, this.parent, this.ends)
-                .start(this.variable, 0, this.mode)
-                .case();
+    } else if (text === '}') {
         // istanbul ignore else
-        } else if (text === '}') {
-            // istanbul ignore else
-            if (this.mode === 'walk') {
-                var node = this.story.create(this.path, 'print', this.variable);
-                tie(this.ends, this.path);
-                return new Knot(this.story, Path.next(this.path), this.parent, [node]);
-            }
+        if (this.mode === 'walk') {
+            var node = this.story.create(this.path, 'print', this.expression);
+            tie(this.ends, this.path);
+            return new Knot(this.story, Path.next(this.path), this.parent, [node]);
         }
     }
     // istanbul ignore next
@@ -685,13 +689,13 @@ function Switch(story, path, parent, ends) {
     this.branches = [];
 }
 
-Switch.prototype.start = function start(variable, value, mode) {
+Switch.prototype.start = function start(expression, value, mode) {
     value = value || 0;
-    if (mode === 'loop' && !variable) {
+    if (mode === 'loop' && !expression) {
         value = 1;
     }
-    variable = variable || Path.toName(this.path);
-    var node = this.story.create(this.path, 'switch', variable);
+    expression = expression || ['get', Path.toName(this.path)];
+    var node = this.story.create(this.path, 'switch', expression);
     node.value = value;
     node.mode = mode;
     tie(this.ends, this.path);
