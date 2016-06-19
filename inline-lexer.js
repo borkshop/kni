@@ -27,6 +27,7 @@ function InlineLexer(generator) {
     this.accumulator = '';
     this.numeric = false;
     this.alphanumeric = false;
+    this.type = 'text';
     this.debug = debug;
     Object.seal(this);
 }
@@ -73,6 +74,7 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         } else if (!this.alphanumeric && numeric) {
             this.accumulator += c;
             this.numeric = true;
+            this.type = 'number';
         } else if (alphanumeric) {
             if (!this.alphanumeric) {
                 this.flush(scanner);
@@ -80,9 +82,10 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             this.accumulator += c;
             this.numeric = true;
             this.alphanumeric = true;
+            this.type = 'text';
         } else {
             this.flush(scanner);
-            this.generator.next('text', this.space, c, scanner);
+            this.generator.next(this.type, this.space, c, scanner);
             this.space = '';
         }
     }
@@ -96,7 +99,7 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             this.generator.next('token', this.space, c, scanner);
         } else if (!alpha.test(c)) {
             this.flush(scanner);
-            this.generator.next('text', this.space, c, scanner);
+            this.generator.next(this.type, this.space, c, scanner);
             this.space = '';
         } else {
             this.accumulator += c;
@@ -110,7 +113,7 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
 
 InlineLexer.prototype.flush = function flush(scanner) {
     if (this.accumulator) {
-        this.generator.next('text', this.space, this.accumulator, scanner);
+        this.generator.next(this.type, this.space, this.accumulator, scanner);
         this.accumulator = '';
         this.space = '';
     }

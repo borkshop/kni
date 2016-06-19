@@ -1096,6 +1096,53 @@ test([
 });
 
 test([
+    'Counting down, {3|2|1}, Lift-off\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Counting down,",
+        "lift": "",
+        "drop": " ",
+        "next": "start.1",
+    },
+    "start.1": {
+        "type": "switch",
+        "variable": "start.1",
+        "branches": ["start.1.1", "start.1.2", "start.1.3"],
+        "value": 1,
+        "mode": "walk"
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "3",
+        "lift": "",
+        "drop": "",
+        "next": "start.2"
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": "2",
+        "lift": "",
+        "drop": "",
+        "next": "start.2"
+    },
+    "start.1.3": {
+        "type": "text",
+        "text": "1",
+        "lift": "",
+        "drop": "",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "text",
+        "text": ", Lift-off",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
     'Counting down, {Three||One}, Lift-off\n'
 ], {
     "start": {
@@ -1281,6 +1328,84 @@ test([
         "type": "add",
         "variable": "arrow",
         "value": 1,
+        "next": null
+    }
+});
+
+test([
+    '{-10 gil} {+arrow}'
+], {
+    "start": {
+        "type": "sub",
+        "variable": "gil",
+        "value": 10,
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "add",
+        "variable": "arrow",
+        "value": 1,
+        "next": null
+    }
+});
+
+test([
+    '{{a|b}}'
+], {
+    "start": {
+        "type": "switch",
+        "variable": "start",
+        "value": 1,
+        "mode": "walk",
+        "branches": [
+            "start.0.1"
+        ]
+    },
+    "start.0.1": {
+        "type": "switch",
+        "variable": "start.0.1",
+        "value": 1,
+        "mode": "walk",
+        "branches": [
+            "start.0.1.0.1",
+            "start.0.1.0.2"
+        ]
+    },
+    "start.0.1.0.1": {
+        "type": "text",
+        "text": "a",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.1.0.2": {
+        "type": "text",
+        "text": "b",
+        "lift": "",
+        "drop": "",
+        "next": null
+    }
+});
+
+test([
+    '{\n',
+    '- hi\n',
+    '}\n',
+], {
+    "start": {
+        "type": "switch",
+        "variable": "start",
+        "value": 1,
+        "mode": "walk",
+        "branches": [
+            "start.0.1"
+        ]
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "hi",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 });

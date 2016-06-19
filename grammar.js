@@ -48,7 +48,7 @@ function Knot(story, path, parent, ends) {
 }
 
 Knot.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text') {
+    if (type === 'text' || type === 'number') {
         return new Text(this.story, this.path, space, text, this, this.ends);
     }  else if (type === 'token') {
         if (text === '{') {
@@ -113,7 +113,7 @@ function Text(story, path, lift, text, parent, ends) {
 }
 
 Text.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text') {
+    if (type === 'text' || type === 'number') {
         this.text += space + text;
         return this;
     } else {
@@ -157,12 +157,12 @@ function Option(leader, story, path, parent, ends) {
 //    0       1     -2      -3 4   5   5
 //    Common         Question  Answer
 Option.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' && this.position === 0) {
+    if ((type === 'text' || type === 'number') && this.position === 0) {
         this.answer.lift = space;
         this.answer.text = text;
         this.position = 1;
         return this;
-    } else if (type === 'text' && this.position === 1) {
+    } else if ((type === 'text' || type === 'number') && this.position === 1) {
         this.answer.text += space + text;
         return this;
     } else if (type === 'token' && text === '[' && (this.position === 0 || this.position === 1)) {
@@ -172,13 +172,13 @@ Option.prototype.next = function next(type, space, text, scanner) {
         this.direction = -1;
         this.position = -2;
         return this;
-    } else if (type === 'text' && this.position === 2 * this.direction) {
+    } else if ((type === 'text' || type === 'number') && this.position === 2 * this.direction) {
         this.answer.drop = space;
         this.question.lift = space;
         this.question.text = text;
         this.position = 3 * this.direction;
         return this;
-    } else if (type === 'text' && this.position === 3 * this.direction) {
+    } else if ((type === 'text' || type === 'number') && this.position === 3 * this.direction) {
         this.question.text += space + text;
         return this;
     } else if (type === 'token' && text === ']' && (this.position === 2 || this.position === 3)) {
@@ -189,13 +189,13 @@ Option.prototype.next = function next(type, space, text, scanner) {
         this.question.drop = space;
         this.position = 4;
         return this;
-    } else if (type === 'text' && this.position === 4) {
+    } else if ((type === 'text' || type === 'number') && this.position === 4) {
         this.question.drop = space;
         this.common.lift = space;
         this.common.text = text;
         this.position = 5;
         return this;
-    } else if (type === 'text' && this.position === 5) {
+    } else if ((type === 'text' || type === 'number') && this.position === 5) {
         this.common.text += space + text;
         return this;
     } else if (this.position === 0 || this.position === 1) {
@@ -499,7 +499,7 @@ var switches = {
 };
 
 Block.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'token' || type === 'text') {
+    if (type === 'token' || type === 'text' || type === 'number') {
         if (jumps[text]) {
             return new Jump(this.story, this.path, this.parent, this.ends, jumps[text]);
         } else if (comparators[text]) {
@@ -536,12 +536,15 @@ function JumpCompare(story, path, parent, ends, type) {
 
 JumpCompare.prototype.next = function next(type, space, text, scanner) {
     if (this.position === 0) {
-        if (type === 'text') {
+        // istanbul ignore else
+        if (type === 'number') {
             this.value = parseInt(text, 10);
             this.position = 1;
             return this;
         }
+    // istanbul ignore else
     } else if (this.position === 1) {
+        // istanbul ignore else
         if (type === 'text') {
             this.variable = text;
             this.position = 2;
@@ -575,12 +578,15 @@ function Jump(story, path, parent, ends, type) {
 
 Jump.prototype.next = function next(type, space, text, scanner) {
     if (this.position === 0) {
+        // istanbul ignore else
         if (type === 'text') {
             this.variable = text;
             this.position = 1;
             return this;
         }
+    // istanbul ignore else
     } else if (this.position === 1) {
+        // istanbul ignore else
         if (text === '}') {
             this.node = this.story.create(this.path, this.type, this.variable);
             this.branch = new Branch(this.node);
@@ -609,18 +615,27 @@ function Write(story, path, parent, ends, type) {
 
 Write.prototype.next = function next(type, space, text, scanner) {
     if (this.position === 0) {
-        if (type === 'text') {
+        if (type === 'number') {
             this.value = parseInt(text, 10);
             this.position = 1;
             return this;
+        // istanbul ignore else
+        } else if (type === 'text') {
+            this.value = 1;
+            this.variable = text;
+            this.position = 2;
+            return this;
         }
     } else if (this.position === 1) {
+        // istanbul ignore else
         if (type === 'text') {
             this.variable = text;
             this.position = 2;
             return this;
         }
+    // istanbul ignore else
     } else if (this.position === 2) {
+        // istanbul ignore else
         if (text === '}') {
             var node = this.story.create(this.path, this.type, this.variable);
             node.value = this.value;
@@ -645,26 +660,29 @@ function Variable(story, path, parent, ends, mode) {
 
 Variable.prototype.next = function next(type, space, text, scanner) {
     if (this.position === 0) {
+        // istanbul ignore else
         if (type === 'text') {
             this.variable = text;
             this.position++;
             return this;
         }
+    // istanbul ignore else
     } else if (this.position === 1) {
         if (text === '|') {
             return new Switch(this.story, this.path, this.parent, this.ends)
                 .start(this.variable, 0, this.mode)
                 .case();
+        // istanbul ignore else
         } else if (text === '}') {
+            // istanbul ignore else
             if (this.mode === 'walk') {
                 var node = this.story.create(this.path, 'print', this.variable);
                 tie(this.ends, this.path);
                 return new Knot(this.story, Path.next(this.path), this.parent, [node]);
-            } else {
-                // TODO error, unexpected
             }
         }
     }
+    // istanbul ignore next
     throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
 };
 

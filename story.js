@@ -39,6 +39,7 @@ function Text(text) {
     Object.seal(this);
 }
 Text.prototype.tie = tie;
+// istanbul ignore next
 Text.prototype.describe = function describe() {
     return this.text;
 };
@@ -51,6 +52,7 @@ function Print(variable) {
     Object.seal(this);
 }
 Print.prototype.tie = tie;
+// istanbul ignore next
 Print.prototype.describe = function describe() {
     return this.variable;
 };
@@ -65,6 +67,7 @@ function Option(label) {
     Object.seal(this);
 }
 Option.prototype.tie = tie;
+// istanbul ignore next
 Option.prototype.describe = function describe() {
     return this.label + ' -> ' + this.branch;
 };
@@ -76,6 +79,7 @@ function Goto(next) {
     Object.seal(this);
 }
 Goto.prototype.tie = tie;
+// istanbul ignore next
 Goto.prototype.describe = function describe() {
     return this.next;
 };
@@ -89,6 +93,7 @@ function Call(label) {
     Object.seal(this);
 }
 Call.prototype.tie = tie;
+// istanbul ignore next
 Call.prototype.describe = function describe() {
     return this.branch + '() -> ' + this.next;
 };
@@ -101,6 +106,7 @@ function Subroutine(locals) {
     Object.seal(this);
 };
 Subroutine.prototype.tie = tie;
+// istanbul ignore next
 Subroutine.prototype.describe = function describe() {
     return '(' + this.locals.join(', ') + ')';
 };
@@ -114,6 +120,7 @@ function Jz(variable) {
     Object.seal(this);
 }
 Jz.prototype.tie = tie;
+// istanbul ignore next
 Jz.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
@@ -127,6 +134,7 @@ function Jnz(variable) {
     Object.seal(this);
 }
 Jnz.prototype.tie = tie;
+// istanbul ignore next
 Jnz.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
@@ -141,6 +149,7 @@ function Jeq(variable) {
     Object.seal(this);
 }
 Jeq.prototype.tie = tie;
+// istanbul ignore next
 Jeq.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
@@ -155,6 +164,7 @@ function Jne(variable) {
     Object.seal(this);
 }
 Jne.prototype.tie = tie;
+// istanbul ignore next
 Jne.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
@@ -169,6 +179,7 @@ function Jlt(variable) {
     Object.seal(this);
 }
 Jlt.prototype.tie = tie;
+// istanbul ignore next
 Jlt.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
@@ -183,6 +194,7 @@ function Jgt(variable) {
     Object.seal(this);
 }
 Jgt.prototype.tie = tie;
+// istanbul ignore next
 Jgt.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
@@ -197,6 +209,7 @@ function Jle(variable) {
     Object.seal(this);
 }
 Jle.prototype.tie = tie;
+// istanbul ignore next
 Jle.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
@@ -211,6 +224,7 @@ function Jge(variable) {
     Object.seal(this);
 }
 Jge.prototype.tie = tie;
+// istanbul ignore next
 Jge.prototype.describe = function describe() {
     return this.variable + ' ' + this.branch;
 };
@@ -223,6 +237,7 @@ function Inc(variable) {
     Object.seal(this);
 }
 Inc.prototype.tie = tie;
+// istanbul ignore next
 Inc.prototype.describe = function describe() {
     return this.variable;
 };
@@ -237,6 +252,7 @@ function Switch(variable) {
     Object.seal(this);
 }
 Switch.prototype.tie = tie;
+// istanbul ignore next
 Switch.prototype.describe = function describe() {
     return this.variable + ' ' + this.mode;
 };
@@ -250,6 +266,7 @@ function Set(variable) {
     Object.seal(this);
 }
 Set.prototype.tie = tie;
+// istanbul ignore next
 Set.prototype.describe = function describe() {
     return this.variable + ' ' + this.value;
 };
@@ -263,6 +280,7 @@ function Add(variable) {
     Object.seal(this);
 }
 Add.prototype.tie = tie;
+// istanbul ignore next
 Add.prototype.describe = function describe() {
     return this.variable + ' ' + this.value;
 };
@@ -276,6 +294,7 @@ function Sub(variable) {
     Object.seal(this);
 }
 Sub.prototype.tie = tie;
+// istanbul ignore next
 Sub.prototype.describe = function describe() {
     return this.variable + ' ' + this.value;
 };
@@ -287,6 +306,7 @@ function Break(variable) {
     Object.seal(this);
 }
 Break.prototype.tie = tie;
+// istanbul ignore next
 Break.prototype.describe = function describe() {
     return '';
 };
@@ -298,6 +318,7 @@ function Paragraph(variable) {
     Object.seal(this);
 }
 Paragraph.prototype.tie = tie;
+// istanbul ignore next
 Paragraph.prototype.describe = function describe() {
     return '';
 };
@@ -308,6 +329,7 @@ function Prompt(variable) {
     Object.seal(this);
 }
 Prompt.prototype.tie = tie;
+// istanbul ignore next
 Prompt.prototype.describe = function describe() {
     return '';
 };

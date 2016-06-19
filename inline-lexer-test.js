@@ -158,7 +158,7 @@ test([
 test([
     '10hello'
 ], [
-    '10',
+    'NUMBER', '10',
     'hello',
     ' ', 'STOP',
     ' ', 'STOP'
@@ -167,7 +167,7 @@ test([
 test([
     '10hel_lo10'
 ], [
-    '10', 'hel_lo10',
+    'NUMBER', '10', 'hel_lo10',
     ' ', 'STOP',
     ' ', 'STOP'
 ]);
@@ -175,8 +175,8 @@ test([
 test([
     '10hel_lo10 20'
 ], [
-    '10', 'hel_lo10',
-    ' ', '20',
+    'NUMBER', '10', 'hel_lo10',
+    ' ', 'NUMBER', '20',
     ' ', 'STOP',
     ' ', 'STOP'
 ]);
@@ -184,8 +184,8 @@ test([
 test([
     '10hel_lo10|20alpha'
 ], [
-    '10', 'hel_lo10',
-    'TOKEN', '|', '20', 'alpha',
+    'NUMBER', '10', 'hel_lo10',
+    'TOKEN', '|', 'NUMBER', '20', 'alpha',
     ' ', 'STOP',
     ' ', 'STOP'
 ]);
