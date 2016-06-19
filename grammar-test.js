@@ -1866,7 +1866,7 @@ test([
     "start.1": {
         "type": "switch",
         "variable": "color",
-        "value": 1,
+        "value": 0,
         "mode": "loop",
         "branches": [
             "start.1.1",
