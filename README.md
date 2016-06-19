@@ -21,6 +21,7 @@ Hello, "World!"
   You are too kind, hello
   again to you too. -> loop
 + You s[S]ay, "Farewell."
+>
 
 The End.
 ```
@@ -53,6 +54,8 @@ a dialog graph, suitable for use with alternate ink readers.
     "start": {
         "type": "text",
         "text": "Hello, \"World!\"",
+        "lift": "",
+        "drop": " ",
         "next": "loop"
     },
     "loop": {
@@ -64,16 +67,23 @@ a dialog graph, suitable for use with alternate ink readers.
     },
     "loop.0.1": {
         "type": "text",
-        "text": "You say, \"Hello\".",
+        "text": "You s",
+        "lift": "",
+        "drop": "",
         "next": "loop.0.2"
     },
     "loop.0.2": {
-        "type": "break",
+        "type": "text",
+        "text": "ay, \"Hello\".",
+        "lift": "",
+        "drop": " ",
         "next": "loop.0.3"
     },
     "loop.0.3": {
         "type": "text",
         "text": "You are too kind, hello again to you too.",
+        "lift": " ",
+        "drop": " ",
         "next": "loop"
     },
     "loop.1": {
@@ -85,19 +95,26 @@ a dialog graph, suitable for use with alternate ink readers.
     },
     "loop.1.1": {
         "type": "text",
-        "text": "You say, \"Farewell.\"",
+        "text": "You s",
+        "lift": "",
+        "drop": "",
+        "next": "loop.1.2"
+    },
+    "loop.1.2": {
+        "type": "text",
+        "text": "ay, \"Farewell.\"",
+        "lift": "",
+        "drop": " ",
         "next": "loop.3"
     },
     "loop.2": {
         "type": "prompt"
     },
     "loop.3": {
-        "type": "break",
-        "next": "loop.4"
-    },
-    "loop.4": {
         "type": "text",
         "text": "The End.",
+        "lift": "",
+        "drop": " ",
         "next": null
     }
 }
