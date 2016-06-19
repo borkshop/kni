@@ -116,6 +116,7 @@ InlineLexer.prototype.flush = function flush(scanner) {
         this.generator.next(this.type, this.space, this.accumulator, scanner);
         this.accumulator = '';
         this.space = '';
+        this.type = 'text';
     }
     this.numeric = false;
     this.alphanumeric = false;

@@ -2117,3 +2117,92 @@ test([
         "next": "hello"
     }
 });
+
+test([
+    '{=(n)m}'
+], {
+    "start": {
+        "type": "set",
+        "variable": "m",
+        "expression": ["get", "n"],
+        "next": null
+    }
+});
+
+test([
+    '{=(10)m}'
+], {
+    "start": {
+        "type": "set",
+        "variable": "m",
+        "expression": ["val", 10],
+        "next": null
+    }
+});
+
+test([
+    '{=(n+10)m}'
+], {
+    "start": {
+        "type": "set",
+        "variable": "m",
+        "expression": ["+", ["get", "n"], ["val", 10]],
+        "next": null
+    }
+});
+
+test([
+    '{=(a+b-c)m}'
+], {
+    "start": {
+        "type": "set",
+        "variable": "m",
+        "expression": ["-",
+            ["+", ["get", "a"], ["get", "b"]],
+            ["get", "c"]
+        ],
+        "next": null
+    }
+});
+
+test([
+    '{=(a+(b-c))m}'
+], {
+    "start": {
+        "type": "set",
+        "variable": "m",
+        "expression": ["+",
+            ["get", "a"],
+            ["-", ["get", "b"], ["get", "c"]]
+        ],
+        "next": null
+    }
+});
+
+test([
+    '{=(a*b+c)m}'
+], {
+    "start": {
+        "type": "set",
+        "variable": "m",
+        "expression": ["+",
+            ["*", ["get", "a"], ["get", "b"]],
+            ["get", "c"]
+        ],
+        "next": null
+    }
+});
+
+only([
+    '{=(a+b*c)m}'
+], {
+    "start": {
+        "type": "set",
+        "variable": "m",
+        "expression": ["+",
+            ["get", "a"],
+            ["*", ["get", "b"], ["get", "c"]]
+        ],
+        "next": null
+    }
+});

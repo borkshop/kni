@@ -2,6 +2,7 @@
 
 var Path = require('./path');
 var story = require('./story');
+var expression = require('./expression');
 
 exports.start = start;
 
@@ -509,7 +510,7 @@ Block.prototype.next = function next(type, space, text, scanner) {
         } else if (comparators[text]) {
             return new JumpCompare(this.story, this.path, this.parent, this.ends, comparators[text]);
         } else if (mutators[text]) {
-            return new Write(this.story, this.path, this.parent, this.ends, text);
+            return new Set(this.story, this.path, this.parent, this.ends, text);
         } else if (variables[text]) {
             return new Variable(this.story, this.path, this.parent, this.ends, variables[text]);
         } else if (switches[text]) {
@@ -606,53 +607,57 @@ Jump.prototype.return = function _return(path, ends, prevs, scanner) {
     return this.parent.return(path, ends.concat(prevs, [this.branch]), [], scanner);
 };
 
-function Write(story, path, parent, ends, type) {
-    this.type = type;
+function Set(story, path, parent, ends, op) {
+    this.type = 'set';
+    this.op = op;
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    this.variable = null;
-    this.value = null;
-    this.position = 0;
 }
 
-Write.prototype.next = function next(type, space, text, scanner) {
-    if (this.position === 0) {
-        if (type === 'number') {
-            this.value = parseInt(text, 10);
-            this.position = 1;
-            return this;
-        // istanbul ignore else
-        } else if (type === 'text') {
-            this.value = 1;
-            this.variable = text;
-            this.position = 2;
-            return this;
-        }
-    } else if (this.position === 1) {
-        // istanbul ignore else
-        if (type === 'text') {
-            this.variable = text;
-            this.position = 2;
-            return this;
-        }
+Set.prototype.next = function next(type, space, text, scanner) {
+    if (text === '(') {
+        return expression(this);
+    } else if (type === 'number') {
+        return this.return(['val', parseInt(text, 10)]);
     // istanbul ignore else
-    } else if (this.position === 2) {
-        // istanbul ignore else
-        if (text === '}') {
-            var node = this.story.create(this.path, 'set', this.variable);
-            if (this.type === '=') {
-                node.expression = ['val', this.value];
-            } else {
-                node.expression = [this.type, ['get', this.variable], ['val', this.value]];
-            }
-            tie(this.ends, this.path);
-            return this.parent.return(Path.next(this.path), [node], [], scanner);
-        }
+    } else if (type === 'text') {
+        return this.return(['val', 1])
+            .next(type, space, text, scanner);
     }
     // istanbul ignore next
     throw new Error('Unexpected token in ' + this.type + ': ' + type + ' ' + text + ' ' + scanner.position());
+};
+
+Set.prototype.return = function _return(expression) {
+    return new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, expression);
+};
+
+function ExpectSetVariable(story, path, parent, ends, op, expression) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.op = op;
+    this.expression = expression;
+}
+
+ExpectSetVariable.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore else
+    if (type === 'text') {
+        var variable = text;
+        var node = this.story.create(this.path, 'set', variable);
+        if (this.op === '=') {
+            node.expression = this.expression;
+        } else {
+            node.expression = [this.op, ['get', variable], this.expression];
+        }
+        tie(this.ends, this.path);
+        return new Expect('token', '}', Path.next(this.path), this.parent, [node]);
+    }
+    // istanbul ignore next
+    throw new Error('Expected variable name, got ' + type + ' ' + text);
 };
 
 function Variable(story, path, parent, ends, mode) {
