@@ -153,35 +153,7 @@ test([
 ], {
     "start": {
         "type": "text",
-        "text": "One",
-        "lift": "",
-        "drop": " ",
-        "next": "start.1"
-    },
-    "start.1": {
-        "type": "text",
-        "text": "Two",
-        "lift": "",
-        "drop": " ",
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "text",
-        "text": "Three",
-        "lift": "",
-        "drop": " ",
-        "next": "start.3"
-    },
-    "start.3": {
-        "type": "text",
-        "text": "Four",
-        "lift": "",
-        "drop": " ",
-        "next": "start.4"
-    },
-    "start.4": {
-        "type": "text",
-        "text": "Five",
+        "text": "One Two Three Four Five",
         "lift": "",
         "drop": " ",
         "next": null
@@ -198,42 +170,21 @@ test([
 ], {
     "start": {
         "type": "text",
-        "text": "One",
+        "text": "One Two Three",
         "lift": "",
         "drop": " ",
         "next": "start.1"
     },
     "start.1": {
         "type": "text",
-        "text": "Two",
+        "text": "Four",
         "lift": "",
         "drop": " ",
         "next": "start.2"
     },
     "start.2": {
         "type": "text",
-        "text": "Three",
-        "lift": "",
-        "drop": " ",
-        "next": "start.3"
-    },
-    "start.3": {
-        "type": "text",
-        "text": "Four",
-        "lift": "",
-        "drop": " ",
-        "next": "start.4"
-    },
-    "start.4": {
-        "type": "text",
-        "text": "Five",
-        "lift": "",
-        "drop": " ",
-        "next": "start.5"
-    },
-    "start.5": {
-        "type": "text",
-        "text": "Six",
+        "text": "Five Six",
         "lift": "",
         "drop": " ",
         "next": null

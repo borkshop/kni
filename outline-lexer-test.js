@@ -62,9 +62,7 @@ test([
     '  b',
 ], [
     'a',
-    'START',
     'b',
-    'STOP',
     'STOP'
 ]);
 
@@ -74,12 +72,8 @@ test([
     ' c'
 ], [
     'a',
-    'START',
     'b',
-    'STOP',
-    'START',
     'c',
-    'STOP',
     'STOP'
 ]);
 
@@ -89,10 +83,8 @@ test([
     '  c'
 ], [
     'a',
-    'START',
     'b',
     'c',
-    'STOP',
     'STOP'
 ]);
 
@@ -103,11 +95,9 @@ test([
     '  c'
 ], [
     'a',
-    'START',
     'b',
     'BREAK',
     'c',
-    'STOP',
     'STOP'
 ]);
 
@@ -117,10 +107,8 @@ test([
     '   \tc'
 ], [
     'a',
-    'START',
     'b',
     'c',
-    'STOP',
     'STOP'
 ]);
 
@@ -164,9 +152,7 @@ test([
     'a',
     'START', '-',
     'b',
-    'START',
     'c',
-    'STOP',
     'STOP',
     'STOP'
 ]);
@@ -196,15 +182,9 @@ test([
     'e'
 ], [
     'a',
-    'START',
     'b',
-    'STOP',
-    'START',
     'c',
-    'STOP',
-    'START',
     'd',
-    'STOP',
     'e',
     'STOP'
 ]);

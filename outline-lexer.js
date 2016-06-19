@@ -38,7 +38,7 @@ OutlineLexer.prototype.next = function next(line, scanner) {
         this.stack.pop();
         this.top = this.stack[this.stack.length - 1];
     }
-    if (scanner.indent > this.top) {
+    if (scanner.leader.length !== 0 && scanner.indent > this.top) {
         this.generator = this.generator.next('start', scanner.leader, scanner);
         this.stack.push(scanner.indent);
         this.top = scanner.indent;
