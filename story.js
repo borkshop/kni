@@ -248,42 +248,14 @@ constructors.set = Set;
 function Set(variable) {
     this.type = 'set';
     this.variable = variable;
-    this.value = null;
+    this.expression = null;
     this.next = null;
     Object.seal(this);
 }
 Set.prototype.tie = tie;
 // istanbul ignore next
 Set.prototype.describe = function describe() {
-    return this.variable + ' ' + this.value;
-};
-
-constructors.add = Add;
-function Add(variable) {
-    this.type = 'add';
-    this.variable = variable;
-    this.value = null;
-    this.next = null;
-    Object.seal(this);
-}
-Add.prototype.tie = tie;
-// istanbul ignore next
-Add.prototype.describe = function describe() {
-    return this.variable + ' ' + this.value;
-};
-
-constructors.sub = Sub;
-function Sub(variable) {
-    this.type = 'sub';
-    this.variable = variable;
-    this.value = null;
-    this.next = null;
-    Object.seal(this);
-}
-Sub.prototype.tie = tie;
-// istanbul ignore next
-Sub.prototype.describe = function describe() {
-    return this.variable + ' ' + this.value;
+    return this.variable + ' ' + JSON.stringify(this.expression);
 };
 
 constructors.break = Break;

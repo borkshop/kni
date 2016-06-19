@@ -876,9 +876,9 @@ test([
         "keywords": []
     },
     "start.0.2": {
-        "type": "add",
+        "type": "set",
         "variable": "start",
-        "value": 1,
+        "expression": ["+", ["get", "start"], ["val", 1]],
         "next": "start.1"
     },
     "start.1": {
@@ -909,9 +909,9 @@ test([
         "keywords": []
     },
     "start.0.2": {
-        "type": "add",
+        "type": "set",
         "variable": "start",
-        "value": 1,
+        "expression": ["+", ["get", "start"], ["val", 1]],
         "next": "start.2"
     },
     "start.1": {
@@ -928,9 +928,9 @@ test([
         "keywords": []
     },
     "start.1.2": {
-        "type": "add",
+        "type": "set",
         "variable": "start.1",
-        "value": 1,
+        "expression": ["+", ["get", "start.1"], ["val", 1]],
         "next": "start.2"
     },
     "start.2": {
@@ -1233,7 +1233,7 @@ test([
     "start": {
         "type": "set",
         "variable": "hi",
-        "value": 1,
+        "expression": ["val", 1],
         "next": null
     }
 });
@@ -1244,7 +1244,7 @@ test([
     "start": {
         "type": "set",
         "variable": "hi",
-        "value": 1,
+        "expression": ["val", 1],
         "next": "start.1"
     },
     "start.1": {
@@ -1322,15 +1322,15 @@ test([
     '{-10 gil} {+1 arrow}'
 ], {
     "start": {
-        "type": "sub",
+        "type": "set",
         "variable": "gil",
-        "value": 10,
+        "expression": ["-", ["get", "gil"], ["val", 10]],
         "next": "start.1"
     },
     "start.1": {
-        "type": "add",
+        "type": "set",
         "variable": "arrow",
-        "value": 1,
+        "expression": ["+", ["get", "arrow"], ["val", 1]],
         "next": null
     }
 });
@@ -1339,15 +1339,15 @@ test([
     '{-10 gil} {+arrow}'
 ], {
     "start": {
-        "type": "sub",
+        "type": "set",
         "variable": "gil",
-        "value": 10,
+        "expression": ["-", ["get", "gil"], ["val", 10]],
         "next": "start.1"
     },
     "start.1": {
-        "type": "add",
+        "type": "set",
         "variable": "arrow",
-        "value": 1,
+        "expression": ["+", ["get", "arrow"], ["val", 1]],
         "next": null
     }
 });
@@ -2113,7 +2113,7 @@ test([
     "start.0.1": {
         "type": "set",
         "variable": "world",
-        "value": 10,
+        "expression": ["val", 10],
         "next": "hello"
     }
 });

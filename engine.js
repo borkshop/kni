@@ -1,6 +1,7 @@
 'use strict';
 
 var Story = require('./story');
+var evaluate = require('./evaluate');
 
 module.exports = Engine;
 
@@ -89,17 +90,7 @@ Engine.prototype.$option = function option() {
 };
 
 Engine.prototype.$set = function set() {
-    this.write(this.instruction.value);
-    return this.goto(this.instruction.next);
-};
-
-Engine.prototype.$add = function add() {
-    this.write(this.read() + this.instruction.value);
-    return this.goto(this.instruction.next);
-};
-
-Engine.prototype.$sub = function sub() {
-    this.write(this.read() - this.instruction.value);
+    this.top.set(this.instruction.variable, evaluate(this.top, this.instruction.expression));
     return this.goto(this.instruction.next);
 };
 
