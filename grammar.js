@@ -678,11 +678,11 @@ function Switch(story, path, parent, ends) {
 }
 
 Switch.prototype.start = function start(variable, value, mode) {
-    variable = variable || Path.toName(this.path);
     value = value || 0;
-    if (mode === 'loop') {
+    if (mode === 'loop' && !variable) {
         value = 1;
     }
+    variable = variable || Path.toName(this.path);
     var node = this.story.create(this.path, 'switch', variable);
     node.value = value;
     node.mode = mode;
