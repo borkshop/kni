@@ -29,4 +29,22 @@ var binary = {
     "%": function (x, y) {
         return x % y;
     },
+    ">=": function (x, y) {
+        return x >= 0;
+    },
+    ">": function (x, y) {
+        return x > 0;
+    },
+    "<=": function (x, y) {
+        return x <= 0;
+    },
+    "<": function (x, y) {
+        return x < 0;
+    },
+    "==": function (x, y) {
+        return x == y;
+    },
+    "!=": function (x, y) {
+        return x != y;
+    }
 };

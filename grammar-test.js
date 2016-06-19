@@ -863,8 +863,8 @@ test([
     'Fin\n'
 ], {
     "start": {
-        "type": "jnz",
-        "variable": "start",
+        "type": "jump",
+        "condition": ["!=", ["get", "start"], ["val", 0]],
         "branch": "start.1",
         "next": "start.0.1"
     },
@@ -896,8 +896,8 @@ test([
     'Fin\n'
 ], {
     "start": {
-        "type": "jnz",
-        "variable": "start",
+        "type": "jump",
+        "condition": ["!=", ["get", "start"], ["val", 0]],
         "branch": "start.1",
         "next": "start.0.1"
     },
@@ -915,8 +915,8 @@ test([
         "next": "start.2"
     },
     "start.1": {
-        "type": "jnz",
-        "variable": "start.1",
+        "type": "jump",
+        "condition": ["!=", ["get", "start.1"], ["val", 0]],
         "branch": "start.2",
         "next": "start.1.1"
     },
@@ -1260,8 +1260,8 @@ test([
     '{?hi} Hello'
 ], {
     "start": {
-        "type": "jz",
-        "variable": "hi",
+        "type": "jump",
+        "condition": ["!=", ["get", "hi"], ["val", 0]],
         "branch": null,
         "next": "start.1"
     },
@@ -1278,8 +1278,8 @@ test([
     '{!hi} Hello'
 ], {
     "start": {
-        "type": "jnz",
-        "variable": "hi",
+        "type": "jump",
+        "condition": ["==", ["get", "hi"], ["val", 0]],
         "branch": null,
         "next": "start.1"
     },
@@ -1297,8 +1297,8 @@ test([
     'Bye\n',
 ], {
     "start": {
-        "type": "jnz",
-        "variable": "hi",
+        "type": "jump",
+        "condition": ["==", ["get", "hi"], ["val", 0]],
         "branch": "start.2",
         "next": "start.1"
     },
@@ -1704,9 +1704,8 @@ test([
     'Get on with it.\n'
 ], {
     "start": {
-        "type": "jne",
-        "variable": "gold",
-        "value": 0,
+        "type": "jump",
+        "condition": ["!=", ["get", "gold"], ["val", 0]],
         "next": "start.1",
         "branch": "start.2"
     },
@@ -1731,9 +1730,8 @@ test([
     'Get on with it.\n'
 ], {
     "start": {
-        "type": "jeq",
-        "variable": "gold",
-        "value": 0,
+        "type": "jump",
+        "condition": ["==", ["get", "gold"], ["val", 0]],
         "next": "start.1",
         "branch": "start.2"
     },
@@ -1758,9 +1756,8 @@ test([
     'Get on with it.\n'
 ], {
     "start": {
-        "type": "jge",
-        "variable": "gold",
-        "value": 10,
+        "type": "jump",
+        "condition": [">=", ["get", "gold"], ["val", 10]],
         "next": "start.1",
         "branch": "start.2"
     },
@@ -1785,9 +1782,8 @@ test([
     'Get on with it.\n'
 ], {
     "start": {
-        "type": "jle",
-        "variable": "gold",
-        "value": 10,
+        "type": "jump",
+        "condition": ["<=", ["get", "gold"], ["val", 10]],
         "next": "start.1",
         "branch": "start.2"
     },
@@ -1812,9 +1808,8 @@ test([
     'Get on with it.\n'
 ], {
     "start": {
-        "type": "jgt",
-        "variable": "gold",
-        "value": 10,
+        "type": "jump",
+        "condition": [">", ["get", "gold"], ["val", 10]],
         "next": "start.1",
         "branch": "start.2"
     },
@@ -1839,9 +1834,8 @@ test([
     'Get on with it.\n'
 ], {
     "start": {
-        "type": "jlt",
-        "variable": "gold",
-        "value": 10,
+        "type": "jump",
+        "condition": ["<", ["get", "gold"], ["val", 10]],
         "next": "start.1",
         "branch": "start.2"
     },

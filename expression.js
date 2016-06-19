@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = parenthesized;
+module.exports = expression;
 
 function parenthesized(parent) {
     return expression(new Open(parent));
@@ -9,6 +9,8 @@ function parenthesized(parent) {
 function expression(parent) {
     return new Value(new MultiplicativeExpression(new ArithmeticExpression(parent)));
 }
+
+expression.parenthesized = parenthesized;
 
 function Open(parent) {
     this.parent = parent;

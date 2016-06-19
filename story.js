@@ -111,122 +111,18 @@ Subroutine.prototype.describe = function describe() {
     return '(' + this.locals.join(', ') + ')';
 };
 
-constructors.jz = Jz;
-function Jz(variable) {
-    this.type = 'jz';
-    this.variable = variable;
+constructors.jump = Jump;
+function Jump(condition) {
+    this.type = 'jump';
+    this.condition = condition;
     this.branch = null;
     this.next = null;
     Object.seal(this);
 }
-Jz.prototype.tie = tie;
+Jump.prototype.tie = tie;
 // istanbul ignore next
-Jz.prototype.describe = function describe() {
-    return this.variable + ' ' + this.branch;
-};
-
-constructors.jnz = Jnz;
-function Jnz(variable) {
-    this.type = 'jnz';
-    this.variable = variable;
-    this.branch = null;
-    this.next = null;
-    Object.seal(this);
-}
-Jnz.prototype.tie = tie;
-// istanbul ignore next
-Jnz.prototype.describe = function describe() {
-    return this.variable + ' ' + this.branch;
-};
-
-constructors.jeq = Jeq;
-function Jeq(variable) {
-    this.type = 'jeq';
-    this.variable = variable;
-    this.value = 0;
-    this.branch = null;
-    this.next = null;
-    Object.seal(this);
-}
-Jeq.prototype.tie = tie;
-// istanbul ignore next
-Jeq.prototype.describe = function describe() {
-    return this.variable + ' ' + this.branch;
-};
-
-constructors.jne = Jne;
-function Jne(variable) {
-    this.type = 'jne';
-    this.variable = variable;
-    this.value = 0;
-    this.branch = null;
-    this.next = null;
-    Object.seal(this);
-}
-Jne.prototype.tie = tie;
-// istanbul ignore next
-Jne.prototype.describe = function describe() {
-    return this.variable + ' ' + this.branch;
-};
-
-constructors.jlt = Jlt;
-function Jlt(variable) {
-    this.type = 'jlt';
-    this.variable = variable;
-    this.value = 0;
-    this.branch = null;
-    this.next = null;
-    Object.seal(this);
-}
-Jlt.prototype.tie = tie;
-// istanbul ignore next
-Jlt.prototype.describe = function describe() {
-    return this.variable + ' ' + this.branch;
-};
-
-constructors.jgt = Jgt;
-function Jgt(variable) {
-    this.type = 'jgt';
-    this.variable = variable;
-    this.value = 0;
-    this.branch = null;
-    this.next = null;
-    Object.seal(this);
-}
-Jgt.prototype.tie = tie;
-// istanbul ignore next
-Jgt.prototype.describe = function describe() {
-    return this.variable + ' ' + this.branch;
-};
-
-constructors.jle = Jle;
-function Jle(variable) {
-    this.type = 'jle';
-    this.variable = variable;
-    this.value = 0;
-    this.branch = null;
-    this.next = null;
-    Object.seal(this);
-}
-Jle.prototype.tie = tie;
-// istanbul ignore next
-Jle.prototype.describe = function describe() {
-    return this.variable + ' ' + this.branch;
-};
-
-constructors.jge = Jge;
-function Jge(variable) {
-    this.type = 'jge';
-    this.variable = variable;
-    this.value = 0;
-    this.branch = null;
-    this.next = null;
-    Object.seal(this);
-}
-Jge.prototype.tie = tie;
-// istanbul ignore next
-Jge.prototype.describe = function describe() {
-    return this.variable + ' ' + this.branch;
+Jump.prototype.describe = function describe() {
+    return this.variable + ' ' + JSON.stingify(this.condition) + ' ' + this.branch;
 };
 
 constructors.switch = Switch;

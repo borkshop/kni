@@ -94,48 +94,9 @@ Engine.prototype.$set = function set() {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$jz = function jz() {
-    if (!this.read()) {
-        return this.goto(this.instruction.branch);
-    } else {
-        return this.goto(this.instruction.next);
-    }
-};
-
-Engine.prototype.$jnz = function jnz() {
-    if (this.read()) {
-        return this.goto(this.instruction.branch);
-    } else {
-        return this.goto(this.instruction.next);
-    }
-};
-
-Engine.prototype.$jlt = function jlt() {
-    if (this.read() < this.instruction.value) {
-        return this.goto(this.instruction.next);
-    } else {
-        return this.goto(this.instruction.branch);
-    }
-};
-
-Engine.prototype.$jgt = function jgt() {
-    if (this.read() > this.instruction.value) {
-        return this.goto(this.instruction.next);
-    } else {
-        return this.goto(this.instruction.branch);
-    }
-};
-
-Engine.prototype.$jge = function jge() {
-    if (this.read() >= this.instruction.value) {
-        return this.goto(this.instruction.next);
-    } else {
-        return this.goto(this.instruction.branch);
-    }
-};
-
-Engine.prototype.$jle = function jle() {
-    if (this.read() <= this.instruction.value) {
+Engine.prototype.$jump = function jump() {
+    var j = this.instruction;
+    if (evaluate(this.top, j.condition)) {
         return this.goto(this.instruction.next);
     } else {
         return this.goto(this.instruction.branch);
@@ -180,7 +141,7 @@ Engine.prototype.goto = function _goto(name) {
         this.top = this.stack[this.stack.length - 1];
         name = top.next;
     }
-    if (name === null) {
+    if (name == null) {
         this.display();
         this.render.break();
         this.interlocutor.close();
