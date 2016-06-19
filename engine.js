@@ -37,12 +37,6 @@ Engine.prototype.continue = function _continue() {
 };
 
 Engine.prototype.print = function print(text) {
-    // Implicitly prompt if there are pending options before resuming the
-    // narrative.
-    if (this.options.length) {
-        this.prompt();
-        return false;
-    }
     this.render.write(this.instruction.lift, text, this.instruction.drop);
     return this.goto(this.instruction.next);
 };
@@ -194,22 +188,17 @@ Engine.prototype.$prompt = function prompt() {
     return false;
 };
 
-Engine.prototype.goto = function _goto(name, fresh) {
+Engine.prototype.goto = function _goto(name) {
     while (name === null && this.stack.length > 1 && this.options.length === 0) {
         var top = this.stack.pop();
         this.top = this.stack[this.stack.length - 1];
         name = top.next;
     }
     if (name === null) {
-        if (this.options.length && !fresh) {
-            this.prompt();
-            return false;
-        } else {
-            this.display();
-            this.render.break();
-            this.interlocutor.close();
-            return false;
-        }
+        this.display();
+        this.render.break();
+        this.interlocutor.close();
+        return false;
     }
     var next = this.story[name];
     if (!next) {
@@ -222,15 +211,12 @@ Engine.prototype.goto = function _goto(name, fresh) {
 
 Engine.prototype.read = function read() {
     var variable = this.instruction.variable;
-    if (this.variables[variable] == undefined) {
-        this.variables[variable] = 0;
-    }
-    return this.variables[variable];
+    return this.top.get(variable);
 };
 
 Engine.prototype.write = function write(value) {
     var variable = this.instruction.variable;
-    this.variables[variable] = value;
+    this.top.set(variable, value);
 };
 
 Engine.prototype.answer = function answer(text) {
@@ -246,12 +232,12 @@ Engine.prototype.answer = function answer(text) {
     }
     var n = +text;
     if (n >= 1 && n <= this.options.length) {
-        if (this.goto(this.options[n - 1].branch, true)) {
+        if (this.goto(this.options[n - 1].branch)) {
             this.flush();
             this.continue();
         }
     } else if (this.keywords[text]) {
-        if (this.goto(this.keywords[text], true)) {
+        if (this.goto(this.keywords[text])) {
             this.flush();
             this.continue();
         }

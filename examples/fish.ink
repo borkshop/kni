@@ -1,5 +1,7 @@
-* One Fish -> start
-* Two Fish -> start
-* Red Fish -> start
-* Blue Fish -> start
+* One Fish
+* Two Fish
+* Red Fish
+* Blue Fish
 + End <-
+>
+-> start

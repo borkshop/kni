@@ -791,7 +791,7 @@ test([
         "type": "option",
         "label": "Alpha",
         "next": "start.1",
-        "branch": "start.1",
+        "branch": "start.2",
         "keywords": []
     },
     "start.1": {

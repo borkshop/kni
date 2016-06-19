@@ -14,6 +14,7 @@ There is a door.
   + You o[O]pen the door. 
     - {=1 door} -> blue2
 + Where am I again? -> blue
+>
 
 = red
 
@@ -31,6 +32,7 @@ There is a door and a bell.
     - {=1 door} -> red2
 + You r[R]ing the bell.
 + Where am I again? -> red
+>
 
 A dark portal opens and swallows you whole.
 You lose consciousness.
