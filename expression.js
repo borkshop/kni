@@ -2,15 +2,34 @@
 
 module.exports = expression;
 
-function parenthesized(parent) {
-    return expression(new Open(parent));
-}
-
 function expression(parent) {
     return new Value(new MultiplicativeExpression(new ArithmeticExpression(parent)));
 }
 
 expression.parenthesized = parenthesized;
+function parenthesized(parent) {
+    return expression(new Open(parent));
+}
+
+var inversions = {
+    '==': '!=',
+    '!=': '==',
+    '>': '<=',
+    '<': '>=',
+    '>=': '<',
+    '<=': '>'
+};
+
+expression.invert = invert;
+function invert(expression) {
+    // if (expression[0] === '!') {
+    //     return expression[1];
+    // if (inversions[expression[0]]) {
+        return [inversions[expression[0]], expression[1], expression[2]];
+    // } else {
+    //     return ['!', expression];
+    // }
+}
 
 function Open(parent) {
     this.parent = parent;

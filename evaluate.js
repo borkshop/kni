@@ -10,6 +10,8 @@ function evaluate(scope, args) {
         return args[1];
     } else if (name === 'get') {
         return scope.get(args[1]);
+    } else if (name === '!') {
+        return evaluate(scope, args[1]) ? 0 : 1;
     }
 }
 

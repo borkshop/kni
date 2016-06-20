@@ -2161,3 +2161,83 @@ test([
         "next": null
     }
 });
+
+test([
+    '{?x|true|false}\n'
+], {
+    "start": {
+        "type": "switch",
+        "expression": ["==", ["get", "x"], [ "val", 0]],
+        "value": 0,
+        "mode": "walk",
+        "branches": [
+            "start.0.1",
+            "start.0.2"
+        ]
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "true",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "false",
+        "lift": "",
+        "drop": "",
+        "next": null
+    }
+});
+
+test([
+    '{!x|true|false}\n'
+], {
+    "start": {
+        "type": "switch",
+        "expression": ["!=", ["get", "x"], [ "val", 0]],
+        "value": 0,
+        "mode": "walk",
+        "branches": [
+            "start.0.1",
+            "start.0.2"
+        ]
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "true",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "false",
+        "lift": "",
+        "drop": "",
+        "next": null
+    }
+});
+
+only([
+    '{<10x|true}\n'
+], {
+    "start": {
+        "type": "switch",
+        "expression": [">=", ["get", "x"], ["val", 10]],
+        "value": 0,
+        "mode": "walk",
+        "branches": [
+            "start.0.1",
+            null
+        ]
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "true",
+        "lift": "",
+        "drop": "",
+        "next": null
+    }
+});
