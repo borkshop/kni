@@ -729,10 +729,14 @@ Case.prototype.next = function next(type, space, text, scanner) {
     if (text === '|') {
         return this.case();
     } else {
+        var path = this.path;
         while (this.branches.length < this.min) {
-            this.branches.push(null);
+            var node = this.story.create(path, 'goto', null);
+            this.ends.push(node);
+            this.branches.push(Path.toName(path));
+            path = Path.next(path);
         }
-        return this.parent.return(this.path, this.ends, [], scanner)
+        return this.parent.return(path, this.ends, [], scanner)
             .next(type, space, text, scanner);
     }
 };

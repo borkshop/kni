@@ -27,7 +27,7 @@ function only(input, output) {
     }
     s.return();
     // istanbul ignore if
-    if (!equals(JSON.parse(JSON.stringify(story.states)), output)) {
+    if (!equals(story.states, output)) {
         console.error('ERROR');
         console.error(input.join(''));
         console.error('expected');
@@ -218,7 +218,6 @@ test([
     "start": {
         "type": "option",
         "label": "Apples",
-        "keywords": [],
         "branch": null,
         "next": null
     }
@@ -231,14 +230,12 @@ test([
     "start": {
         "type": "option",
         "label": "Apples",
-        "keywords": [],
         "branch": null,
         "next": "start.1"
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
-        "keywords": [],
         "branch": null,
         "next": null
     }
@@ -251,14 +248,12 @@ test([
     "start": {
         "type": "option",
         "label": "Apples",
-        "keywords": [],
         "branch": "start.0.1",
         "next": null
     },
     "start.0.1": {
         "type": "option",
         "label": "Honeycrisps",
-        "keywords": [],
         "branch": null,
         "next": null
     }
@@ -272,21 +267,18 @@ test([
     "start": {
         "type": "option",
         "label": "Apples",
-        "keywords": [],
         "branch": "start.0.1",
         "next": "start.1"
     },
     "start.0.1": {
         "type": "option",
         "label": "Honeycrisps",
-        "keywords": [],
         "branch": null,
         "next": null
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
-        "keywords": [],
         "branch": null,
         "next": null
     }
@@ -313,7 +305,6 @@ test([
     "start.1": {
         "type": "option",
         "label": "Bravo",
-        "keywords": [],
         "branch": "start.1.1",
         "next": "start.2"
     },
@@ -327,7 +318,6 @@ test([
     "start.2": {
         "type": "option",
         "label": "Delta",
-        "keywords": [],
         "branch": "start.2.1",
         "next": "start.3"
     },
@@ -363,14 +353,12 @@ test([
     "start.1": {
         "type": "option",
         "label": "Bravo",
-        "keywords": [],
         "branch": "start.3",
         "next": "start.2"
     },
     "start.2": {
         "type": "option",
         "label": "Charlie",
-        "keywords": [],
         "branch": "start.3",
         "next": "start.3"
     },
@@ -392,28 +380,24 @@ test([
     "start": {
         "type": "option",
         "label": "Apples",
-        "keywords": [],
         "branch": "start.0.1",
         "next": "start.1"
     },
     "start.0.1": {
         "type": "option",
         "label": "Honeycrisps",
-        "keywords": [],
         "branch": null,
         "next": "start.0.2"
     },
     "start.0.2": {
         "type": "option",
         "label": "Braeburns",
-        "keywords": [],
         "branch": null,
         "next": null
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
-        "keywords": [],
         "branch": null,
         "next": null
     }
@@ -430,42 +414,36 @@ test([
     "start": {
         "type": "option",
         "label": "Apples",
-        "keywords": [],
         "branch": "start.0.1",
         "next": "start.1"
     },
     "start.0.1": {
         "type": "option",
         "label": "Honeycrisps",
-        "keywords": [],
         "branch": "start.0.1.1",
         "next": "start.0.2"
     },
     "start.0.1.1": {
         "type": "option",
         "label": "Braeburns",
-        "keywords": [],
         "branch": null,
         "next": "start.0.1.2"
     },
     "start.0.1.2": {
         "type": "option",
         "label": "Galas",
-        "keywords": [],
         "branch": null,
         "next": null
     },
     "start.0.2": {
         "type": "option",
         "label": "Fujis",
-        "keywords": [],
         "branch": null,
         "next": null
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
-        "keywords": [],
         "branch": null,
         "next": null
     }
@@ -584,7 +562,6 @@ test([
     "start": {
         "type": "option",
         "label": "Say, \"Hello, World!\"",
-        "keywords": [],
         "branch": "start.0.1",
         "next": null
     },
@@ -611,7 +588,6 @@ test([
     "start": {
         "type": "option",
         "label": "Say, \"Hello, World!\"",
-        "keywords": [],
         "branch": "start.0.1",
         "next": null
     },
@@ -645,7 +621,6 @@ test([
     "start": {
         "type": "option",
         "label": "Say, \"Hello, World!\"",
-        "keywords": [],
         "branch": "start.0.1",
         "next": "start.1"
     },
@@ -666,7 +641,6 @@ test([
     "start.1": {
         "type": "option",
         "label": "Say, \"Good bye.\"",
-        "keywords": [],
         "branch": "start.1.1",
         "next": null
     },
@@ -692,7 +666,6 @@ test([
     "start": {
         "type": "option",
         "label": "\"Hello, World!\"",
-        "keywords": [],
         "branch": "start.0.1",
         "next": null
     },
@@ -722,14 +695,12 @@ test([
         "label": "Alpha",
         "next": "start.1",
         "branch": null,
-        "keywords": []
     },
     "start.1": {
         "type": "option",
         "label": "Omega",
         "next": null,
         "branch": null,
-        "keywords": []
     }
 });
 
@@ -743,7 +714,6 @@ test([
         "label": "Alpha",
         "next": "start.1",
         "branch": "start.2",
-        "keywords": []
     },
     "start.1": {
         "type": "prompt"
@@ -753,7 +723,6 @@ test([
         "label": "Omega",
         "next": null,
         "branch": null,
-        "keywords": []
     }
 });
 
@@ -766,7 +735,6 @@ test([
         "label": "Alpha",
         "next": null,
         "branch": "start.0.1",
-        "keywords": []
     },
     "start.0.1": {
         "type": "text",
@@ -784,7 +752,6 @@ test([
     "start": {
         "type": "option",
         "label": "Alpha Omega",
-        "keywords": [],
         "branch": "start.0.1",
         "next": null
     },
@@ -803,7 +770,6 @@ test([
     "start": {
         "type": "option",
         "label": "Alpha",
-        "keywords": [],
         "branch": null,
         "next": null
     }
@@ -824,7 +790,6 @@ test([
         "label": "Choice",
         "next": "start.1",
         "branch": "start.0.2",
-        "keywords": []
     },
     "start.0.2": {
         "type": "set",
@@ -857,7 +822,6 @@ test([
         "label": "One Fish",
         "next": "start.1",
         "branch": "start.0.2",
-        "keywords": []
     },
     "start.0.2": {
         "type": "set",
@@ -876,7 +840,6 @@ test([
         "label": "Two Fish",
         "next": "start.2",
         "branch": "start.1.2",
-        "keywords": []
     },
     "start.1.2": {
         "type": "set",
@@ -2230,7 +2193,7 @@ only([
         "mode": "walk",
         "branches": [
             "start.0.1",
-            null
+            "start.0.2"
         ]
     },
     "start.0.1": {
@@ -2238,6 +2201,63 @@ only([
         "text": "true",
         "lift": "",
         "drop": "",
+        "next": null
+    },
+    "start.0.2": {
+        "type": "goto",
+        "next": null
+    }
+});
+
+only([
+    '{<10x|true}regardless\n'
+], {
+    "start": {
+        "type": "switch",
+        "expression": [">=", ["get", "x"], ["val", 10]],
+        "value": 0,
+        "mode": "walk",
+        "branches": [
+            "start.0.1",
+            "start.0.2",
+        ]
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "true",
+        "lift": "",
+        "drop": "",
+        "next": "start.1"
+    },
+    "start.0.2": {
+        "type": "goto",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "regardless",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+only([
+    '{$x < 10}\n'
+], {
+    "start": {
+        "type": "print",
+        "expression": ["<", ["get", "x"], ["val", 10]],
+        "next": null
+    },
+});
+
+only([
+    '{$2~6 + 1}\n'
+], {
+    "start": {
+        "type": "print",
+        "expression": ["+", ["~", ["val", 2], ["val", 6]], ["val", 1]],
         "next": null
     }
 });

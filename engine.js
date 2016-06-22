@@ -90,7 +90,11 @@ Engine.prototype.$option = function option() {
 };
 
 Engine.prototype.$set = function set() {
-    this.top.set(this.instruction.variable, evaluate(this.top, this.instruction.expression));
+    var value = evaluate(this.top, this.instruction.expression);
+    if (this.debug) {
+        console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.variable + ' = ' + value);
+    }
+    this.top.set(this.instruction.variable, value);
     return this.goto(this.instruction.next);
 };
 
@@ -117,18 +121,14 @@ Engine.prototype.$switch = function _switch() {
     if (this.instruction.mode === 'loop') {
         value = value % branches.length;
     } else if (this.instruction.mode === 'hash') {
-        value = hash(value) % branches.length;
+        value = evaluate.hash(value) % branches.length;
     }
     var next = branches[Math.min(value, branches.length - 1)];
+    if (this.debug) {
+        console.log(this.top.at() + '/' + this.label + ' ' + value + ' -> ' + next);
+    }
     return this.goto(next);
 };
-
-function hash(x) {
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x);
-    return x >>> 0;
-}
 
 Engine.prototype.$prompt = function prompt() {
     this.prompt();

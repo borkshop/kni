@@ -1,6 +1,8 @@
 'use strict';
 
+var equals = require('pop-equals');
 var Path = require('./path');
+
 var constructors = {};
 
 module.exports = Story;
@@ -43,6 +45,13 @@ Text.prototype.tie = tie;
 Text.prototype.describe = function describe() {
     return this.text;
 };
+Text.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.text === that.text &&
+        this.lift === that.lift &&
+        this.drop === that.drop &&
+        this.next === that.next;
+};
 
 constructors.print = Print;
 function Print(expression) {
@@ -54,7 +63,12 @@ function Print(expression) {
 Print.prototype.tie = tie;
 // istanbul ignore next
 Print.prototype.describe = function describe() {
-    return this.variable;
+    return JSON.stringify(this.expression);
+};
+Print.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.expression, that.expression) &&
+        this.next === that.next;
 };
 
 constructors.option = Option;
@@ -71,6 +85,13 @@ Option.prototype.tie = tie;
 Option.prototype.describe = function describe() {
     return this.label + ' -> ' + this.branch;
 };
+Option.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.label === that.label &&
+        // Don't care about keywords for the nonce
+        this.branch == that.branch &&
+        this.next === that.next;
+};
 
 constructors.goto = Goto;
 function Goto(next) {
@@ -82,6 +103,10 @@ Goto.prototype.tie = tie;
 // istanbul ignore next
 Goto.prototype.describe = function describe() {
     return this.next;
+};
+Goto.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
 };
 
 constructors.call = Call;
@@ -97,6 +122,12 @@ Call.prototype.tie = tie;
 Call.prototype.describe = function describe() {
     return this.branch + '() -> ' + this.next;
 };
+Call.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.label === that.label &&
+        this.branch === that.branch &&
+        this.next === that.next;
+};
 
 constructors.subroutine = Subroutine;
 function Subroutine(locals) {
@@ -109,6 +140,11 @@ Subroutine.prototype.tie = tie;
 // istanbul ignore next
 Subroutine.prototype.describe = function describe() {
     return '(' + this.locals.join(', ') + ')';
+};
+Subroutine.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.locals, that.locals) &&
+        this.next === that.next;
 };
 
 constructors.jump = Jump;
@@ -124,6 +160,12 @@ Jump.prototype.tie = tie;
 Jump.prototype.describe = function describe() {
     return this.variable + ' ' + JSON.stingify(this.condition) + ' ' + this.branch;
 };
+Jump.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.condition, that.condition) &&
+        this.branch === that.branch &&
+        this.next === that.next;
+};
 
 constructors.switch = Switch;
 function Switch(expression) {
@@ -137,7 +179,14 @@ function Switch(expression) {
 Switch.prototype.tie = tie;
 // istanbul ignore next
 Switch.prototype.describe = function describe() {
-    return this.variable + ' ' + this.mode;
+    return JSON.stringify(this.expression) + ' ' + this.mode;
+};
+Switch.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.expression, that.expression) &&
+        this.value === that.value &&
+        this.mode === that.mode &&
+        equals(this.branches, that.branches);
 };
 
 constructors.set = Set;
@@ -145,6 +194,7 @@ function Set(variable) {
     this.type = 'set';
     this.variable = variable;
     this.expression = null;
+    this.parameter = false;
     this.next = null;
     Object.seal(this);
 }
@@ -152,6 +202,12 @@ Set.prototype.tie = tie;
 // istanbul ignore next
 Set.prototype.describe = function describe() {
     return this.variable + ' ' + JSON.stringify(this.expression);
+};
+Set.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.variable === that.variable &&
+        this.parameter === Boolean(that.parameter) &&
+        this.next === that.next;
 };
 
 constructors.break = Break;
@@ -165,6 +221,10 @@ Break.prototype.tie = tie;
 Break.prototype.describe = function describe() {
     return '';
 };
+Break.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
 
 constructors.paragraph = Paragraph;
 function Paragraph(variable) {
@@ -177,6 +237,10 @@ Paragraph.prototype.tie = tie;
 Paragraph.prototype.describe = function describe() {
     return '';
 };
+Paragraph.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
 
 constructors.prompt = Prompt;
 function Prompt(variable) {
@@ -187,6 +251,9 @@ Prompt.prototype.tie = tie;
 // istanbul ignore next
 Prompt.prototype.describe = function describe() {
     return '';
+};
+Prompt.prototype.equals = function equals(that) {
+    return this.type === that.type;
 };
 
 function tie(end) {

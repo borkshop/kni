@@ -3,7 +3,7 @@
 module.exports = expression;
 
 function expression(parent) {
-    return new Value(new MultiplicativeExpression(new ArithmeticExpression(parent)));
+    return new Value(new MultiplicativeExpression(new ArithmeticExpression(new ComparisonExpression(parent))));
 }
 
 expression.parenthesized = parenthesized;
@@ -85,7 +85,7 @@ function MaybeMultiplicative(parent, expression) {
 }
 
 MaybeMultiplicative.prototype.next = function next(type, space, text, scanner) {
-    if (text === '*' || text === '/' || text === '%') {
+    if (text === '*' || text === '/' || text === '%' || text === '~') {
         return new Value(new Multiplicative(this.parent, text, this.expression));
     } else {
         return this.parent.return(this.expression)
@@ -136,6 +136,45 @@ function Arithmetic(parent, op, left) {
 Arithmetic.prototype.return = function _return(right) {
     return new MaybeMultiplicative(
         new ArithmeticExpression(this.parent),
+        [this.op, this.left, right]
+    );
+};
+
+var comparison = {'<': true, '<=': true, '==': true, '!=': true, '>=': true, '>': true, '#': true};
+
+function ComparisonExpression(parent) {
+    this.parent = parent;
+}
+
+ComparisonExpression.prototype.return = function _return(expression) {
+    return new MaybeComparison(this.parent, expression);
+};
+
+function MaybeComparison(parent, expression) {
+    this.parent = parent;
+    this.expression = expression;
+}
+
+MaybeComparison.prototype.next = function next(type, space, text, scanner) {
+    if (comparison[text] === true) {
+        return new Value(
+            new MultiplicativeExpression(
+                new ArithmeticExpression(
+                    new Comparison(this.parent, text, this.expression))));
+    } else {
+        return this.parent.return(this.expression)
+            .next(type, space, text, scanner);
+    }
+};
+
+function Comparison(parent, op, left) {
+    this.parent = parent;
+    this.op = op;
+    this.left = left;
+}
+
+Comparison.prototype.return = function _return(right) {
+    return new MaybeMultiplicative(new ArithmeticExpression(new ComparisonExpression(this.parent)),
         [this.op, this.left, right]
     );
 };
