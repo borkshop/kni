@@ -69,7 +69,7 @@ Engine.prototype.$call = function $call() {
     if (!routine) {
         throw new Error('no such routine ' + this.instruction.label);
     }
-    this.top = new Frame(this.top, routine.locals, this.instruction.next, this.instruction.branch);
+    this.top = new Frame(this.top, routine.locals || [], this.instruction.next, this.instruction.branch);
     this.stack.push(this.top);
     return this.goto(this.instruction.branch);
 };
