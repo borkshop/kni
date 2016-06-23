@@ -1,14 +1,16 @@
 usage: inkblot [-jJ] [-s label] script.ink
 
-script:            <script> :input  Script file name
-start:             [-s <start>]     Start script at this label
-fromJson:          [-J]             Read ink script as compiled JSON
-toJson:            [-j|--json]      Dump compiled script as JSON instead of running interactively.
-dot:               [--dot]          Dump the final parse tree in Graphviz DOT format.
+script:            <script> :input        Script file name
+start:             [-s <start>]           Start script at this label
+fromJson:          [-J]                   Read ink script as compiled JSON
+toJson:            [-j|--json]            Dump compiled script as JSON instead of running interactively.
+describe:          [-d]                   Describe instead of running interactively.
+transcript:        [-t <script>] :output  Write a transcript.
+seed:              [-r <seed>] :number    Seed the random number generator.
 
-debugInput:        [--di]           Log input file before processing
-debugRuntime:      [--dr]           Enable runtime debug logging
-debugParser:       [--dp]           Enable parser debug logging
-debugInlineLexer:  [--dil]          Enable inline lexer debug logging
-debugOutlineLexer: [--dol]          Enable outline lexer debug logging
-debugScanner:      [--ds]           Enable scanner debug logging
+debugInput:        [--di]                 Log input file before processing
+debugRuntime:      [--dr]                 Enable runtime debug logging
+debugParser:       [--dp]                 Enable parser debug logging
+debugInlineLexer:  [--dil]                Enable inline lexer debug logging
+debugOutlineLexer: [--dol]                Enable outline lexer debug logging
+debugScanner:      [--ds]                 Enable scanner debug logging

@@ -62,6 +62,7 @@ Wrapper.prototype.break = function _break() {
 };
 
 // Bring your own break, if you need it.
+// istanbul ignore next
 Wrapper.prototype.bullet = function bullet() {
     var lead = this.leads[this.leads.length - 1];
     this.target.write(lead);

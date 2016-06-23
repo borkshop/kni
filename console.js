@@ -6,6 +6,7 @@ var Excerpt = require('./excerpt');
 var Wrapper = require('./wrapper');
 
 function Console(writer) {
+    this.writer = writer;
     this.wrapper = new Wrapper(writer);
     this.excerpt = new Excerpt();
 }
@@ -23,21 +24,21 @@ Console.prototype.paragraph = function paragraph() {
 };
 
 Console.prototype.option = function option(number, label) {
-        var lead = (number + '.    ').slice(0, 4);
-        this.wrapper.word(lead);
-        this.wrapper.flush = true;
-        this.wrapper.push('    ', '   ');
-        this.wrapper.words(label);
-        this.wrapper.pop();
-        this.wrapper.break();
+    var lead = (number + '.   ').slice(0, 3) + ' ';
+    this.wrapper.word(lead);
+    this.wrapper.flush = true;
+    this.wrapper.push('    ', '   ');
+    this.wrapper.words(label);
+    this.wrapper.pop();
+    this.wrapper.break();
 };
 
 Console.prototype.flush = function flush() {
-    console.log('');
+    this.writer.write('\n');
 };
 
 Console.prototype.pardon = function pardon() {
-    console.log('?');
+    this.writer.write('?\n');
 };
 
 Console.prototype.display = function display() {

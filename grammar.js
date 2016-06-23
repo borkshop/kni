@@ -522,14 +522,14 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return expression(new ExpressionSwitch(this.story, this.path, this.parent, this.ends, variables[text]));
         } else if (switches[text]) {
             return new Switch(this.story, this.path, this.parent, this.ends)
-                .start(null, null, switches[text])
+                .start(null, null, null, switches[text])
                 .case();
         } else if (text === '->') {
             return new Call(this.story, this.path, this.parent, this.ends);
         }
     }
     return new Switch(this.story, this.path, this.parent, this.ends)
-        .start(null, 1, 'walk') // with variable and value, waiting for case to start
+        .start(null, Path.toName(this.path), 1, 'walk') // with variable and value, waiting for case to start
         .case() // first case
         .next(type, space, text, scanner);
 };
@@ -575,14 +575,14 @@ function MaybeConditional(story, path, parent, ends, condition) {
 MaybeConditional.prototype.next = function next(type, space, text, scanner) {
     if (text === '|') {
         return new Switch(this.story, this.path, this.parent, this.ends)
-            .start(expression.invert(this.condition), 0, 'walk', 2)
+            .start(expression.invert(this.condition), null, 0, 'walk', 2)
             .case();
     // istanbul ignore else
     } else if (text === '}') {
         var node = this.story.create(this.path, 'jump', this.condition);
         var branch = new Branch(node);
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), new Rejoin(this.parent, branch), [node]);
+        return new Knot(this.story, Path.next(this.path), new Rejoin(this.parent, node), [branch]);
     }
     // istanbul ignore next
     throw new Error('Unexpected token after conditional, got ' + type + ' ' + text);
@@ -672,7 +672,7 @@ function Variable(story, path, parent, ends, mode, expression) {
 Variable.prototype.next = function next(type, space, text, scanner) {
     if (text === '|') {
         return new Switch(this.story, this.path, this.parent, this.ends)
-            .start(this.expression, 0, this.mode)
+            .start(this.expression, null, 0, this.mode)
             .case();
     // istanbul ignore else
     } else if (text === '}') {
@@ -696,13 +696,14 @@ function Switch(story, path, parent, ends) {
     this.branches = [];
 }
 
-Switch.prototype.start = function start(expression, value, mode, min) {
+Switch.prototype.start = function start(expression, variable, value, mode, min) {
     value = value || 0;
     if (mode === 'loop' && !expression) {
         value = 1;
     }
     expression = expression || ['get', Path.toName(this.path)];
     var node = this.story.create(this.path, 'switch', expression);
+    node.variable = variable;
     node.value = value;
     node.mode = mode;
     tie(this.ends, this.path);

@@ -1,0 +1,26 @@
+"This example generates a field of values around the origin
+of a two-dimensional plane, illustrating how Inkblot can
+assign a consistent hash to every coordinate in that plane
+without symmetry about any axis. This random variable is
+useful for procedurally generated places, people, and
+things.
+
+Most of this example involves iterating over the (x, y)
+coordinate plane about the origin. The "#" block maps the
+given expression to consistent hash. The inner "#" is a
+binary operator that produces a Hilbert curve, ensuring
+that the consistent hash provides no symmetric axes,
+producing a sequence of values that wends around itself in
+the plane.
+
+A - J - C - Z - L - B - F - X - Z - D - S -
+K - V - Y - F - A - K - G - X - X - G - W -
+S - R - Z - K - N - Q - O - A - O - D - E -
+T - A - P - H - K - S - B - T - D - Q - D -
+L - N - P - W - H - H - C - K - I - Y - F -
+J - Q - I - S - S - A - L - L - U - N - P -
+Y - K - W - G - A - I - D - A - F - P - Z -
+K - E - J - X - C - H - F - J - C - C - V -
+W - D - Z - D - H - Z - F - Y - Y - N - H -
+O - Q - F - E - Y - P - A - L - Q - O - I -
+G - X - E - O - U - N - W - A - F - H - E -

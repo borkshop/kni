@@ -13,6 +13,7 @@ Excerpt.prototype.Child = Paragraph;
 Excerpt.prototype.paragraph = flag;
 Excerpt.prototype.break = breakChild;
 
+// istanbul ignore next
 Excerpt.prototype.startJoin = function startJoin(lift, delimiter, conjunction) {
     if (this.children.length === 0) {
         return;
@@ -21,6 +22,7 @@ Excerpt.prototype.startJoin = function startJoin(lift, delimiter, conjunction) {
     last.startJoin(lift, delimiter, conjunction);
 };
 
+// istanbul ignore next
 Excerpt.prototype.delimit = function delimit(delimiter) {
     if (this.children.length === 0) {
         return;
@@ -29,6 +31,7 @@ Excerpt.prototype.delimit = function delimit(delimiter) {
     last.delimit(delimiter);
 };
 
+// istanbul ignore next
 Excerpt.prototype.stopJoin = function stopJoin() {
     if (this.children.length === 0) {
         return;
@@ -83,14 +86,17 @@ function Stanza() {
     this.cursor = new StanzaProxy(this);
 }
 
+// istanbul ignore next
 Stanza.prototype.startJoin = function startJoin(lift, delimiter, conjunction) {
     this.cursor = this.cursor.startJoin(lift, delimiter, conjunction);
 };
 
+// istanbul ignore next
 Stanza.prototype.delimit = function delimit(delimiter) {
     this.cursor.delimit(delimiter);
 };
 
+// istanbul ignore next
 Stanza.prototype.stopJoin = function stopJoin() {
     this.cursor = this.cursor.stopJoin();
 };
@@ -123,14 +129,17 @@ function StanzaProxy(parent) {
     this.parent = parent;
 }
 
+// istanbul ignore next
 StanzaProxy.prototype.startJoin = function startJoin(lift, delimiter, conjunction) {
     return new Conjunction(this, lift, delimiter, conjunction);
 };
 
+// istanbul ignore next
 StanzaProxy.prototype.delimit = function delimit(delimiter) {
     this.parent.digest('', [delimiter], ' ');
 };
 
+// istanbul ignore next
 StanzaProxy.prototype.stopJoin = function stopJoin() {
     throw new Error('cannot stop without starting conjunction');
 };
@@ -139,6 +148,7 @@ StanzaProxy.prototype.digest = function digest(lift, words, drop) {
     this.parent.proxyDigest(lift, words, drop);
 };
 
+// istanbul ignore next
 function Conjunction(parent, lift, delimiter, conjunction) {
     this.children = [];
     this.parent = parent;
@@ -153,6 +163,7 @@ Conjunction.prototype.digest = Excerpt.prototype.digest;
 
 Conjunction.prototype.startJoin = StanzaProxy.prototype.startJoin;
 
+// istanbul ignore next
 Conjunction.prototype.stopJoin = function stopJoin(drop) {
     if (this.children.length === 0) {
     } else if (this.children.length === 1) {

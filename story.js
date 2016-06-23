@@ -26,11 +26,6 @@ Story.prototype.create = function create(path, type, text) {
     return node;
 };
 
-// istanbul ignore next
-Story.prototype.dot = function dot() {
-    return 'graph {}';
-};
-
 constructors.text = Text;
 function Text(text) {
     this.type = 'text';
@@ -43,7 +38,9 @@ function Text(text) {
 Text.prototype.tie = tie;
 // istanbul ignore next
 Text.prototype.describe = function describe() {
-    return this.text;
+    return (this.lift ? '' : '-') +
+        this.text.slice(0, 30) +
+        (this.drop ? '' : '-');
 };
 Text.prototype.equals = function equals(that) {
     return this.type === that.type &&
@@ -63,7 +60,7 @@ function Print(expression) {
 Print.prototype.tie = tie;
 // istanbul ignore next
 Print.prototype.describe = function describe() {
-    return JSON.stringify(this.expression);
+    return S(this.expression);
 };
 Print.prototype.equals = function _equals(that) {
     return this.type === that.type &&
@@ -83,7 +80,7 @@ function Option(label) {
 Option.prototype.tie = tie;
 // istanbul ignore next
 Option.prototype.describe = function describe() {
-    return this.label + ' -> ' + this.branch;
+    return this.label + ' ' + A(this.branch);
 };
 Option.prototype.equals = function equals(that) {
     return this.type === that.type &&
@@ -158,7 +155,7 @@ function Jump(condition) {
 Jump.prototype.tie = tie;
 // istanbul ignore next
 Jump.prototype.describe = function describe() {
-    return this.variable + ' ' + JSON.stingify(this.condition) + ' ' + this.branch;
+    return this.branch + ' if ' + S(this.condition);
 };
 Jump.prototype.equals = function _equals(that) {
     return this.type === that.type &&
@@ -171,6 +168,7 @@ constructors.switch = Switch;
 function Switch(expression) {
     this.type = 'switch';
     this.expression = expression;
+    this.variable = null;
     this.value = 0;
     this.mode = null;
     this.branches = [];
@@ -179,7 +177,11 @@ function Switch(expression) {
 Switch.prototype.tie = tie;
 // istanbul ignore next
 Switch.prototype.describe = function describe() {
-    return JSON.stringify(this.expression) + ' ' + this.mode;
+    if (this.variable) {
+        return this.mode + ' (' + this.variable + '+' +  this.value + ') ' + S(this.expression);
+    } else {
+        return this.mode + ' ' + S(this.expression);
+    }
 };
 Switch.prototype.equals = function _equals(that) {
     return this.type === that.type &&
@@ -201,7 +203,7 @@ function Set(variable) {
 Set.prototype.tie = tie;
 // istanbul ignore next
 Set.prototype.describe = function describe() {
-    return this.variable + ' ' + JSON.stringify(this.expression);
+    return this.variable + ' ' + S(this.expression);
 };
 Set.prototype.equals = function equals(that) {
     return this.type === that.type &&
@@ -258,4 +260,22 @@ Prompt.prototype.equals = function equals(that) {
 
 function tie(end) {
     this.next = end;
+}
+
+// istanbul ignore next
+function S(args) {
+    if (args[0] === 'val' || args[0] === 'get') {
+        return args[1];
+    } else {
+        return '(' + args[0] + ' ' + args.slice(1).map(S).join(' ') + ')';
+    }
+}
+
+// istanbul ignore next
+function A(label) {
+    if (label == null) {
+        return '<-';
+    } else {
+        return '-> ' + label;
+    }
 }

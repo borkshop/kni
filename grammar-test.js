@@ -7,6 +7,8 @@ var InlineLexer = require('./inline-lexer');
 var Parser = require('./parser');
 var grammar = require('./grammar');
 var Story = require('./story');
+var colorize = require('json-diff/lib/colorize').colorize;
+var diff = require('json-diff/lib').diff;
 
 function test(input, output) {
     // istanbul ignore if
@@ -30,10 +32,7 @@ function only(input, output) {
     if (!equals(story.states, output)) {
         console.error('ERROR');
         console.error(input.join(''));
-        console.error('expected');
-        console.error(JSON.stringify(output, null, 4));
-        console.error('actual');
-        console.error(JSON.stringify(story.states, null, 4));
+        console.error(colorize(diff(story.states, output)));
         global.fail = true;
     }
 }
@@ -1176,8 +1175,8 @@ test([
     "start": {
         "type": "jump",
         "condition": ["!=", ["get", "hi"], ["val", 0]],
-        "branch": null,
-        "next": "start.1"
+        "branch": "start.1",
+        "next": null
     },
     "start.1": {
         "type": "text",
@@ -1194,8 +1193,8 @@ test([
     "start": {
         "type": "jump",
         "condition": ["==", ["get", "hi"], ["val", 0]],
-        "branch": null,
-        "next": "start.1"
+        "branch": "start.1",
+        "next": null
     },
     "start.1": {
         "type": "text",
@@ -1213,8 +1212,8 @@ test([
     "start": {
         "type": "jump",
         "condition": ["==", ["get", "hi"], ["val", 0]],
-        "branch": "start.2",
-        "next": "start.1"
+        "branch": "start.1",
+        "next": "start.2"
     },
     "start.1": {
         "type": "text",
@@ -1620,8 +1619,8 @@ test([
     "start": {
         "type": "jump",
         "condition": ["!=", ["get", "gold"], ["val", 0]],
-        "next": "start.1",
-        "branch": "start.2"
+        "next": "start.2",
+        "branch": "start.1"
     },
     "start.1": {
         "type": "text",
@@ -1646,8 +1645,8 @@ test([
     "start": {
         "type": "jump",
         "condition": ["==", ["get", "gold"], ["val", 0]],
-        "next": "start.1",
-        "branch": "start.2"
+        "next": "start.2",
+        "branch": "start.1"
     },
     "start.1": {
         "type": "text",
@@ -1672,8 +1671,8 @@ test([
     "start": {
         "type": "jump",
         "condition": [">=", ["get", "gold"], ["val", 10]],
-        "next": "start.1",
-        "branch": "start.2"
+        "next": "start.2",
+        "branch": "start.1"
     },
     "start.1": {
         "type": "text",
@@ -1698,8 +1697,8 @@ test([
     "start": {
         "type": "jump",
         "condition": ["<=", ["get", "gold"], ["val", 10]],
-        "next": "start.1",
-        "branch": "start.2"
+        "next": "start.2",
+        "branch": "start.1"
     },
     "start.1": {
         "type": "text",
@@ -1724,8 +1723,8 @@ test([
     "start": {
         "type": "jump",
         "condition": [">", ["get", "gold"], ["val", 10]],
-        "next": "start.1",
-        "branch": "start.2"
+        "next": "start.2",
+        "branch": "start.1"
     },
     "start.1": {
         "type": "text",
@@ -1750,8 +1749,8 @@ test([
     "start": {
         "type": "jump",
         "condition": ["<", ["get", "gold"], ["val", 10]],
-        "next": "start.1",
-        "branch": "start.2"
+        "next": "start.2",
+        "branch": "start.1"
     },
     "start.1": {
         "type": "text",

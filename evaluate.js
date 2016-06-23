@@ -5,14 +5,22 @@ module.exports = evaluate;
 function evaluate(scope, args) {
     var name = args[0];
     if (binary[name]) {
-        return binary[name](evaluate(scope, args[1]), evaluate(scope, args[2]));
+        return binary[name](
+            evaluate(scope, args[1]),
+            evaluate(scope, args[2]),
+            scope
+        );
+    // istanbul ignore next
     } else if (unary[name]) {
         return unary[name](evaluate(scope, args[1]));
     } else if (name === 'val') {
         return args[1];
+    // istanbul ignore else
     } else if (name === 'get') {
         return scope.get(args[1]);
     }
+    // istanbul ignore next
+    throw new Error('Unexpected operator ' + args[0]);
 }
 
 var binary = {
@@ -52,15 +60,16 @@ var binary = {
     '#': function (x, y) {
         return hilbert(x, y);
     },
-    '~': function (x, y) {
+    '~': function (x, y, scope) {
         var r = 0;
         for (var i = 0; i < x; i++) {
-            r += Math.random() * y;
+            r += scope.random() * y;
         }
         return Math.floor(r);
     }
 };
 
+// istanbul ignore next
 var unary = {
     '!': function (x) {
         return x ? 0 : 1;

@@ -12,4 +12,4 @@
 # Generate a histogram with this at the command line:
 # > inkblot distribution.ink | sort -n | uniq -c
 
-{$3~6}/{+i}{<10000i|->start}
+{$3~6}/{+i}{<100i|->start}

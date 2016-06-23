@@ -4,17 +4,19 @@
     "inkblot [-jJ] [-s label] script.ink"
   ],
   "usage": [
-    "<script> :input  Script file name",
-    "[-s <start>]     Start script at this label",
-    "[-J]             Read ink script as compiled JSON",
-    "[-j|--json]      Dump compiled script as JSON instead of running interactively.",
-    "[--dot]          Dump the final parse tree in Graphviz DOT format.",
-    "[--di]           Log input file before processing",
-    "[--dr]           Enable runtime debug logging",
-    "[--dp]           Enable parser debug logging",
-    "[--dil]          Enable inline lexer debug logging",
-    "[--dol]          Enable outline lexer debug logging",
-    "[--ds]           Enable scanner debug logging"
+    "<script> :input        Script file name",
+    "[-s <start>]           Start script at this label",
+    "[-J]                   Read ink script as compiled JSON",
+    "[-j|--json]            Dump compiled script as JSON instead of running interactively.",
+    "[-d]                   Describe instead of running interactively.",
+    "[-t <script>] :output  Write a transcript.",
+    "[-r <seed>] :number    Seed the random number generator.",
+    "[--di]                 Log input file before processing",
+    "[--dr]                 Enable runtime debug logging",
+    "[--dp]                 Enable parser debug logging",
+    "[--dil]                Enable inline lexer debug logging",
+    "[--dol]                Enable outline lexer debug logging",
+    "[--ds]                 Enable scanner debug logging"
   ],
   "terms": {
     "script": {
@@ -80,11 +82,11 @@
       "maxLength": null,
       "help": "Dump compiled script as JSON instead of running interactively."
     },
-    "dot": {
+    "describe": {
       "flags": [
         {
-          "flag": "--dot",
-          "long": true
+          "flag": "-d",
+          "short": true
         }
       ],
       "arg": null,
@@ -94,7 +96,39 @@
       "required": false,
       "minLength": null,
       "maxLength": null,
-      "help": "Dump the final parse tree in Graphviz DOT format."
+      "help": "Describe instead of running interactively."
+    },
+    "transcript": {
+      "flags": [
+        {
+          "flag": "-t",
+          "short": true
+        }
+      ],
+      "arg": "script",
+      "command": null,
+      "collectorType": null,
+      "type": "output",
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Write a transcript."
+    },
+    "seed": {
+      "flags": [
+        {
+          "flag": "-r",
+          "short": true
+        }
+      ],
+      "arg": "seed",
+      "command": null,
+      "collectorType": null,
+      "type": "number",
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Seed the random number generator."
     },
     "debugInput": {
       "flags": [
