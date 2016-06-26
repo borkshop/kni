@@ -85,7 +85,7 @@ function MaybeMultiplicative(parent, expression) {
 }
 
 MaybeMultiplicative.prototype.next = function next(type, space, text, scanner) {
-    if (text === '*' || text === '/' || text === '%' || text === '~') {
+    if (text === '*' || text === '/' || text === '%' || text === '~' || text === '^') {
         return new Value(new Multiplicative(this.parent, text, this.expression));
     } else {
         return this.parent.return(this.expression)
@@ -117,7 +117,7 @@ function MaybeArithmetic(parent, expression) {
 }
 
 MaybeArithmetic.prototype.next = function next(type, space, text, scanner) {
-    if (text === '+' || text === '-') {
+    if (text === '+' || text === '-' || text === 'v') {
         return new Value(
             new MultiplicativeExpression(
                 new Arithmetic(this.parent, text, this.expression)));

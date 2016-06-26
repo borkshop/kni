@@ -39,6 +39,12 @@ var binary = {
     '%': function (x, y) {
         return x % y;
     },
+    'v': function (x, y) {
+        return x || y ? 1 : 0;
+    },
+    '^': function (x, y) {
+        return x && y ? 1 : 0;
+    },
     '>=': function (x, y) {
         return x >= y ? 1 : 0;
     },
