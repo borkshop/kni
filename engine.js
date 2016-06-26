@@ -187,12 +187,14 @@ Engine.prototype.answer = function answer(text) {
     }
     var n = +text;
     if (n >= 1 && n <= this.options.length) {
+        this.render.clear();
         if (this.goto(this.options[n - 1].branch)) {
             this.flush();
             this.continue();
         }
     // istanbul ignore next
     } else if (this.keywords[text]) {
+        this.render.clear();
         if (this.goto(this.keywords[text])) {
             this.flush();
             this.continue();
@@ -219,7 +221,6 @@ Engine.prototype.prompt = function prompt() {
 Engine.prototype.flush = function flush() {
     this.options.length = 0;
     this.keywords = {};
-    this.render.clear();
 };
 
 function Global(randomer) {
