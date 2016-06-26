@@ -311,7 +311,7 @@ function Rejoin(parent, branch) {
 }
 
 Rejoin.prototype.return = function _return(path, ends, jumps, scanner) {
-    return this.parent.return(path, ends.concat(jumps, [this.branch]), [], scanner);
+    return this.parent.return(path, ends.concat([this.branch]), jumps, scanner);
 };
 
 function ExpectLabel(story, path, parent, ends) {
