@@ -68,7 +68,7 @@ Value.prototype.next = function next(type, space, text, scanner) {
         return this.parent.return(['get', text]);
     }
     // istanbul ignore next
-    throw new Error('Expected value, got ' + type + ' ' + text);
+    throw new Error('Expected value, got ' + type + ' ' + text + ' at ' + scanner.position());
 };
 
 function MultiplicativeExpression(parent) {

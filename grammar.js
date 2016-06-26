@@ -10,7 +10,7 @@ function start(story) {
     var path = ['start'];
     var stop = new Stop();
     var start = story.create(path, 'goto', null);
-    return new Knot(story, ['start', 0], stop, [start]);
+    return new Knot(story, ['start', 0], stop, [start], []);
 }
 
 function Stop() {
@@ -39,67 +39,76 @@ End.prototype.next = function next(type, space, text, scanner) {
     throw new Error('nodes beyond root ' + type + ' ' + JSON.stringify(text));
 };
 
-function Knot(story, path, parent, ends, prevs) {
+// ends are tied to the next instruction
+// jumps are tied off after the next encountered prompt
+function Knot(story, path, parent, ends, jumps) {
     this.type = 'knot';
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    this.prevs = prevs || [];
+    this.jumps = jumps;
     this.story = story;
     Object.seal(this);
 }
 
 Knot.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text' || type === 'number') {
-        return new Text(this.story, this.path, space, text, this, this.ends.concat(this.prevs));
+        return new Text(this.story, this.path, space, text, this, this.ends);
     }  else if (type === 'token') {
         if (text === '{') {
-            return new Block(this.story, this.path, this, this.ends.concat(this.prevs));
+            return new Block(this.story, this.path, this, this.ends);
         } else if (text === '=') {
-            return new ExpectLabel(this.story, this.path, this.parent, this.ends.concat(this.prevs));
+            return new ExpectLabel(this.story, this.path, this, this.ends);
         } else if (text === '->') {
-            return new Goto(this.story, this.path, this, this.ends.concat(this.prevs));
+            return new Goto(this.story, this.path, this, this.ends);
         } else if (text === '<-') {
-            return new Knot(this.story, this.path, this.parent, []);
+            // Implicitly tie ends to null by dropping them.
+            // Continue carrying jumps to the next encountered prompt.
+            return new Knot(this.story, this.path, this.parent, [], this.jumps);
         } else if (text === '/') {
             var node = this.story.create(this.path, 'break');
-            tie(this.ends.concat(this.prevs), this.path);
-            return new Knot(this.story, Path.next(this.path), this.parent, [node]);
+            tie(this.ends, this.path);
+            return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
         } else if (text === '>') {
             var node = this.story.create(this.path, 'prompt');
-            tie(this.prevs, this.path);
-            return new Knot(this.story, Path.next(this.path), this.parent, this.ends);
+            // tie off ends to the prompt.
+            tie(this.ends, this.path);
+            // promote jumps to ends, tying them off after the prompt.
+            return new Knot(this.story, Path.next(this.path), this.parent, this.jumps, []);
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
-            tie(this.ends.concat(this.prevs), this.path);
+            tie(this.ends, this.path);
             return new Option(text, this.story, this.path, this, []);
         } else if (text === '-') {
-            return new Knot(this.story, this.path, new Indent(this), this.ends.concat(this.prevs));
+            return new Knot(this.story, this.path, new Indent(this), this.ends, []);
         } else { // if (text === '=') {
-            return new LabelThread(this.story, this.path, this, this.ends.concat(this.prevs));
+            return new LabelThread(this.story, this.path, this, this.ends);
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'paragraph');
-        tie(this.ends.concat(this.prevs), this.path);
-        return new Knot(this.story, Path.next(this.path), this.parent, [node]);
+        tie(this.ends, this.path);
+        return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
     } else if (type === 'break') {
         return this;
     }
-    return this.parent.return(this.path, this.ends, this.prevs, scanner)
+    return this.parent.return(this.path, this.ends, this.jumps, scanner)
         .next(type, space, text, scanner);
 };
 
-Knot.prototype.return = function _return(path, ends, prevs, scanner) {
-    return new Knot(this.story, path, this.parent, ends, prevs);
+Knot.prototype.return = function _return(path, ends, jumps, scanner) {
+    // All rules above (in next) guarantee that this.ends has been passed to
+    // any rule that might use them. If the rule fails to use them, they must
+    // return them. However, jumps are never passed to any rule that returns.
+    return new Knot(this.story, path, this.parent, ends, this.jumps.concat(jumps));
 };
 
 function Indent(parent) {
     this.parent = parent;
 }
 
-Indent.prototype.return = function _return(path, ends, prevs, scanner) {
-    return new Expect('stop', '', path, this.parent, ends.concat(prevs));
+Indent.prototype.return = function _return(path, ends, jumps, scanner) {
+    return new Expect('stop', '', path, this.parent, ends, jumps);
 };
 
 function Text(story, path, lift, text, parent, ends) {
@@ -139,8 +148,8 @@ function Option(leader, story, path, parent, ends) {
     this.path = path;
     this.name = Path.toName(path);
     this.parent = parent;
-    this.ends = ends; // to tie off to the next node after the entire option list
-    this.continues = []; // to tie off to the next option
+    this.ends = ends; // to tie off to the next option
+    this.jumps = []; // to tie off to the next node after the next prompt
     this.question = new Pretext();
     this.answer = new Pretext();
     this.common = new Pretext();
@@ -221,7 +230,7 @@ Option.prototype.create = function create(answer, question, common, direction, t
     if (this.leader === '*') {
         var jnz = this.story.create(path, 'jump', ['!=', ['get', variable], ['val', 0]]);
         var jnzBranch = new Branch(jnz);
-        this.continues.push(jnzBranch);
+        this.ends.push(jnzBranch);
         path = Path.firstChild(path);
         tie([jnz], path);
     }
@@ -236,7 +245,7 @@ Option.prototype.create = function create(answer, question, common, direction, t
     } else {
         option = this.story.create(path, 'option', common.text);
     }
-    this.continues.push(option);
+    this.ends.push(option);
 
     if (this.leader === '*') {
         path = Path.next(path);
@@ -273,7 +282,7 @@ Option.prototype.create = function create(answer, question, common, direction, t
         prev = next;
     }
 
-    var state = new Knot(this.story, path, new Indent(this), [prev]);
+    var state = new Knot(this.story, path, new Indent(this), [prev], []);
 
     if (text !== '/') {
         state = state.next(type, space, text, scanner);
@@ -282,28 +291,8 @@ Option.prototype.create = function create(answer, question, common, direction, t
     return state;
 };
 
-Option.prototype.return = function _return(path, ends, prevs, scanner) {
-    return new MaybeOption(this.story, Path.next(this.path), this.parent, this.continues.concat(prevs), this.ends.concat(ends));
-};
-
-function MaybeOption(story, path, parent, continues, ends) {
-    this.type = 'maybe-option';
-    this.path = path;
-    this.parent = parent;
-    this.ends = ends;
-    this.story = story;
-    this.continues = continues;
-    Object.seal(this);
-}
-
-MaybeOption.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'start' && (text === '+' || text === '*')) {
-        tie(this.continues, this.path);
-        return new Option(text, this.story, this.path, this.parent, this.ends);
-    } else {
-        return this.parent.return(this.path, this.ends, this.continues, scanner)
-            .next(type, '', text, scanner);
-    }
+Option.prototype.return = function _return(path, ends, jumps, scanner) {
+    return this.parent.return(Path.next(this.path), this.ends, this.jumps.concat(ends, jumps));
 };
 
 function Branch(node) {
@@ -321,8 +310,8 @@ function Rejoin(parent, branch) {
     this.branch = branch;
 }
 
-Rejoin.prototype.return = function _return(path, ends, prevs, scanner) {
-    return this.parent.return(path, ends.concat(prevs, [this.branch]), [], scanner);
+Rejoin.prototype.return = function _return(path, ends, jumps, scanner) {
+    return this.parent.return(path, ends.concat(jumps, [this.branch]), [], scanner);
 };
 
 function ExpectLabel(story, path, parent, ends) {
@@ -361,8 +350,8 @@ LabelThread.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-LabelThread.prototype.return = function _return(path, ends, prevs, scanner) {
-    return new Expect('stop', '', path, this.parent, ends.concat(prevs));
+LabelThread.prototype.return = function _return(path, ends, jumps, scanner) {
+    return new Expect('stop', '', path, this.parent, ends, jumps);
 };
 
 function MaybeSubroutine(story, path, parent, ends, label) {
@@ -376,22 +365,28 @@ function MaybeSubroutine(story, path, parent, ends, label) {
 
 MaybeSubroutine.prototype.next = function next(type, space, text, scanner) {
     if (type === 'text' && text === '(') {
-        return new Subroutine(this.story, this.path, this.parent, this.ends, this.label);
+        return new Subroutine(this.story, this.path, this, this.label);
     } else {
         var path = [this.label, 0];
+        // place-holder goto thunk
         var label = this.story.create(path, 'goto', null);
         tie(this.ends, path);
-        return new Knot(this.story, path, this.parent, this.ends.concat([label]))
+        // ends also forwarded so they can be tied off if the goto is replaced.
+        return new Knot(this.story, path, this.parent, this.ends.concat([label]), [])
             .next(type, space, text, scanner);
     }
 };
 
-function Subroutine(story, path, parent, ends, label) {
+MaybeSubroutine.prototype.return = function _return(path, ends, jumps, scanner) {
+    // After a subroutine, connect prior ends.
+    return this.parent.return(path, this.ends.concat(ends), jumps, scanner);
+};
+
+function Subroutine(story, path, parent, label) {
     this.type = 'subroutine';
     this.story = story;
     this.path = path;
     this.parent = parent;
-    this.ends = ends;
     this.label = label;
     this.locals = [];
 }
@@ -407,7 +402,7 @@ Subroutine.prototype.next = function next(type, space, text, scanner) {
         // The subroutine exists only for reference in calls.
         var sub = this.story.create(path, 'subroutine', this.locals);
 
-        return new Knot(this.story, Path.next(path), this, [label, sub]);
+        return new Knot(this.story, Path.next(path), this, [label, sub], []);
     // istanbul ignore else
     } else if (type === 'text') {
         this.locals.push(text);
@@ -417,10 +412,10 @@ Subroutine.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-Subroutine.prototype.return = function _return(path, ends, prevs, scanner) {
+Subroutine.prototype.return = function _return(path, ends, jumps, scanner) {
     // Let loose ends of subroutine dangle to null.
     // Pick up the threads left before the subroutine declaration.
-    return this.parent.return(Path.next(this.path), this.ends, [], scanner);
+    return this.parent.return(Path.next(this.path), [], [], scanner);
 };
 
 function Goto(story, path, parent, ends) {
@@ -458,15 +453,15 @@ Call.prototype.next = function next(type, space, text, scanner) {
         this.node = this.story.create(this.path, 'call', this.label);
         var branch = new Branch(this.node);
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.firstChild(this.path), this, [branch]);
+        return new Knot(this.story, Path.firstChild(this.path), this, [branch], []);
     } else {
         throw new Error('Unexpected token after goto arrow: ' + type + ' ' + text + ' ' + scanner.position());
     }
 };
 
-Call.prototype.return = function _return(path, ends, prevs, scanner) {
-    tieName(ends.concat(prevs), this.label);
-    return new Expect('token', '}', Path.next(this.path), this.parent, [this.node]);
+Call.prototype.return = function _return(path, ends, jumps, scanner) {
+    tieName(ends, this.label);
+    return new Expect('token', '}', Path.next(this.path), this.parent, [this.node], jumps);
 };
 
 function Block(story, path, parent, ends) {
@@ -582,7 +577,7 @@ MaybeConditional.prototype.next = function next(type, space, text, scanner) {
         var node = this.story.create(this.path, 'jump', this.condition);
         var branch = new Branch(node);
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), new Rejoin(this.parent, node), [branch]);
+        return new Knot(this.story, Path.next(this.path), new Rejoin(this.parent, node), [branch], []);
     }
     // istanbul ignore next
     throw new Error('Unexpected token after conditional, got ' + type + ' ' + text);
@@ -638,7 +633,7 @@ ExpectSetVariable.prototype.next = function next(type, space, text, scanner) {
             node.expression = [this.op, ['get', variable], this.expression];
         }
         tie(this.ends, this.path);
-        return new Expect('token', '}', Path.next(this.path), this.parent, [node]);
+        return new Expect('token', '}', Path.next(this.path), this.parent, [node], []);
     }
     // istanbul ignore next
     throw new Error('Expected variable name, got ' + type + ' ' + text);
@@ -680,7 +675,7 @@ Variable.prototype.next = function next(type, space, text, scanner) {
         if (this.mode === 'walk') {
             var node = this.story.create(this.path, 'print', this.expression);
             tie(this.ends, this.path);
-            return new Knot(this.story, Path.next(this.path), this.parent, [node]);
+            return new Knot(this.story, Path.next(this.path), this.parent, [node], []);
         }
     }
     // istanbul ignore next
@@ -711,8 +706,8 @@ Switch.prototype.start = function start(expression, variable, value, mode, min) 
     return new Case(this.story, Path.firstChild(this.path), this, [], this.branches, min || 0);
 };
 
-Switch.prototype.return = function _return(path, ends, prevs, scanner) {
-    return new Expect('token', '}', Path.next(this.path), this.parent, ends.concat(prevs));
+Switch.prototype.return = function _return(path, ends, jumps, scanner) {
+    return new Expect('token', '}', Path.next(this.path), this.parent, ends, jumps);
 };
 
 function Case(story, path, parent, ends, branches, min) {
@@ -746,26 +741,27 @@ Case.prototype.case = function _case() {
     var path = Path.zerothChild(this.path);
     var node = this.story.create(path, 'goto', null);
     this.branches.push(Path.toName(path));
-    return new Knot(this.story, path, this, [node]);
+    return new Knot(this.story, path, this, [node], []);
 };
 
-Case.prototype.return = function _return(path, ends, prevs, scanner) {
-    return new Case(this.story, Path.next(this.path), this.parent, this.ends.concat(ends, prevs), this.branches, this.min);
+Case.prototype.return = function _return(path, ends, jumps, scanner) {
+    return new Case(this.story, Path.next(this.path), this.parent, this.ends.concat(ends, jumps), this.branches, this.min);
 };
 
-function Expect(type, text, path, parent, ends) {
+function Expect(type, text, path, parent, ends, jumps) {
     this.type = 'expect';
     this.expect = type;
     this.text = text;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
+    this.jumps = jumps;
 }
 
 Expect.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
     if (type === this.expect && text === this.text) {
-        return this.parent.return(this.path, this.ends, [], scanner);
+        return this.parent.return(this.path, this.ends, this.jumps, scanner);
     } else {
         throw new Error('expected ' + this.expect + ' ' + this.text + ', got ' + type + ' ' + text);
     }

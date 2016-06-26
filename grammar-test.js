@@ -32,7 +32,7 @@ function only(input, output) {
     if (!equals(story.states, output)) {
         console.error('ERROR');
         console.error(input.join(''));
-        console.error(colorize(diff(story.states, output)));
+        console.error(colorize(diff(output, story.states)));
         global.fail = true;
     }
 }
@@ -225,17 +225,29 @@ test([
 test([
     '+ Apples\n',
     '+ Oranges\n',
+    '>\n',
+    'Fruit!\n'
 ], {
     "start": {
         "type": "option",
         "label": "Apples",
-        "branch": null,
+        "branch": "start.3",
         "next": "start.1"
     },
     "start.1": {
         "type": "option",
         "label": "Oranges",
-        "branch": null,
+        "branch": "start.3",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "Fruit!",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -243,17 +255,74 @@ test([
 test([
     '+ Apples\n',
     '  + Honeycrisps\n',
+    '  >\n',
+    '>\n',
+    'Fruit!\n'
 ], {
     "start": {
         "type": "option",
         "label": "Apples",
         "branch": "start.0.1",
-        "next": null
+        "next": "start.1"
     },
     "start.0.1": {
         "type": "option",
         "label": "Honeycrisps",
-        "branch": null,
+        "branch": "start.2",
+        "next": "start.0.2"
+    },
+    "start.0.2": {
+        "type": "prompt"
+    },
+    "start.1": {
+        "type": "prompt"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Fruit!",
+        "lift": " ",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '+ Apples\n',
+    '  + Honeycrisps\n',
+    '  >\n',
+    '+ Oranges\n',
+    '>\n',
+    'Fruit!\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Apples",
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "Honeycrisps",
+        "branch": "start.3",
+        "next": "start.0.2"
+    },
+    "start.0.2": {
+        "type": "prompt"
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Oranges",
+        "branch": "start.3",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "Fruit!",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -312,7 +381,7 @@ test([
         "text": "Charlie",
         "lift": "",
         "drop": " ",
-        "next": "start.3"
+        "next": null
     },
     "start.2": {
         "type": "option",
@@ -325,12 +394,69 @@ test([
         "text": "Echo",
         "lift": "",
         "drop": " ",
-        "next": "start.3"
+        "next": null,
     },
     "start.3": {
         "type": "text",
         "text": "Foxtrot",
         "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    'Alpha\n',
+    '+ Bravo\n',
+    '\n',
+    '  Charlie\n',
+    '+ Delta\n',
+    '\n',
+    '  Echo\n',
+    '\n',
+    '>\n',
+    'Foxtrot\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Alpha",
+        "lift": "",
+        "drop": " ",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Bravo",
+        "branch": "start.1.1",
+        "next": "start.2"
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "Charlie",
+        "lift": "",
+        "drop": " ",
+        "next": "start.4"
+    },
+    "start.2": {
+        "type": "option",
+        "label": "Delta",
+        "branch": "start.2.1",
+        "next": "start.3"
+    },
+    "start.2.1": {
+        "type": "text",
+        "text": "Echo",
+        "lift": "",
+        "drop": " ",
+        "next": "start.4",
+    },
+    "start.3": {
+        "type": "prompt"
+    },
+    "start.4": {
+        "type": "text",
+        "text": "Foxtrot",
+        "lift": " ",
         "drop": " ",
         "next": null
     }
@@ -352,19 +478,57 @@ test([
     "start.1": {
         "type": "option",
         "label": "Bravo",
-        "branch": "start.3",
+        "branch": null,
         "next": "start.2"
     },
     "start.2": {
         "type": "option",
         "label": "Charlie",
-        "branch": "start.3",
+        "branch": null,
         "next": "start.3"
     },
     "start.3": {
         "type": "text",
         "text": "Delta",
         "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    'Alpha\n',
+    '+ Bravo\n',
+    '+ Charlie\n',
+    '>\n',
+    'Delta\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Alpha",
+        "lift": "",
+        "drop": " ",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Bravo",
+        "branch": "start.4",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "option",
+        "label": "Charlie",
+        "branch": "start.4",
+        "next": "start.3"
+    },
+    "start.3": {
+        "type": "prompt"
+    },
+    "start.4": {
+        "type": "text",
+        "text": "Delta",
+        "lift": " ",
         "drop": " ",
         "next": null
     }
@@ -444,6 +608,184 @@ test([
         "type": "option",
         "label": "Oranges",
         "branch": null,
+        "next": null
+    }
+});
+
+test([
+    '+ Apples\n',
+    '  + Honeycrisps\n',
+    '    + Braeburns\n',
+    '    + Galas\n',
+    '    >\n',
+    '  + Fujis\n',
+    '+ Oranges\n',
+], {
+    "start": {
+        "type": "option",
+        "label": "Apples",
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "Honeycrisps",
+        "branch": "start.0.1.1",
+        "next": "start.0.2"
+    },
+    "start.0.1.1": {
+        "type": "option",
+        "label": "Braeburns",
+        "branch": null,
+        "next": "start.0.1.2"
+    },
+    "start.0.1.2": {
+        "type": "option",
+        "label": "Galas",
+        "branch": null,
+        "next": "start.0.1.3"
+    },
+    "start.0.1.3": {
+        "type": "prompt"
+    },
+    "start.0.2": {
+        "type": "option",
+        "label": "Fujis",
+        "branch": null,
+        "next": null
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Oranges",
+        "branch": null,
+        "next": null
+    }
+});
+
+test([
+    '+ Apples\n',
+    '  + Honeycrisps\n',
+    '    + Braeburns\n',
+    '    + Galas\n',
+    '    >\n',
+    '  + Fujis\n',
+    '+ Oranges\n',
+    '>\n',
+    'Fruit!\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Apples",
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "Honeycrisps",
+        "branch": "start.0.1.1",
+        "next": "start.0.2"
+    },
+    "start.0.1.1": {
+        "type": "option",
+        "label": "Braeburns",
+        "branch": "start.3",
+        "next": "start.0.1.2"
+    },
+    "start.0.1.2": {
+        "type": "option",
+        "label": "Galas",
+        "branch": "start.3",
+        "next": "start.0.1.3"
+    },
+    "start.0.1.3": {
+        "type": "prompt"
+    },
+    "start.0.2": {
+        "type": "option",
+        "label": "Fujis",
+        "branch": "start.3",
+        "next": "start.3"
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Oranges",
+        "branch": "start.3",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "Fruit!",
+        "lift": " ",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '+ Apples\n',
+    '  + Honeycrisps\n',
+    '    + Braeburns\n',
+    '    + Galas\n',
+    '    >\n',
+    '  + Fujis\n',
+    '  >\n',
+    '+ Oranges\n',
+    '>\n',
+    'Fruit!\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Apples",
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "Honeycrisps",
+        "branch": "start.0.1.1",
+        "next": "start.0.2"
+    },
+    "start.0.1.1": {
+        "type": "option",
+        "label": "Braeburns",
+        "branch": "start.3",
+        "next": "start.0.1.2"
+    },
+    "start.0.1.2": {
+        "type": "option",
+        "label": "Galas",
+        "branch": "start.3",
+        "next": "start.0.1.3"
+    },
+    "start.0.1.3": {
+        "type": "prompt"
+    },
+    "start.0.2": {
+        "type": "option",
+        "label": "Fujis",
+        "branch": "start.3",
+        "next": "start.0.3"
+    },
+    "start.0.3": {
+        "type": "prompt"
+    },
+    "start.1": {
+        "type": "option",
+        "label": "Oranges",
+        "branch": "start.3",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "Fruit!",
+        "lift": " ",
+        "drop": " ",
         "next": null
     }
 });
@@ -577,6 +919,35 @@ test([
         "lift": "",
         "drop": " ",
         "next": null
+    }
+});
+
+test([
+    '+ You s[S]ay, "Hello, World!"\n',
+    '>\n'
+], {
+    "start": {
+        "type": "option",
+        "label": "Say, \"Hello, World!\"",
+        "branch": "start.0.1",
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "You s",
+        "lift": "",
+        "drop": "",
+        "next": "start.0.2"
+    },
+    "start.0.2": {
+        "type": "text",
+        "text": "ay, \"Hello, World!\"",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    },
+    "start.1": {
+        "type": "prompt"
     }
 });
 
@@ -794,12 +1165,47 @@ test([
         "type": "set",
         "variable": "start",
         "expression": ["+", ["get", "start"], ["val", 1]],
-        "next": "start.1"
+        "next": null
     },
     "start.1": {
         "type": "text",
         "text": "Fin",
         "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '* [Choice]\n',
+    '>',
+    'Fin\n'
+], {
+    "start": {
+        "type": "jump",
+        "condition": ["!=", ["get", "start"], ["val", 0]],
+        "branch": "start.1",
+        "next": "start.0.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "Choice",
+        "next": "start.1",
+        "branch": "start.0.2",
+    },
+    "start.0.2": {
+        "type": "set",
+        "variable": "start",
+        "expression": ["+", ["get", "start"], ["val", 1]],
+        "next": "start.2"
+    },
+    "start.1": {
+        "type": "prompt"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Fin",
+        "lift": " ",
         "drop": " ",
         "next": null
     }
@@ -826,7 +1232,7 @@ test([
         "type": "set",
         "variable": "start",
         "expression": ["+", ["get", "start"], ["val", 1]],
-        "next": "start.2"
+        "next": null
     },
     "start.1": {
         "type": "jump",
@@ -844,12 +1250,66 @@ test([
         "type": "set",
         "variable": "start.1",
         "expression": ["+", ["get", "start.1"], ["val", 1]],
-        "next": "start.2"
+        "next": null
     },
     "start.2": {
         "type": "text",
         "text": "Fin",
         "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '* [One Fish]\n',
+    '* [Two Fish]\n',
+    '>\n',
+    'Fin\n'
+], {
+    "start": {
+        "type": "jump",
+        "condition": ["!=", ["get", "start"], ["val", 0]],
+        "branch": "start.1",
+        "next": "start.0.1"
+    },
+    "start.0.1": {
+        "type": "option",
+        "label": "One Fish",
+        "next": "start.1",
+        "branch": "start.0.2",
+    },
+    "start.0.2": {
+        "type": "set",
+        "variable": "start",
+        "expression": ["+", ["get", "start"], ["val", 1]],
+        "next": "start.3"
+    },
+    "start.1": {
+        "type": "jump",
+        "condition": ["!=", ["get", "start.1"], ["val", 0]],
+        "branch": "start.2",
+        "next": "start.1.1"
+    },
+    "start.1.1": {
+        "type": "option",
+        "label": "Two Fish",
+        "next": "start.2",
+        "branch": "start.1.2",
+    },
+    "start.1.2": {
+        "type": "set",
+        "variable": "start.1",
+        "expression": ["+", ["get", "start.1"], ["val", 1]],
+        "next": "start.3"
+    },
+    "start.2": {
+        "type": "prompt"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "Fin",
+        "lift": " ",
         "drop": " ",
         "next": null
     }
@@ -2182,7 +2642,7 @@ test([
     }
 });
 
-only([
+test([
     '{<10x|true}\n'
 ], {
     "start": {
@@ -2208,7 +2668,7 @@ only([
     }
 });
 
-only([
+test([
     '{<10x|true}regardless\n'
 ], {
     "start": {
@@ -2241,7 +2701,7 @@ only([
     }
 });
 
-only([
+test([
     '{$x < 10}\n'
 ], {
     "start": {
@@ -2251,7 +2711,7 @@ only([
     },
 });
 
-only([
+test([
     '{$2~6 + 1}\n'
 ], {
     "start": {
