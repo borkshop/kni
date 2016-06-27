@@ -170,19 +170,23 @@ module.exports = Engine;
 
 var debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
-function Engine(story, start, render, interlocutor) {
+function Engine(story, start, render, interlocutor, randomer) {
+    // istanbul ignore next
+    start = start || 'start';
     var self = this;
     this.story = story;
     this.options = [];
     this.keywords = {};
     this.variables = {};
-    this.top = new Global();
+    this.global = new Global(randomer);
+    this.top = this.global;
     this.stack = [this.top];
     this.label = '';
-    this.instruction = new Story.constructors.goto(start || 'start');
+    this.instruction = new Story.constructors.goto(start);
     this.render = render;
     this.interlocutor = interlocutor;
     this.interlocutor.engine = this;
+    this.randomer = randomer;
     this.debug = debug;
     Object.seal(this);
 }
@@ -190,9 +194,11 @@ function Engine(story, start, render, interlocutor) {
 Engine.prototype.continue = function _continue() {
     var _continue;
     do {
+        // istanbul ignore if
         if (this.debug) {
             console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.type + ' ' + this.instruction.describe());
         }
+        // istanbul ignore if
         if (!this['$' + this.instruction.type]) {
             throw new Error('Unexpected instruction type: ' + this.instruction.type);
         }
@@ -223,16 +229,43 @@ Engine.prototype.$paragraph = function $paragraph() {
     return this.goto(this.instruction.next);
 };
 
+Engine.prototype.$startJoin = function $startJoin() {
+    this.render.startJoin(
+        this.instruction.lift,
+        this.instruction.delimiter,
+        this.instruction.text
+    );
+    return this.goto(this.instruction.next);
+};
+
+Engine.prototype.$delimit = function $delimit() {
+    this.render.delimit(this.instruction.delimiter);
+    return this.goto(this.instruction.next);
+};
+
+Engine.prototype.$stopJoin = function $stopJoin() {
+    // TODO thread for "if no delimits"
+    this.render.stopJoin();
+    return this.goto(this.instruction.next);
+};
+
 Engine.prototype.$goto = function $goto() {
     return this.goto(this.instruction.next);
 };
 
 Engine.prototype.$call = function $call() {
     var routine = this.story[this.instruction.label];
+    // istanbul ignore if
     if (!routine) {
         throw new Error('no such routine ' + this.instruction.label);
     }
-    this.top = new Frame(this.top, routine.locals, this.instruction.next, this.instruction.branch);
+    // TODO replace this.global with closure scope if scoped procedures become
+    // viable. This will require that the engine create references to closures
+    // when entering a new scope (calling a procedure), in addition to
+    // capturing locals. As such the parser will need to retain a reference to
+    // the enclosing procedure and note all of the child procedures as they are
+    // encountered.
+    this.top = new Frame(this.global, routine.locals || [], this.instruction.next, this.instruction.branch);
     this.stack.push(this.top);
     return this.goto(this.instruction.branch);
 };
@@ -245,24 +278,29 @@ Engine.prototype.$subroutine = function $subroutine() {
 
 Engine.prototype.$option = function option() {
     this.options.push(this.instruction);
-    for (var i = 0; i < this.instruction.keywords.length; i++) {
-        var keyword = this.instruction.keywords[i];
-        this.keywords[keyword] = this.instruction.branch;
-    }
+    // for (var i = 0; i < this.instruction.keywords.length; i++) {
+    //     var keyword = this.instruction.keywords[i];
+    //     this.keywords[keyword] = this.instruction.branch;
+    // }
     return this.goto(this.instruction.next);
 };
 
 Engine.prototype.$set = function set() {
-    this.top.set(this.instruction.variable, evaluate(this.top, this.instruction.expression));
+    var value = evaluate(this.top, this.instruction.expression);
+    // istanbul ignore if
+    if (this.debug) {
+        console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.variable + ' = ' + value);
+    }
+    this.top.set(this.instruction.variable, value);
     return this.goto(this.instruction.next);
 };
 
 Engine.prototype.$jump = function jump() {
     var j = this.instruction;
     if (evaluate(this.top, j.condition)) {
-        return this.goto(this.instruction.next);
-    } else {
         return this.goto(this.instruction.branch);
+    } else {
+        return this.goto(this.instruction.next);
     }
 };
 
@@ -270,28 +308,25 @@ Engine.prototype.$switch = function _switch() {
     var branches = this.instruction.branches;
     var value;
     if (this.instruction.mode === 'rand') {
-        value = Math.floor(Math.random() * branches.length);
+        value = Math.floor(this.randomer.random() * branches.length);
     } else {
         value = evaluate(this.top, this.instruction.expression);
-        if (this.instruction.value !== 0) {
-            this.write(value + this.instruction.value);
-        }
+        this.top.set(this.instruction.variable, value + this.instruction.value);
     }
     if (this.instruction.mode === 'loop') {
         value = value % branches.length;
     } else if (this.instruction.mode === 'hash') {
-        value = hash(value) % branches.length;
+        value = evaluate.hash(value) % branches.length;
     }
-    var next = branches[Math.min(value, branches.length - 1)];
+    value = Math.min(value, branches.length - 1);
+    value = Math.max(value, 0);
+    var next = branches[value];
+    // istanbul ignore if
+    if (this.debug) {
+        console.log(this.top.at() + '/' + this.label + ' ' + value + ' -> ' + next);
+    }
     return this.goto(next);
 };
-
-function hash(x) {
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x);
-    return x >>> 0;
-}
 
 Engine.prototype.$prompt = function prompt() {
     this.prompt();
@@ -311,6 +346,7 @@ Engine.prototype.goto = function _goto(name) {
         return false;
     }
     var next = this.story[name];
+    // istanbul ignore if
     if (!next) {
         throw new Error('Story missing knot for name: ' + name);
     }
@@ -319,34 +355,29 @@ Engine.prototype.goto = function _goto(name) {
     return true;
 };
 
-Engine.prototype.read = function read() {
-    var variable = this.instruction.variable;
-    return this.top.get(variable);
-};
-
-Engine.prototype.write = function write(value) {
-    var variable = this.instruction.variable;
-    this.top.set(variable, value);
-};
-
 Engine.prototype.answer = function answer(text) {
     this.render.flush();
     if (text === 'quit') {
         this.interlocutor.close();
         return;
     }
+    // istanbul ignore next
     if (text === 'bt') {
+        this.render.clear();
         this.top.log();
         this.prompt();
         return;
     }
     var n = +text;
     if (n >= 1 && n <= this.options.length) {
+        this.render.clear();
         if (this.goto(this.options[n - 1].branch)) {
             this.flush();
             this.continue();
         }
+    // istanbul ignore next
     } else if (this.keywords[text]) {
+        this.render.clear();
         if (this.goto(this.keywords[text])) {
             this.flush();
             this.continue();
@@ -361,10 +392,6 @@ Engine.prototype.display = function display() {
     this.render.display();
 };
 
-function getLength(array) {
-    return array.length;
-}
-
 Engine.prototype.prompt = function prompt() {
     this.display();
     for (var i = 0; i < this.options.length; i++) {
@@ -377,11 +404,11 @@ Engine.prototype.prompt = function prompt() {
 Engine.prototype.flush = function flush() {
     this.options.length = 0;
     this.keywords = {};
-    this.render.clear();
 };
 
-function Global() {
+function Global(randomer) {
     this.scope = Object.create(null);
+    this.randomer = randomer;
     this.next = null;
 }
 
@@ -393,26 +420,33 @@ Global.prototype.set = function set(name, value) {
     this.scope[name] = value;
 };
 
+Global.prototype.random = function random() {
+    return this.randomer.random();
+};
+
+// istanbul ignore next
 Global.prototype.log = function log() {
     var globals = Object.keys(this.scope);
     for (var i = 0; i < globals.length; i++) {
         var name = globals[i];
         var value = this.scope[name];
-        console.log(name, value);
+        console.log(name + ' = ' + value);
     }
+    render.paragraph();
 };
 
+// istanbul ignore next
 Global.prototype.at = function at() {
     return '';
 };
 
-function Frame(parent, locals, next, branch) {
+function Frame(caller, locals, next, branch) {
     this.locals = locals;
     this.scope = Object.create(null);
     for (var i = 0; i < locals.length; i++) {
         this.scope[locals[i]] = 0;
     }
-    this.parent = parent;
+    this.caller = caller;
     this.next = next;
     this.branch = branch;
 }
@@ -421,29 +455,35 @@ Frame.prototype.get = function get(name) {
     if (this.locals.indexOf(name) >= 0) {
         return this.scope[name];
     }
-    return this.parent.get(name);
+    return this.caller.get(name);
 };
 
 Frame.prototype.set = function set(name, value) {
+    // istanbul ignore else
     if (this.locals.indexOf(name) >= 0) {
         this.scope[name] = value;
         return;
     }
-    return this.parent.set(name, value);
+    this.caller.set(name, value);
 };
 
+Frame.prototype.random = function random() {
+    return this.caller.random();
+};
+
+// istanbul ignore next
 Frame.prototype.log = function log() {
-    this.parent.log();
-    console.log('---', this.branch, '->', this.next);
+    console.log('--- ' + this.branch + ' -> ' + this.next);
     for (var i = 0; i < this.locals.length; i++) {
         var name = this.locals[i];
         var value = this.scope[name];
-        console.log(name, value);
+        console.log(name + ' = ' + value);
     }
 };
 
+// istanbul ignore next
 Frame.prototype.at = function at() {
-    return this.parent.at() + '/' + this.branch;
+    return this.caller.at() + '/' + this.branch;
 };
 
 }],["evaluate.js","inkblot","evaluate.js",{},function (require, exports, module, __filename, __dirname){
@@ -458,49 +498,122 @@ module.exports = evaluate;
 function evaluate(scope, args) {
     var name = args[0];
     if (binary[name]) {
-        return binary[name](evaluate(scope, args[1]), evaluate(scope, args[2]));
+        return binary[name](
+            evaluate(scope, args[1]),
+            evaluate(scope, args[2]),
+            scope
+        );
+    // istanbul ignore next
+    } else if (unary[name]) {
+        return unary[name](evaluate(scope, args[1]));
     } else if (name === 'val') {
         return args[1];
+    // istanbul ignore else
     } else if (name === 'get') {
         return scope.get(args[1]);
     }
+    // istanbul ignore next
+    throw new Error('Unexpected operator ' + args[0]);
 }
 
 var binary = {
-    "+": function (x, y) {
+    '+': function (x, y) {
         return x + y;
     },
-    "-": function (x, y) {
+    '-': function (x, y) {
         return x - y;
     },
-    "*": function (x, y) {
+    '*': function (x, y) {
         return x * y;
     },
-    "/": function (x, y) {
-        return x / y;
+    '/': function (x, y) {
+        return (x / y) >>> 0;
     },
-    "%": function (x, y) {
+    '%': function (x, y) {
         return x % y;
     },
-    ">=": function (x, y) {
-        return x >= 0;
+    'v': function (x, y) {
+        return x || y ? 1 : 0;
     },
-    ">": function (x, y) {
-        return x > 0;
+    '^': function (x, y) {
+        return x && y ? 1 : 0;
     },
-    "<=": function (x, y) {
-        return x <= 0;
+    '>=': function (x, y) {
+        return x >= y ? 1 : 0;
     },
-    "<": function (x, y) {
-        return x < 0;
+    '>': function (x, y) {
+        return x > y ? 1 : 0;
     },
-    "==": function (x, y) {
-        return x == y;
+    '<=': function (x, y) {
+        return x <= y ? 1 : 0;
     },
-    "!=": function (x, y) {
-        return x != y;
+    '<': function (x, y) {
+        return x < y ? 1 : 0;
+    },
+    '==': function (x, y) {
+        return x === y ? 1 : 0;
+    },
+    '!=': function (x, y) {
+        return x != y ? 1 : 0;
+    },
+    '#': function (x, y) {
+        return hilbert(x, y);
+    },
+    '~': function (x, y, scope) {
+        var r = 0;
+        for (var i = 0; i < x; i++) {
+            r += scope.random() * y;
+        }
+        return Math.floor(r);
     }
 };
+
+// istanbul ignore next
+var unary = {
+    '!': function (x) {
+        return x ? 0 : 1;
+    }
+};
+
+evaluate.hash = hash;
+function hash(x) {
+    x = ((x >>> 16) ^ x) * 0x45d9f3b;
+    x = ((x >>> 16) ^ x) * 0x45d9f3b;
+    x = ((x >>> 16) ^ x);
+    return x >>> 0;
+}
+
+var msb = (-1 >>> 1) + 1;
+var hsb = (-1 >>> 16) + 1;
+
+function hilbert(x, y) {
+    if (x < 0) {
+        x += hsb;
+    }
+    if (y < 0) {
+        y += hsb;
+    }
+    var rx = 0;
+    var ry = y;
+    var scalar = 0;
+    for (var scale = msb; scale > 0; scale /= 2) {
+        rx = x & scale;
+        ry = y & scale;
+        scalar += scale * ((3 * rx) ^ ry);
+        // rotate
+        if (!ry) {
+            if (rx) {
+                x = scale - 1 - x;
+                y = scale - 1 - y;
+            }
+            // transpose
+            var t = x;
+            x = y;
+            y = t;
+        }
+    }
+    return scalar;
+}
 
 }],["examples/archery.json","inkblot/examples","archery.json",{},function (require, exports, module, __filename, __dirname){
 
@@ -515,6 +628,7 @@ module.exports = {
             "val",
             2
         ],
+        "parameter": false,
         "next": "start.1"
     },
     "start.1": {
@@ -524,6 +638,7 @@ module.exports = {
             "val",
             0
         ],
+        "parameter": false,
         "next": "start.2"
     },
     "start.2": {
@@ -533,6 +648,7 @@ module.exports = {
             "val",
             0
         ],
+        "parameter": false,
         "next": "start.3"
     },
     "start.3": {
@@ -559,6 +675,7 @@ module.exports = {
             "get",
             "arrow"
         ],
+        "variable": null,
         "value": 0,
         "mode": "walk",
         "branches": [
@@ -602,6 +719,7 @@ module.exports = {
             "get",
             "arrow"
         ],
+        "variable": null,
         "value": 0,
         "mode": "walk",
         "branches": [
@@ -615,6 +733,7 @@ module.exports = {
             "get",
             "gold"
         ],
+        "variable": null,
         "value": 0,
         "mode": "walk",
         "branches": [
@@ -669,8 +788,8 @@ module.exports = {
                 0
             ]
         ],
-        "branch": "shop.8",
-        "next": "shop.6"
+        "branch": "shop.6",
+        "next": "shop.8"
     },
     "shop.6": {
         "type": "jump",
@@ -685,8 +804,8 @@ module.exports = {
                 0
             ]
         ],
-        "branch": "shop.8",
-        "next": "exit"
+        "branch": "exit",
+        "next": "shop.8"
     },
     "shop.8": {
         "type": "jump",
@@ -701,8 +820,8 @@ module.exports = {
                 0
             ]
         ],
-        "branch": "shop.10",
-        "next": "shop.9"
+        "branch": "shop.9",
+        "next": "shop.10"
     },
     "shop.9": {
         "type": "option",
@@ -739,6 +858,7 @@ module.exports = {
                 1
             ]
         ],
+        "parameter": false,
         "next": "shop.9.4"
     },
     "shop.9.4": {
@@ -755,6 +875,7 @@ module.exports = {
                 3
             ]
         ],
+        "parameter": false,
         "next": "shop"
     },
     "shop.10": {
@@ -770,8 +891,8 @@ module.exports = {
                 4
             ]
         ],
-        "branch": "shop.12",
-        "next": "shop.11"
+        "branch": "shop.11",
+        "next": "shop.12"
     },
     "shop.11": {
         "type": "option",
@@ -808,6 +929,7 @@ module.exports = {
                 1
             ]
         ],
+        "parameter": false,
         "next": "shop.11.4"
     },
     "shop.11.4": {
@@ -824,6 +946,7 @@ module.exports = {
                 4
             ]
         ],
+        "parameter": false,
         "next": "shop"
     },
     "shop.12": {
@@ -870,6 +993,7 @@ module.exports = {
             "get",
             "arrow"
         ],
+        "variable": null,
         "value": 0,
         "mode": "walk",
         "branches": [
@@ -927,8 +1051,8 @@ module.exports = {
                 0
             ]
         ],
-        "branch": "range.5",
-        "next": "range.4"
+        "branch": "range.4",
+        "next": "range.5"
     },
     "range.4": {
         "type": "option",
@@ -965,6 +1089,7 @@ module.exports = {
                 1
             ]
         ],
+        "parameter": false,
         "next": "range.4.4"
     },
     "range.4.4": {
@@ -973,6 +1098,7 @@ module.exports = {
             "get",
             "range.4.4"
         ],
+        "variable": null,
         "value": 0,
         "mode": "rand",
         "branches": [
@@ -1002,6 +1128,7 @@ module.exports = {
                 1
             ]
         ],
+        "parameter": false,
         "next": "range.4.4.1.2"
     },
     "range.4.4.1.2": {
@@ -1018,6 +1145,7 @@ module.exports = {
                 1
             ]
         ],
+        "parameter": false,
         "next": "range"
     },
     "range.4.4.2": {
@@ -1070,6 +1198,7 @@ module.exports = {
             "get",
             "gold"
         ],
+        "variable": null,
         "value": 0,
         "mode": "walk",
         "branches": [
@@ -1140,8 +1269,8 @@ module.exports = {
                 0
             ]
         ],
-        "branch": null,
-        "next": "exit.4"
+        "branch": "exit.4",
+        "next": null
     },
     "exit.4": {
         "type": "text",
@@ -1171,6 +1300,7 @@ module.exports = {
             "get",
             "hit"
         ],
+        "variable": null,
         "value": 0,
         "mode": "walk",
         "branches": [
@@ -1274,14 +1404,16 @@ function zerothChildPath(path) {
     return path;
 }
 
-}],["story.js","inkblot","story.js",{"./path":5},function (require, exports, module, __filename, __dirname){
+}],["story.js","inkblot","story.js",{"pop-equals":8,"./path":5},function (require, exports, module, __filename, __dirname){
 
 // inkblot/story.js
 // ----------------
 
 'use strict';
 
+var equals = require('pop-equals');
 var Path = require('./path');
+
 var constructors = {};
 
 module.exports = Story;
@@ -1305,11 +1437,6 @@ Story.prototype.create = function create(path, type, text) {
     return node;
 };
 
-// istanbul ignore next
-Story.prototype.dot = function dot() {
-    return 'graph {}';
-};
-
 constructors.text = Text;
 function Text(text) {
     this.type = 'text';
@@ -1322,7 +1449,16 @@ function Text(text) {
 Text.prototype.tie = tie;
 // istanbul ignore next
 Text.prototype.describe = function describe() {
-    return this.text;
+    return (this.lift ? '' : '-') +
+        this.text.slice(0, 30) +
+        (this.drop ? '' : '-');
+};
+Text.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.text === that.text &&
+        this.lift === that.lift &&
+        this.drop === that.drop &&
+        this.next === that.next;
 };
 
 constructors.print = Print;
@@ -1335,7 +1471,12 @@ function Print(expression) {
 Print.prototype.tie = tie;
 // istanbul ignore next
 Print.prototype.describe = function describe() {
-    return this.variable;
+    return S(this.expression);
+};
+Print.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.expression, that.expression) &&
+        this.next === that.next;
 };
 
 constructors.option = Option;
@@ -1350,7 +1491,14 @@ function Option(label) {
 Option.prototype.tie = tie;
 // istanbul ignore next
 Option.prototype.describe = function describe() {
-    return this.label + ' -> ' + this.branch;
+    return this.label + ' ' + A(this.branch);
+};
+Option.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.label === that.label &&
+        // Don't care about keywords for the nonce
+        this.branch == that.branch &&
+        this.next === that.next;
 };
 
 constructors.goto = Goto;
@@ -1363,6 +1511,10 @@ Goto.prototype.tie = tie;
 // istanbul ignore next
 Goto.prototype.describe = function describe() {
     return this.next;
+};
+Goto.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
 };
 
 constructors.call = Call;
@@ -1378,6 +1530,12 @@ Call.prototype.tie = tie;
 Call.prototype.describe = function describe() {
     return this.branch + '() -> ' + this.next;
 };
+Call.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.label === that.label &&
+        this.branch === that.branch &&
+        this.next === that.next;
+};
 
 constructors.subroutine = Subroutine;
 function Subroutine(locals) {
@@ -1391,6 +1549,11 @@ Subroutine.prototype.tie = tie;
 Subroutine.prototype.describe = function describe() {
     return '(' + this.locals.join(', ') + ')';
 };
+Subroutine.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.locals, that.locals) &&
+        this.next === that.next;
+};
 
 constructors.jump = Jump;
 function Jump(condition) {
@@ -1403,13 +1566,20 @@ function Jump(condition) {
 Jump.prototype.tie = tie;
 // istanbul ignore next
 Jump.prototype.describe = function describe() {
-    return this.variable + ' ' + JSON.stingify(this.condition) + ' ' + this.branch;
+    return this.branch + ' if ' + S(this.condition);
+};
+Jump.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.condition, that.condition) &&
+        this.branch === that.branch &&
+        this.next === that.next;
 };
 
 constructors.switch = Switch;
 function Switch(expression) {
     this.type = 'switch';
     this.expression = expression;
+    this.variable = null;
     this.value = 0;
     this.mode = null;
     this.branches = [];
@@ -1418,7 +1588,18 @@ function Switch(expression) {
 Switch.prototype.tie = tie;
 // istanbul ignore next
 Switch.prototype.describe = function describe() {
-    return this.variable + ' ' + this.mode;
+    if (this.variable) {
+        return this.mode + ' (' + this.variable + '+' +  this.value + ') ' + S(this.expression);
+    } else {
+        return this.mode + ' ' + S(this.expression);
+    }
+};
+Switch.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.expression, that.expression) &&
+        this.value === that.value &&
+        this.mode === that.mode &&
+        equals(this.branches, that.branches);
 };
 
 constructors.set = Set;
@@ -1426,13 +1607,20 @@ function Set(variable) {
     this.type = 'set';
     this.variable = variable;
     this.expression = null;
+    this.parameter = false;
     this.next = null;
     Object.seal(this);
 }
 Set.prototype.tie = tie;
 // istanbul ignore next
 Set.prototype.describe = function describe() {
-    return this.variable + ' ' + JSON.stringify(this.expression);
+    return this.variable + ' ' + S(this.expression);
+};
+Set.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.variable === that.variable &&
+        this.parameter === Boolean(that.parameter) &&
+        this.next === that.next;
 };
 
 constructors.break = Break;
@@ -1446,6 +1634,10 @@ Break.prototype.tie = tie;
 Break.prototype.describe = function describe() {
     return '';
 };
+Break.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
 
 constructors.paragraph = Paragraph;
 function Paragraph(variable) {
@@ -1458,6 +1650,64 @@ Paragraph.prototype.tie = tie;
 Paragraph.prototype.describe = function describe() {
     return '';
 };
+Paragraph.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
+
+constructors.startJoin = StartJoin;
+function StartJoin(variable) {
+    this.type = 'startJoin';
+    this.text = '';
+    this.lift = '';
+    this.drop = '';
+    this.delimiter = ',';
+    this.next = null;
+    Object.seal(this);
+}
+StartJoin.prototype.tie = tie;
+// istanbul ignore next
+StartJoin.prototype.describe = function describe() {
+    return '';
+};
+StartJoin.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
+
+constructors.stopJoin = StopJoin;
+function StopJoin(variable) {
+    this.type = 'stopJoin';
+    this.next = null;
+    Object.seal(this);
+}
+StopJoin.prototype.tie = tie;
+// istanbul ignore next
+StopJoin.prototype.describe = function describe() {
+    return '';
+};
+StopJoin.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
+
+constructors.delimit = Delimit;
+function Delimit(variable) {
+    this.type = 'delimit';
+    this.delimiter = ',';
+    this.next = null;
+    Object.seal(this);
+}
+Delimit.prototype.tie = tie;
+// istanbul ignore next
+Delimit.prototype.describe = function describe() {
+    return ',';
+};
+Delimit.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.delimiter === that.delimiter &&
+        this.next === that.next;
+};
 
 constructors.prompt = Prompt;
 function Prompt(variable) {
@@ -1469,9 +1719,195 @@ Prompt.prototype.tie = tie;
 Prompt.prototype.describe = function describe() {
     return '';
 };
+Prompt.prototype.equals = function equals(that) {
+    return this.type === that.type;
+};
 
 function tie(end) {
     this.next = end;
 }
+
+// istanbul ignore next
+function S(args) {
+    if (args[0] === 'val' || args[0] === 'get') {
+        return args[1];
+    } else {
+        return '(' + args[0] + ' ' + args.slice(1).map(S).join(' ') + ')';
+    }
+}
+
+// istanbul ignore next
+function A(label) {
+    if (label == null) {
+        return '<-';
+    } else {
+        return '-> ' + label;
+    }
+}
+
+}],["mini-map.js","mini-map","mini-map.js",{},function (require, exports, module, __filename, __dirname){
+
+// mini-map/mini-map.js
+// --------------------
+
+"use strict";
+
+module.exports = MiniMap;
+function MiniMap() {
+    this.keys = [];
+    this.values = [];
+}
+
+MiniMap.prototype.has = function (key) {
+    var index = this.keys.indexOf(key);
+    return index >= 0;
+};
+
+MiniMap.prototype.get = function (key) {
+    var index = this.keys.indexOf(key);
+    if (index >= 0) {
+        return this.values[index];
+    }
+};
+
+MiniMap.prototype.set = function (key, value) {
+    var index = this.keys.indexOf(key);
+    if (index < 0) {
+        index = this.keys.length;
+    }
+    this.keys[index] = key;
+    this.values[index] = value;
+};
+
+MiniMap.prototype["delete"] = function (key) {
+    var index = this.keys.indexOf(key);
+    if (index >= 0) {
+        this.keys.splice(index, 1);
+        this.values.splice(index, 1);
+    }
+};
+
+MiniMap.prototype.clear = function () {
+    this.keys.length = 0;
+    this.values.length = 0;
+};
+
+
+}],["pop-equals.js","pop-equals","pop-equals.js",{"mini-map":7},function (require, exports, module, __filename, __dirname){
+
+// pop-equals/pop-equals.js
+// ------------------------
+
+"use strict";
+
+var MiniMap = require("mini-map");
+var getPrototypeOf = Object.getPrototypeOf;
+var objectPrototype = Object.prototype;
+
+/**
+    Performs a polymorphic, type-sensitive deep equivalence comparison of any
+    two values.
+
+    <p>As a basic principle, any value is equivalent to itself (as in
+    identity), any boxed version of itself (as a <code>new Number(10)</code> is
+    to 10), and any deep clone of itself.
+
+    <p>Equivalence has the following properties:
+
+    <ul>
+        <li><strong>polymorphic:</strong>
+            If the given object is an instance of a type that implements a
+            methods named "equals", this function defers to the method.  So,
+            this function can safely compare any values regardless of type,
+            including undefined, null, numbers, strings, any pair of objects
+            where either implements "equals", or object literals that may even
+            contain an "equals" key.
+        <li><strong>type-sensitive:</strong>
+            Incomparable types are not equal.  No object is equivalent to any
+            array.  No string is equal to any other number.
+        <li><strong>deep:</strong>
+            Collections with equivalent content are equivalent, recursively.
+        <li><strong>equivalence:</strong>
+            Identical values and objects are equivalent, but so are collections
+            that contain equivalent content.  Whether order is important varies
+            by type.  For Arrays and lists, order is important.  For Objects,
+            maps, and sets, order is not important.  Boxed objects are mutally
+            equivalent with their unboxed values, by virtue of the standard
+            <code>valueOf</code> method.
+    </ul>
+    @param this
+    @param that
+    @returns {Boolean} whether the values are deeply equivalent
+*/
+module.exports = equals;
+function equals(a, b, equals, memo) {
+    equals = equals || module.exports;
+    // unbox objects
+    if (a && typeof a.valueOf === "function") {
+        a = a.valueOf();
+    }
+    if (b && typeof b.valueOf === "function") {
+        b = b.valueOf();
+    }
+    if (a === b)
+        return true;
+    // NaN !== NaN, but they are equal.
+    // NaNs are the only non-reflexive value, i.e., if x !== x,
+    // then x is a NaN.
+    // isNaN is broken: it converts its argument to number, so
+    // isNaN("foo") => true
+    // We have established that a !== b, but if a !== a && b !== b, they are
+    // both NaN.
+    if (a !== a && b !== b)
+        return true;
+    if (!a || !b)
+        return false;
+    if (typeof a === "object") {
+        memo = memo || new MiniMap();
+        if (memo.has(a)) {
+            return true;
+        }
+        memo.set(a, true);
+    }
+    if (typeof a.equals === "function") {
+        return a.equals(b, equals, memo);
+    }
+    // commutative
+    if (typeof b.equals === "function") {
+        return b.equals(a, equals, memo);
+    }
+    if ((Array.isArray(a) || Array.isArray(b)) && a.length !== b.length) {
+        return false;
+    }
+    if (typeof a === "object" && typeof b === "object") {
+        if (
+            getPrototypeOf(a) === objectPrototype &&
+            getPrototypeOf(b) === objectPrototype ||
+            Array.isArray(a) ||
+            Array.isArray(b)
+        ) {
+            for (var name in a) {
+                if (!equals(a[name], b[name], equals, memo)) {
+                    return false;
+                }
+            }
+            for (var name in b) {
+                if (!(name in a)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+// Because a return value of 0 from a `compare` function  may mean either
+// "equals" or "is incomparable", `equals` cannot be defined in terms of
+// `compare`.  However, `compare` *can* be defined in terms of `equals` and
+// `lessThan`.  Again however, more often it would be desirable to implement
+// all of the comparison functions in terms of compare rather than the other
+// way around.
+
 
 }]])("inkblot/index.js")
