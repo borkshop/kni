@@ -92,6 +92,7 @@ thread ends ends on the next line that starts on a shallower column.
   - You are too kind, hello
     again to you too.
 + You s[S]ay, “Farewell.”
+>
 ```
 
 The asterisk denotes an optional thread that the narrator will only propose
@@ -119,18 +120,10 @@ ends.
 
 ## Options
 
-The Inkblot runtime will infer when it needs to present a prompt to the
-interlocutor.
-Since options can be collected by traversing multiple optional subthreads, the
-runtime waits until the narrative resumes.
-It will then pause and present its questions.
-
-Note in the following excerpt, there are two groups of options, and a final
-option that is always presented, “Where am I again?”.
-The runtime collects all of these options and does not present a prompt
-until it encounters the text for the red room, indicating that a choice must be
-made before the narrative can continue.
-
+Inkblot will accumulate options until it encounters a prompt, depicted as
+a right angle bracket, ``>``.
+All loose ends from option branches will resume after the prompt unless
+redirected elsewhere.
 
 ```
 = blue
@@ -139,13 +132,14 @@ You are in a blue room.
 There is a door.
 
 - {?door} The door is open.
-  + You w[W]alk through the open door. -> red
+  + You w[W]alk through the open door.
   + You c[C]lose the door.
     - {=0 door} -> blue
 - {!door} The door is closed.
   + You o[O]pen the door.
     - {=1 door} -> blue
 + Where am I again? -> blue
+>
 
 = red
 
@@ -250,11 +244,11 @@ the song exhausts itself or the interlocutor.
 ```
 {=99 bottles}
 = refrain
-{#bottles||1 bottle|{$bottles} bottles} of beer on the wall. /
-{#bottles||1 bottle|{$bottles} bottles} of beer. /
+{$bottles||1 bottle|{$bottles} bottles} of beer on the wall. /
+{$bottles||1 bottle|{$bottles} bottles} of beer. /
 You take one down and pass it around. {-1 bottles} /
-{#bottles|No more bottles|1 bottle|{$bottles} bottles} of beer on the wall. /
-{#bottles||->refrain}
+{$bottles|No more bottles|1 bottle|{$bottles} bottles} of beer on the wall. /
+{$bottles||->refrain}
 ```
 
 Additionally, the `=` sign can be used as a bullet to start a thread with a
@@ -335,7 +329,7 @@ even after the threads have been exhausted and we see only the final thread.
 The story can read or modify this variable.
 
 ```
-+ Tired of cheeries. {=0 fruit}
++ Tired of cherries. {=0 fruit}
 ```
 
 ### Loops
@@ -421,10 +415,11 @@ Modifiers all take a concise form: operator, value, variable.
   you have 10 gold now. {=10 gold}
 ```
 
-Inkblot reserves the right to add an infix notation for multivariate
-expressions someday, and will not try to cobble algebra into this form.
-
 ### Check a variable
+
+Checking a variable will jump to the end of a scope if that variable is zero.
+This is a handy use for the `-` block, which serves only as an organizational
+indent and allows these expressions to jump.
 
 ```
 - {?gold} You have some gold.
@@ -436,3 +431,79 @@ expressions someday, and will not try to cobble algebra into this form.
 - {==10 gold} You have exactly 10 gold pieces.
 - {!=10 gold} You do not have exactly 10 gold pieces.
 ```
+
+### Conditions
+
+All of the above variable checks support an `{if|then|else}` notation.
+The following expression skips to the end if there is no gold.
+
+```
+{!gold|<-}
+```
+
+The following expression says red or blue depending on whether the variable is
+positive.
+
+```
+{>0 team| red | blue }
+```
+
+### Expressions
+
+Inkblot supports limited algebraic expressions.
+Expressions may require parentheses to disambiguated precedence.
+There are three tiers of precedence from tightly binding to loosely binding.
+All of these operators produce 32 bit integers.
+Logical operators return 0 or 1.
+
+- `*`, `/`, `%`, `~`, and `^`
+- `+`, `-`, and `v`
+- ``<``, ``<=``, `==`, `!=`, `>=`, `>`, `#`.
+
+`*` is multiplication.
+
+`/` is division.
+
+`%` is modulo.
+
+`+` is addition.
+
+`-` is subtraction.
+
+`<` is less-than.
+
+`>` is greater-than.
+
+`<=` is less-than-or-equal-to
+
+`>=` is greater-than-or-equal-to
+
+`==` is equality
+
+`!=` is inequality
+
+I have not yet implemented unary negation.
+
+`^` and `v` are logical union and intersection (`and` and `or`).  Note that `v`
+must be separated from subsequent text with a space to unambiguously produce
+the operator token.  These symbols are consistent with symbolic logic notation
+but not typical for programming languages.  I chose them because the pipe
+operator is reserved for delimiting block sections.
+
+`~` is a random variable. In `x~y`, X is the number of samples and `Y` is the
+upper bound of the random variable for each sample. As such,
+`2~6` produces a random variable in the half open interval of [0, 12) with a
+mean value of 6, where 6 is the most likely variable, with diminishing
+probability toward 0 and 12. The D&D expression `2d6` is equivalent to
+`1~6 + 1~6 + 2` owing to the vagaries of math.
+
+I have not yet implemented unary random variables, essentially an implicit X
+= 1.  I also haven't implemented simplified notation for die rolls, favoring
+the ~ operator initially because it composes better mathematically.
+
+`#` produces the equivalent point on a Hilbert Curve for a coordinate X, Y.
+This, in combination with `#` consistent hash blocks, is handy for generating
+arbitrary but consistent content in a two-dimensional plane without
+accidental symmetry over any axis.  For example `{#x+y}` creates symmetry
+along a diagonal. `{#x*y}` produces symmetry across multiple axes about the
+origin.
