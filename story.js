@@ -244,6 +244,60 @@ Paragraph.prototype.equals = function equals(that) {
         this.next === that.next;
 };
 
+constructors.startJoin = StartJoin;
+function StartJoin(variable) {
+    this.type = 'startJoin';
+    this.text = '';
+    this.lift = '';
+    this.drop = '';
+    this.delimiter = ',';
+    this.next = null;
+    Object.seal(this);
+}
+StartJoin.prototype.tie = tie;
+// istanbul ignore next
+StartJoin.prototype.describe = function describe() {
+    return '';
+};
+StartJoin.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
+
+constructors.stopJoin = StopJoin;
+function StopJoin(variable) {
+    this.type = 'stopJoin';
+    this.next = null;
+    Object.seal(this);
+}
+StopJoin.prototype.tie = tie;
+// istanbul ignore next
+StopJoin.prototype.describe = function describe() {
+    return '';
+};
+StopJoin.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
+
+constructors.delimit = Delimit;
+function Delimit(variable) {
+    this.type = 'delimit';
+    this.delimiter = ',';
+    this.next = null;
+    Object.seal(this);
+}
+Delimit.prototype.tie = tie;
+// istanbul ignore next
+Delimit.prototype.describe = function describe() {
+    return ',';
+};
+Delimit.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.delimiter === that.delimiter &&
+        this.next === that.next;
+};
+
 constructors.prompt = Prompt;
 function Prompt(variable) {
     this.type = 'prompt';

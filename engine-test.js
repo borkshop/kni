@@ -24,6 +24,7 @@ function main() {
     test('examples/procedure.ink', 'transcripts/procedure.1');
     test('examples/german.ink', 'transcripts/german.1');
     test('examples/archery.ink', 'transcripts/quit.1');
+    test('examples/conjunctions.ink', 'transcripts/conjunctions.1');
 }
 
 function test(inkscript, transcript) {

@@ -23,6 +23,18 @@ Console.prototype.paragraph = function paragraph() {
     this.excerpt.paragraph();
 };
 
+Console.prototype.startJoin = function startJoin(lift, delimiter, conjunction) {
+    this.excerpt.startJoin(lift, delimiter, conjunction);
+};
+
+Console.prototype.delimit = function delimit(delimiter) {
+    this.excerpt.delimit(delimiter);
+};
+
+Console.prototype.stopJoin = function stopJoin() {
+    this.excerpt.stopJoin();
+};
+
 Console.prototype.option = function option(number, label) {
     var lead = (number + '.   ').slice(0, 3) + ' ';
     this.wrapper.word(lead);

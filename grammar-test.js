@@ -2720,3 +2720,73 @@ test([
         "next": null
     }
 });
+
+test([
+    '{, }\n'
+], {
+    start: {
+        type: 'delimit',
+        delimiter: ',',
+        next: null
+    }
+});
+
+// TODO stop conjunction with alt if no delimits
+only([
+    '{, and |x{,} y{,} z{,}}.\n'
+], {
+    "start": {
+        "type": "startJoin",
+        "text": "and",
+        "lift": " ",
+        "drop": " ",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "text",
+        "text": "x",
+        "lift": "",
+        "drop": "",
+        "next": "start.2"
+    },
+    "start.2": {
+        "type": "delimit",
+        "delimiter": ",",
+        "next": "start.3"
+    },
+    "start.3": {
+        "type": "text",
+        "text": "y",
+        "lift": " ",
+        "drop": "",
+        "next": "start.4"
+    },
+    "start.4": {
+        "type": "delimit",
+        "delimiter": ",",
+        "next": "start.5"
+    },
+    "start.5": {
+        "type": "text",
+        "text": "z",
+        "lift": " ",
+        "drop": "",
+        "next": "start.6"
+    },
+    "start.6": {
+        "type": "delimit",
+        "delimiter": ",",
+        "next": "start.7"
+    },
+    "start.7": {
+        "type": "stopJoin",
+        "next": "start.8"
+    },
+    "start.8": {
+        "type": "text",
+        "text": ".",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
