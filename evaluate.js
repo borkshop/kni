@@ -15,12 +15,26 @@ function evaluate(scope, args) {
         return unary[name](evaluate(scope, args[1]));
     } else if (name === 'val') {
         return args[1];
-    // istanbul ignore else
     } else if (name === 'get') {
         return scope.get(args[1]);
+    // istanbul ignore else
+    } else if (name === 'var') {
+        return scope.get(nominate(scope, args));
     }
     // istanbul ignore next
     throw new Error('Unexpected operator ' + args[0]);
+}
+
+evaluate.nominate = nominate;
+function nominate(scope, args) {
+    var literals = args[1];
+    var variables = args[2];
+    var name = '';
+    for (var i = 0; i < variables.length; i++) {
+        name += literals[i] + scope.get(variables[i]);
+    }
+    name += literals[i];
+    return name;
 }
 
 var binary = {

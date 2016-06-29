@@ -35,7 +35,7 @@ function Open(parent) {
     this.parent = parent;
 }
 
-Open.prototype.return = function _return(expression) {
+Open.prototype.return = function _return(expression, scanner) {
     return new Close(this.parent, expression);
 };
 
@@ -46,8 +46,8 @@ function Close(parent, expression) {
 
 Close.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
-    if (type === 'text' && text === ')') {
-        return this.parent.return(this.expression);
+    if (type === 'symbol' && text === ')') {
+        return this.parent.return(this.expression, scanner);
     }
     // istanbul ignore next
     throw new Error('Expected expression to continue or end, got ' + type + ' ' + text);
@@ -60,22 +60,74 @@ function Value(parent) {
 
 Value.prototype.next = function next(type, space, text, scanner) {
     if (type === 'number') {
-        return this.parent.return(['val', +text]);
+        return this.parent.return(['val', +text], scanner);
     } else if (text === '(') {
         return parenthesized(this.parent);
+    } else if (text === '$') {
+        return new GetDynamicVariable(this.parent, [''], []);
     // istanbul ignore else
-    } else if (type === 'text') {
-        return this.parent.return(['get', text]);
+    } else if (type === 'alphanum') {
+        return new GetStaticVariable(this.parent, [], [], text);
     }
     // istanbul ignore next
     throw new Error('Expected value, got ' + type + ' ' + text + ' at ' + scanner.position());
+};
+
+expression.variable = variable;
+function variable(parent) {
+    return new GetStaticVariable(parent, [], [], '');
+}
+
+function GetDynamicVariable(parent, literals, variables) {
+    this.parent = parent;
+    this.literals = literals;
+    this.variables = variables;
+    this.variable = '';
+}
+
+GetDynamicVariable.prototype.next = function next(type, space, text, scanner) {
+    if ((type ===  'alphanum' || type === 'number') && space === '') {
+        this.variable += text;
+        return this;
+    }
+    return new GetStaticVariable(this.parent, this.literals, this.variables.concat([this.variable]), '')
+        .next(type, space, text, scanner);
+};
+
+function GetStaticVariable(parent, literals, variables, literal) {
+    this.parent = parent;
+    this.literals = literals;
+    this.variables = variables;
+    this.literal = literal;
+}
+
+GetStaticVariable.prototype.next = function next(type, space, text, scanner) {
+    if ((space === '' || this.literal === '') && space === '') {
+        if (text === '$') {
+            return new GetDynamicVariable(this.parent, this.literals.concat([this.literal]), this.variables);
+        } else if (text === '.') {
+            this.literal += text;
+            return this;
+        } else if (type === 'alphanum' || type === 'number') {
+            this.literal += text;
+            return this;
+        }
+    }
+
+    var state;
+    if (this.literals.length === 0 && this.variables.length === 0) {
+        state = this.parent.return(['get', this.literal], scanner);
+    } else {
+        state = this.parent.return(['var', this.literals.concat([this.literal]), this.variables], scanner);
+    }
+    return state.next(type, space, text, scanner);
 };
 
 function MultiplicativeExpression(parent) {
     this.parent = parent;
 }
 
-MultiplicativeExpression.prototype.return = function _return(expression) {
+MultiplicativeExpression.prototype.return = function _return(expression, scanner) {
     return new MaybeMultiplicative(this.parent, expression);
 };
 
@@ -88,7 +140,7 @@ MaybeMultiplicative.prototype.next = function next(type, space, text, scanner) {
     if (text === '*' || text === '/' || text === '%' || text === '~' || text === '^') {
         return new Value(new Multiplicative(this.parent, text, this.expression));
     } else {
-        return this.parent.return(this.expression)
+        return this.parent.return(this.expression, scanner)
             .next(type, space, text, scanner);
     }
 };
@@ -99,7 +151,7 @@ function Multiplicative(parent, op, left) {
     this.left = left;
 }
 
-Multiplicative.prototype.return = function _return(right) {
+Multiplicative.prototype.return = function _return(right, scanner) {
     return new MaybeMultiplicative(this.parent, [this.op, this.left, right]);
 };
 
@@ -107,7 +159,7 @@ function ArithmeticExpression(parent) {
     this.parent = parent;
 }
 
-ArithmeticExpression.prototype.return = function _return(expression) {
+ArithmeticExpression.prototype.return = function _return(expression, scanner) {
     return new MaybeArithmetic(this.parent, expression);
 };
 
@@ -122,7 +174,7 @@ MaybeArithmetic.prototype.next = function next(type, space, text, scanner) {
             new MultiplicativeExpression(
                 new Arithmetic(this.parent, text, this.expression)));
     } else {
-        return this.parent.return(this.expression)
+        return this.parent.return(this.expression, scanner)
             .next(type, space, text, scanner);
     }
 };
@@ -133,7 +185,7 @@ function Arithmetic(parent, op, left) {
     this.left = left;
 }
 
-Arithmetic.prototype.return = function _return(right) {
+Arithmetic.prototype.return = function _return(right, scanner) {
     return new MaybeMultiplicative(
         new ArithmeticExpression(this.parent),
         [this.op, this.left, right]
@@ -146,7 +198,7 @@ function ComparisonExpression(parent) {
     this.parent = parent;
 }
 
-ComparisonExpression.prototype.return = function _return(expression) {
+ComparisonExpression.prototype.return = function _return(expression, scanner) {
     return new MaybeComparison(this.parent, expression);
 };
 
@@ -162,7 +214,7 @@ MaybeComparison.prototype.next = function next(type, space, text, scanner) {
                 new ArithmeticExpression(
                     new Comparison(this.parent, text, this.expression))));
     } else {
-        return this.parent.return(this.expression)
+        return this.parent.return(this.expression, scanner)
             .next(type, space, text, scanner);
     }
 };
@@ -173,7 +225,7 @@ function Comparison(parent, op, left) {
     this.left = left;
 }
 
-Comparison.prototype.return = function _return(right) {
+Comparison.prototype.return = function _return(right, scanner) {
     return new MaybeMultiplicative(new ArithmeticExpression(new ComparisonExpression(this.parent)),
         [this.op, this.left, right]
     );

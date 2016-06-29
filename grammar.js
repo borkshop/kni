@@ -52,7 +52,7 @@ function Knot(story, path, parent, ends, jumps) {
 }
 
 Knot.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' || type === 'number') {
+    if (type === 'symbol'|| type === 'alphanum' || type === 'number') {
         return new Text(this.story, this.path, space, text, this, this.ends);
     }  else if (type === 'token') {
         if (text === '{') {
@@ -122,7 +122,7 @@ function Text(story, path, lift, text, parent, ends) {
 }
 
 Text.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' || type === 'number') {
+    if (type === 'alphanum' || type === 'number' || type === 'symbol') {
         this.text += space + text;
         return this;
     } else {
@@ -166,12 +166,12 @@ function Option(leader, story, path, parent, ends) {
 //    0       1     -2      -3 4   5   5
 //    Common         Question  Answer
 Option.prototype.next = function next(type, space, text, scanner) {
-    if ((type === 'text' || type === 'number') && this.position === 0) {
+    if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 0) {
         this.answer.lift = space;
         this.answer.text = text;
         this.position = 1;
         return this;
-    } else if ((type === 'text' || type === 'number') && this.position === 1) {
+    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 1) {
         this.answer.text += space + text;
         return this;
     } else if (type === 'token' && text === '[' && (this.position === 0 || this.position === 1)) {
@@ -181,13 +181,13 @@ Option.prototype.next = function next(type, space, text, scanner) {
         this.direction = -1;
         this.position = -2;
         return this;
-    } else if ((type === 'text' || type === 'number') && this.position === 2 * this.direction) {
+    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 2 * this.direction) {
         this.answer.drop = space;
         this.question.lift = space;
         this.question.text = text;
         this.position = 3 * this.direction;
         return this;
-    } else if ((type === 'text' || type === 'number') && this.position === 3 * this.direction) {
+    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 3 * this.direction) {
         this.question.text += space + text;
         return this;
     } else if (type === 'token' && text === ']' && (this.position === 2 || this.position === 3)) {
@@ -198,13 +198,13 @@ Option.prototype.next = function next(type, space, text, scanner) {
         this.question.drop = space;
         this.position = 4;
         return this;
-    } else if ((type === 'text' || type === 'number') && this.position === 4) {
+    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 4) {
         this.question.drop = space;
         this.common.lift = space;
         this.common.text = text;
         this.position = 5;
         return this;
-    } else if ((type === 'text' || type === 'number') && this.position === 5) {
+    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 5) {
         this.common.text += space + text;
         return this;
     } else if (this.position === 0 || this.position === 1) {
@@ -324,7 +324,7 @@ function ExpectLabel(story, path, parent, ends) {
 
 ExpectLabel.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
-    if (type === 'text') {
+    if (type === 'symbol' || type === 'alphanum') {
         return new MaybeSubroutine(this.story, this.path, this.parent, this.ends, text);
     } else {
         // TODO produce a readable error using scanner
@@ -342,7 +342,7 @@ function LabelThread(story, path, parent, ends) {
 
 LabelThread.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
-    if (type === 'text') {
+    if (type === 'symbol' || type === 'alphanum') {
         return new MaybeSubroutine(this.story, this.path, this, this.ends, text);
     } else {
         // TODO produce a readable error using scanner
@@ -364,7 +364,7 @@ function MaybeSubroutine(story, path, parent, ends, label) {
 }
 
 MaybeSubroutine.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' && text === '(') {
+    if (type === 'symbol' && text === '(') {
         return new Subroutine(this.story, this.path, this, this.label);
     } else {
         var path = [this.label, 0];
@@ -392,7 +392,7 @@ function Subroutine(story, path, parent, label) {
 }
 
 Subroutine.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' && text === ')') {
+    if (type === 'symbol' && text === ')') {
         var path = [this.label, 0];
         var label = this.story.create(path, 'goto', null);
 
@@ -404,11 +404,11 @@ Subroutine.prototype.next = function next(type, space, text, scanner) {
 
         return new Knot(this.story, Path.next(path), this, [label, sub], []);
     // istanbul ignore else
-    } else if (type === 'text') {
+    } else if (type === 'alphanum') {
         this.locals.push(text);
         return this;
     } else {
-        throw new Error('expected variable name or close paren');
+        throw new Error('Expected variable name or close paren at ' + scanner.position());
     }
 };
 
@@ -428,7 +428,7 @@ function Goto(story, path, parent, ends) {
 
 Goto.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
-    if (type === 'text') {
+    if (type === 'alphanum') {
         tieName(this.ends, text);
         return this.parent.return(Path.next(this.path), [], [], scanner);
     } else {
@@ -447,8 +447,9 @@ function Call(story, path, parent, ends) {
 }
 
 Call.prototype.next = function next(type, space, text, scanner) {
+    // TODO read expression for label instead of just alpha
     // istanbul ignore else
-    if (type === 'text') {
+    if (type === 'alphanum') {
         this.label = text;
         this.node = this.story.create(this.path, 'call', this.label);
         var branch = new Branch(this.node);
@@ -506,13 +507,13 @@ var switches = {
 };
 
 Block.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'token' || type === 'text' || type === 'number') {
+    if (type === 'symbol' || type === 'alphanum' || type === 'token') {
         if (jumps[text]) {
             return expression(new Jump(this.story, this.path, this.parent, this.ends, jumps[text], ['val', 0]));
         } else if (comparators[text]) {
             return expression(new JumpCompare(this.story, this.path, this.parent, this.ends, text));
         } else if (mutators[text]) {
-            return new Set(this.story, this.path, this.parent, this.ends, text);
+            return expression(new Set(this.story, this.path, this.parent, this.ends, text));
         } else if (variables[text]) {
             return expression(new ExpressionSwitch(this.story, this.path, this.parent, this.ends, variables[text]));
         } else if (text === ',') {
@@ -543,7 +544,7 @@ function Conjunction(story, path, parent, ends) {
 }
 
 Conjunction.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'text' || type === 'number') {
+    if (type === 'symbol' || type === 'alphanum' || type === 'number') {
         return new ContinueConjunction(this.story, this.path, this.parent, this.ends, space, text);
     // istanbul ignore else
     } else if (type === 'token' && text === '}') {
@@ -567,7 +568,7 @@ function ContinueConjunction(story, path, parent, ends, lift, text) {
 
 ContinueConjunction.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore if
-    if (type === 'text' || type === 'number') {
+    if (type === 'symbol' || type === 'number') {
         this.text += space + text;
         return this;
     // istanbul ignore else
@@ -653,28 +654,12 @@ function Set(story, path, parent, ends, op) {
     this.ends = ends;
 }
 
-Set.prototype.next = function next(type, space, text, scanner) {
-    if (text === '(') {
-        return expression.parenthesized(this);
-    } else if (type === 'number') {
-        return this.return(['val', parseInt(text, 10)]);
-    // istanbul ignore else
-    } else if (type === 'text') {
-        // This is the special case that does not allow a simple value
-        // expression in this position. When you provide a name and no value,
-        // we infer that the value was one.
-        return this.return(['val', 1])
-            .next(type, space, text, scanner);
-    }
-    // istanbul ignore next
-    throw new Error('Unexpected token in ' + this.type + ': ' + type + ' ' + text + ' ' + scanner.position());
-};
-
 Set.prototype.return = function _return(expression) {
-    return new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, expression);
+    return new MaybeSetVariable(this.story, this.path, this.parent, this.ends, this.op, expression);
+    // return expression.variable(new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, source));
 };
 
-function ExpectSetVariable(story, path, parent, ends, op, expression) {
+function MaybeSetVariable(story, path, parent, ends, op, expression) {
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -683,23 +668,55 @@ function ExpectSetVariable(story, path, parent, ends, op, expression) {
     this.expression = expression;
 }
 
-ExpectSetVariable.prototype.next = function next(type, space, text, scanner) {
-    // istanbul ignore else
-    if (type === 'text') {
-        var variable = text;
-        var node = this.story.create(this.path, 'set', variable);
-        if (this.op === '=') {
-            node.expression = this.expression;
-        } else {
-            node.expression = [this.op, ['get', variable], this.expression];
-        }
-        tie(this.ends, this.path);
-        return new Expect('token', '}', Path.next(this.path), this.parent, [node], []);
+MaybeSetVariable.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'token' && text === '}') {
+        return setVariable(this.story, this.path, this.parent, this.ends, this.op, ['val', 1], this.expression, scanner)
+            .next(type, space, text, scanner);
     }
-    // istanbul ignore next
-    throw new Error('Expected variable name, got ' + type + ' ' + text);
+    return expression(new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, this.expression))
+        .next(type, space, text, scanner);
 };
 
+function ExpectSetVariable(story, path, parent, ends, op, source) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.op = op;
+    this.source = source;
+}
+
+ExpectSetVariable.prototype.return = function _return(target, scanner) {
+    return setVariable(this.story, this.path, this.parent, this.ends, this.op, this.source, target, scanner);
+};
+
+function setVariable(story, path, parent, ends, op, source, target, scanner) {
+    if (target[0] === 'get') {
+        var variable = target[1];
+        var node = story.create(path, 'set');
+        if (op === '=') {
+            node.expression = source;
+        } else {
+            node.expression = [op, target, source];
+        }
+        node.variable = variable;
+        tie(ends, path);
+        return new Expect('token', '}', Path.next(path), parent, [node], []);
+    // istanbul ignore else
+    } else if (target[0] === 'var') {
+        var node = story.create(path, 'mov');
+        if (op === '=') {
+            node.source = source;
+        } else {
+            node.source = [op, target, source];
+        }
+        node.target = target;
+        tie(ends, path);
+        return new Expect('token', '}', Path.next(path), parent, [node], []);
+    }
+    // istanbul ignore next
+    throw new Error('Expected a variable to set, got ' + JSON.stringify(source) + ' ' + op + ' ' + JSON.stringify(target) + ' at ' + scanner.position());
+}
 
 function ExpressionSwitch(story, path, parent, ends, mode) {
     this.type = 'expression-switch';
@@ -740,7 +757,7 @@ Variable.prototype.next = function next(type, space, text, scanner) {
         }
     }
     // istanbul ignore next
-    throw new Error('Unexpected token in jump: ' + type + ' ' + text + ' ' + scanner.position());
+    throw new Error('Unexpected token in jump, ' + type + ' ' + text + ' at ' + scanner.position());
 };
 
 function Switch(story, path, parent, ends) {
@@ -824,7 +841,7 @@ Expect.prototype.next = function next(type, space, text, scanner) {
     if (type === this.expect && text === this.text) {
         return this.parent.return(this.path, this.ends, this.jumps, scanner);
     } else {
-        throw new Error('expected ' + this.expect + ' ' + this.text + ', got ' + type + ' ' + text);
+        throw new Error('expected ' + this.expect + ' ' + this.text + ', got ' + type + ' ' + text + ' at ' + scanner.position());
     }
 };
 

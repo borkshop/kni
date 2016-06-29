@@ -19,15 +19,13 @@ var L1 = '=[]{}|/<>';
 var L2 = ['->', '<-', '==', '!=', '>=', '<='];
 var num = /\d/;
 var space = /\s/;
-var alpha = /[\w\d_\.]/;
+var alpha = /[\w\d_]/;
 
 function InlineLexer(generator) {
     this.generator = generator;
     this.space = '';
     this.accumulator = '';
-    this.numeric = false;
-    this.alphanumeric = false;
-    this.type = 'text';
+    this.type = 'symbol';
     this.debug = debug;
     Object.seal(this);
 }
@@ -48,7 +46,7 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         var c = text[i];
         var cc = c + text[i + 1];
         var numeric = num.test(c);
-        var alphanumeric = alpha.test(c);
+        var alphanum = alpha.test(c);
         if (c === ' ' || c === '\t') {
             this.flush(scanner);
             this.space = ' ';
@@ -71,18 +69,15 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             }
             this.generator.next('dash', this.space, text.slice(i, j), scanner);
             i = j - 1;
-        } else if (!this.alphanumeric && numeric) {
+        } else if (this.type !== 'alphanum' && numeric) {
             this.accumulator += c;
-            this.numeric = true;
             this.type = 'number';
-        } else if (alphanumeric) {
-            if (!this.alphanumeric) {
+        } else if (alphanum) {
+            if (this.type != 'alphanum') {
                 this.flush(scanner);
             }
             this.accumulator += c;
-            this.numeric = true;
-            this.alphanumeric = true;
-            this.type = 'text';
+            this.type = 'alphanum';
         } else {
             this.flush(scanner);
             this.generator.next(this.type, this.space, c, scanner);
@@ -92,16 +87,21 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
 
     if (i < text.length) {
         var c = text[i];
+        var numeric = num.test(c);
+        var alphanum = alpha.test(c);
         if (c === ' ' || c === '\t') {
             // noop
         } else if (L1.indexOf(c) >= 0) {
             this.flush(scanner);
             this.generator.next('token', this.space, c, scanner);
-        } else if (!alpha.test(c)) {
+        } else if (this.type === 'number' && numeric) {
+            this.accumulator += c;
+        } else if (!alphanum) {
             this.flush(scanner);
             this.generator.next(this.type, this.space, c, scanner);
             this.space = '';
         } else {
+            this.type = 'alphanum';
             this.accumulator += c;
         }
     }
@@ -116,8 +116,6 @@ InlineLexer.prototype.flush = function flush(scanner) {
         this.generator.next(this.type, this.space, this.accumulator, scanner);
         this.accumulator = '';
         this.space = '';
-        this.type = 'text';
+        this.type = 'symbol';
     }
-    this.numeric = false;
-    this.alphanumeric = false;
 };

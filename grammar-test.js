@@ -10,6 +10,8 @@ var Story = require('./story');
 var colorize = require('json-diff/lib/colorize').colorize;
 var diff = require('json-diff/lib').diff;
 
+Error.stackTraceLimit = Infinity;
+
 function test(input, output) {
     // istanbul ignore if
     if (process.env.ONLY) {
@@ -495,6 +497,7 @@ test([
         "next": null
     }
 });
+
 
 test([
     'Alpha\n',
@@ -2732,7 +2735,7 @@ test([
 });
 
 // TODO stop conjunction with alt if no delimits
-only([
+test([
     '{, and |x{,} y{,} z{,}}.\n'
 ], {
     "start": {
@@ -2787,6 +2790,39 @@ only([
         "text": ".",
         "lift": "",
         "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '{=source.$x.$y target.$w.$z}\n'
+], {
+    "start": {
+        "type": "mov",
+        "target": ["var", ["target.", ".", ""], ["w", "z"]],
+        "source": ["var", ["source.", ".", ""], ["x", "y"]],
+        "next": null
+    }
+});
+
+test([
+    '{+1 $x.$y}\n'
+], {
+    "start": {
+        "type": "mov",
+        "target": ["var", ["", ".", ""], ["x", "y"]],
+        "source": ["+", ["var", ["", ".", ""], ["x", "y"]], ["val", 1]],
+        "next": null
+    }
+});
+
+test([
+    '{+$x.$y}\n'
+], {
+    "start": {
+        "type": "mov",
+        "target": ["var", ["", ".", ""], ["x", "y"]],
+        "source": ["+", ["var", ["", ".", ""], ["x", "y"]], ["val", 1]],
         "next": null
     }
 });

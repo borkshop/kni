@@ -212,6 +212,26 @@ Set.prototype.equals = function equals(that) {
         this.next === that.next;
 };
 
+constructors.mov = Mov;
+function Mov(variable) {
+    this.type = 'mov';
+    this.source = null;
+    this.target = null;
+    this.next = null;
+    Object.seal(this);
+}
+Mov.prototype.tie = tie;
+// istanbul ignore next
+Mov.prototype.describe = function describe() {
+    return S(this.source) + ' -> ' + S(this.expression);
+};
+Mov.prototype.equals = function _equals(that) {
+    return this.type === that.type &&
+        equals(this.source, that.source) &&
+        equals(this.target, that.target) &&
+        this.next === that.next;
+};
+
 constructors.break = Break;
 function Break(variable) {
     this.type = 'break';

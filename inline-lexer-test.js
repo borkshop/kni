@@ -40,7 +40,7 @@ InlineLexLister.prototype.next = function next(type, space, text, scanner) {
     if (space.length) {
         this.list.push(space);
     }
-    if (type !== 'text') {
+    if (type !== 'alphanum') {
         this.list.push(type.toUpperCase());
     }
     if (text) {
@@ -78,7 +78,7 @@ test([
     'TOKEN', '[',
     'S',
     'TOKEN', ']',
-    'ay', ',', ' ', '"', 'Hello.', '"',
+    'ay', 'SYMBOL', ',', ' ', 'SYMBOL', '"', 'Hello', 'SYMBOL', '.', 'SYMBOL', '"',
     ' ', 'TOKEN', '->',
     ' ', 'bye',
     ' ', 'STOP',
@@ -114,7 +114,7 @@ test([
     '',
     'The End'
 ], [
-    'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after.',
+    'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after', 'SYMBOL', '.',
     ' ', 'BREAK',
     'The', ' ', 'End',
     ' ', 'STOP',
@@ -134,12 +134,12 @@ test([
     '{#gold|no gold|{$gold} gold}'
 ], [
     'TOKEN', '{',
-    '#', 'gold',
+    'SYMBOL', '#', 'gold',
     'TOKEN', '|',
     'no', ' ', 'gold',
     'TOKEN', '|',
     'TOKEN', '{',
-    '$', 'gold',
+    'SYMBOL', '$', 'gold',
     'TOKEN', '}',
     ' ', 'gold',
     'TOKEN', '}',
@@ -211,7 +211,7 @@ test([
     '10)'
 ], [
     'NUMBER', '10',
-    ')',
+    'SYMBOL', ')',
     ' ', 'STOP',
     ' ', 'STOP'
 ]);

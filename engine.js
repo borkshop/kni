@@ -132,6 +132,17 @@ Engine.prototype.$set = function set() {
     return this.goto(this.instruction.next);
 };
 
+Engine.prototype.$mov = function mov() {
+    var value = evaluate(this.top, this.instruction.source);
+    var name = evaluate.nominate(this.top, this.instruction.target);
+    // istanbul ignore if
+    if (this.debug) {
+        console.log(this.top.at() + '/' + this.label + ' ' + name + ' = ' + value);
+    }
+    this.top.set(name, value);
+    return this.goto(this.instruction.next);
+};
+
 Engine.prototype.$jump = function jump() {
     var j = this.instruction;
     if (evaluate(this.top, j.condition)) {
