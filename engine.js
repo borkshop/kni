@@ -7,23 +7,23 @@ module.exports = Engine;
 
 var debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
-function Engine(story, start, render, interlocutor, randomer) {
+function Engine(args) {
     // istanbul ignore next
-    start = start || 'start';
+    var start = args.start || 'start';
     var self = this;
-    this.story = story;
+    this.story = args.story;
     this.options = [];
     this.keywords = {};
-    this.variables = {};
-    this.global = new Global(randomer);
-    this.top = this.global;
+    this.storage = args.storage || new Global();
+    this.top = this.storage;
     this.stack = [this.top];
     this.label = '';
     this.instruction = new Story.constructors.goto(start);
-    this.render = render;
-    this.interlocutor = interlocutor;
-    this.interlocutor.engine = this;
-    this.randomer = randomer;
+    this.render = args.render;
+    this.dialog = args.dialog;
+    this.dialog.engine = this;
+    // istanbul ignore next
+    this.randomer = args.randomer || Math;
     this.debug = debug;
     Object.seal(this);
 }
@@ -53,7 +53,7 @@ Engine.prototype.$text = function text() {
 };
 
 Engine.prototype.$print = function print() {
-    return this.print('' + evaluate(this.top, this.instruction.expression));
+    return this.print('' + evaluate(this.top, this.randomer, this.instruction.expression));
 };
 
 Engine.prototype.$break = function $break() {
@@ -96,13 +96,13 @@ Engine.prototype.$call = function $call() {
     if (!routine) {
         throw new Error('no such routine ' + this.instruction.label);
     }
-    // TODO replace this.global with closure scope if scoped procedures become
+    // TODO replace this.storage with closure scope if scoped procedures become
     // viable. This will require that the engine create references to closures
     // when entering a new scope (calling a procedure), in addition to
     // capturing locals. As such the parser will need to retain a reference to
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
-    this.top = new Frame(this.global, routine.locals || [], this.instruction.next, this.instruction.branch);
+    this.top = new Frame(this.storage, routine.locals || [], this.instruction.next, this.instruction.branch);
     this.stack.push(this.top);
     return this.goto(this.instruction.branch);
 };
@@ -123,7 +123,7 @@ Engine.prototype.$option = function option() {
 };
 
 Engine.prototype.$set = function set() {
-    var value = evaluate(this.top, this.instruction.expression);
+    var value = evaluate(this.top, this.randomer, this.instruction.expression);
     // istanbul ignore if
     if (this.debug) {
         console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.variable + ' = ' + value);
@@ -133,8 +133,8 @@ Engine.prototype.$set = function set() {
 };
 
 Engine.prototype.$mov = function mov() {
-    var value = evaluate(this.top, this.instruction.source);
-    var name = evaluate.nominate(this.top, this.instruction.target);
+    var value = evaluate(this.top, this.randomer, this.instruction.source);
+    var name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
     // istanbul ignore if
     if (this.debug) {
         console.log(this.top.at() + '/' + this.label + ' ' + name + ' = ' + value);
@@ -145,7 +145,7 @@ Engine.prototype.$mov = function mov() {
 
 Engine.prototype.$jump = function jump() {
     var j = this.instruction;
-    if (evaluate(this.top, j.condition)) {
+    if (evaluate(this.top, this.randomer, j.condition)) {
         return this.goto(this.instruction.branch);
     } else {
         return this.goto(this.instruction.next);
@@ -158,7 +158,7 @@ Engine.prototype.$switch = function _switch() {
     if (this.instruction.mode === 'rand') {
         value = Math.floor(this.randomer.random() * branches.length);
     } else {
-        value = evaluate(this.top, this.instruction.expression);
+        value = evaluate(this.top, this.randomer, this.instruction.expression);
         this.top.set(this.instruction.variable, value + this.instruction.value);
     }
     if (this.instruction.mode === 'loop') {
@@ -190,7 +190,7 @@ Engine.prototype.goto = function _goto(name) {
     if (name == null) {
         this.display();
         this.render.break();
-        this.interlocutor.close();
+        this.dialog.close();
         return false;
     }
     var next = this.story[name];
@@ -206,7 +206,7 @@ Engine.prototype.goto = function _goto(name) {
 Engine.prototype.answer = function answer(text) {
     this.render.flush();
     if (text === 'quit') {
-        this.interlocutor.close();
+        this.dialog.close();
         return;
     }
     // istanbul ignore next
@@ -246,7 +246,7 @@ Engine.prototype.prompt = function prompt() {
         var option = this.options[i];
         this.render.option(i + 1, option.label);
     }
-    this.interlocutor.question();
+    this.dialog.question();
 };
 
 Engine.prototype.flush = function flush() {
@@ -254,9 +254,8 @@ Engine.prototype.flush = function flush() {
     this.keywords = {};
 };
 
-function Global(randomer) {
+function Global() {
     this.scope = Object.create(null);
-    this.randomer = randomer;
     this.next = null;
 }
 
@@ -266,10 +265,6 @@ Global.prototype.get = function get(name) {
 
 Global.prototype.set = function set(name, value) {
     this.scope[name] = value;
-};
-
-Global.prototype.random = function random() {
-    return this.randomer.random();
 };
 
 // istanbul ignore next
@@ -313,10 +308,6 @@ Frame.prototype.set = function set(name, value) {
         return;
     }
     this.caller.set(name, value);
-};
-
-Frame.prototype.random = function random() {
-    return this.caller.random();
 };
 
 // istanbul ignore next

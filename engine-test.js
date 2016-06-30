@@ -66,7 +66,13 @@ function test(inkscript, transcript) {
     var writer = new StringWriter();
     var render = new Console(writer);
     var readline = new FakeReadline(writer, answers);
-    var engine = new Engine(states, 'start', render, readline, randomer);
+    var engine = new Engine({
+        story: states,
+        start: 'start',
+        render: render,
+        dialog: readline,
+        randomer: randomer
+    });
     readline.engine = engine;
     engine.continue();
 

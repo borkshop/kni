@@ -2,31 +2,36 @@
 
 module.exports = evaluate;
 
-function evaluate(scope, args) {
+function evaluate(scope, randomer, args) {
     var name = args[0];
     if (binary[name]) {
         return binary[name](
-            evaluate(scope, args[1]),
-            evaluate(scope, args[2]),
-            scope
+            evaluate(scope, randomer, args[1]),
+            evaluate(scope, randomer, args[2]),
+            scope,
+            randomer
         );
     // istanbul ignore next
     } else if (unary[name]) {
-        return unary[name](evaluate(scope, args[1]));
+        return unary[name](
+            evaluate(scope, randomer, args[1]),
+            scope,
+            randomer
+        );
     } else if (name === 'val') {
         return args[1];
     } else if (name === 'get') {
         return scope.get(args[1]);
     // istanbul ignore else
     } else if (name === 'var') {
-        return scope.get(nominate(scope, args));
+        return scope.get(nominate(scope, randomer, args));
     }
     // istanbul ignore next
     throw new Error('Unexpected operator ' + args[0]);
 }
 
 evaluate.nominate = nominate;
-function nominate(scope, args) {
+function nominate(scope, randomer, args) {
     var literals = args[1];
     var variables = args[2];
     var name = '';
@@ -80,10 +85,10 @@ var binary = {
     '#': function (x, y) {
         return hilbert(x, y);
     },
-    '~': function (x, y, scope) {
+    '~': function (x, y, scope, randomer) {
         var r = 0;
         for (var i = 0; i < x; i++) {
-            r += scope.random() * y;
+            r += randomer.random() * y;
         }
         return Math.floor(r);
     }

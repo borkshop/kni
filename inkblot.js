@@ -104,7 +104,13 @@ function main() {
         if (interactive) {
             var readline = new Readline(config.transcript);
             var render = new Console(out);
-            var engine = new Engine(states, config.start, render, readline, randomer);
+            var engine = new Engine({
+                story: states,
+                start: config.start,
+                render: render,
+                dialog: readline,
+                randomer: randomer
+            });
 
             if (config.debugRuntime) {
                 engine.debug = true;

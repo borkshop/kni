@@ -2,8 +2,14 @@
 var Engine = require('./engine');
 var story = require('./examples/archery.json');
 var Document = require('./document');
+var LocalStorage = require('./localstorage');
 var doc = new Document(document.getElementById('body'));
-var engine = new Engine(story, 'start', doc, doc);
+var engine = new Engine({
+    story: story,
+    render: doc,
+    dialog: doc,
+    storage: new LocalStorage(localStorage)
+});
 doc.clear();
 engine.continue();
 
