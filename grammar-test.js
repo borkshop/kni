@@ -1829,6 +1829,8 @@ test([
     "start": {
         "type": "print",
         "expression": ["get", "start.1"],
+        "lift": "",
+        "drop": "",
         "next": null
     }
 });
@@ -1864,6 +1866,8 @@ test([
     "start.0.3": {
         "type": "print",
         "expression": ["get", "arrow"],
+        "lift": "",
+        "drop": "",
         "next": "start.0.3.1"
     },
     "start.0.3.1": {
@@ -1891,6 +1895,8 @@ test([
     "start.0.1": {
         "type": "print",
         "expression": ["get", "arrow"],
+        "lift": "",
+        "drop": "",
         "next": "start.0.1.1"
     },
     "start.0.1.1": {
@@ -2057,6 +2063,8 @@ test([
     "start.1.2": {
         "type": "print",
         "expression": ["get", "gold"],
+        "lift": "",
+        "drop": "",
         "next": "start.1.2.1"
     },
     "start.1.2.1": {
@@ -2453,6 +2461,8 @@ test([
     "hello.2": {
         "type": "print",
         "expression": ["get", "name"],
+        "lift": "",
+        "drop": "",
         "next": "hello.3"
     },
     "hello.3": {
@@ -2583,6 +2593,8 @@ test([
     "start": {
         "type": "print",
         "expression": ["+", ["get", "a"], ["get", "b"]],
+        "lift": "",
+        "drop": "",
         "next": null
     }
 });
@@ -2710,6 +2722,8 @@ test([
     "start": {
         "type": "print",
         "expression": ["<", ["get", "x"], ["val", 10]],
+        "lift": "",
+        "drop": "",
         "next": null
     },
 });
@@ -2720,6 +2734,8 @@ test([
     "start": {
         "type": "print",
         "expression": ["+", ["~", ["val", 2], ["val", 6]], ["val", 1]],
+        "lift": "",
+        "drop": "",
         "next": null
     }
 });

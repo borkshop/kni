@@ -54,6 +54,8 @@ constructors.print = Print;
 function Print(expression) {
     this.type = 'print';
     this.expression = expression;
+    this.lift = '';
+    this.drop = '';
     this.next = null;
     Object.seal(this);
 }
@@ -65,6 +67,8 @@ Print.prototype.describe = function describe() {
 Print.prototype.equals = function _equals(that) {
     return this.type === that.type &&
         equals(this.expression, that.expression) &&
+        this.lift === that.lift &&
+        this.drop === that.drop &&
         this.next === that.next;
 };
 
