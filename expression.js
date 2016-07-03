@@ -67,7 +67,7 @@ Value.prototype.next = function next(type, space, text, scanner) {
         return new GetDynamicVariable(this.parent, [''], []);
     // istanbul ignore else
     } else if (type === 'alphanum') {
-        return new GetStaticVariable(this.parent, [], [], text);
+        return new GetStaticVariable(this.parent, [], [], text, false);
     }
     // istanbul ignore next
     throw new Error('Expected value, got ' + type + ' ' + text + ' at ' + scanner.position());
@@ -75,7 +75,7 @@ Value.prototype.next = function next(type, space, text, scanner) {
 
 expression.variable = variable;
 function variable(parent) {
-    return new GetStaticVariable(parent, [], [], '');
+    return new GetStaticVariable(parent, [], [], '', true);
 }
 
 function GetDynamicVariable(parent, literals, variables) {
@@ -94,15 +94,17 @@ GetDynamicVariable.prototype.next = function next(type, space, text, scanner) {
         .next(type, space, text, scanner);
 };
 
-function GetStaticVariable(parent, literals, variables, literal) {
+function GetStaticVariable(parent, literals, variables, literal, fresh) {
     this.parent = parent;
     this.literals = literals;
     this.variables = variables;
     this.literal = literal;
+    this.fresh = fresh;
 }
 
 GetStaticVariable.prototype.next = function next(type, space, text, scanner) {
-    if ((space === '' || this.literal === '') && space === '') {
+    if (space === '' || this.fresh) {
+        this.fresh = false;
         if (text === '$') {
             return new GetDynamicVariable(this.parent, this.literals.concat([this.literal]), this.variables);
         } else if (text === '.') {

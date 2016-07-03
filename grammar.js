@@ -58,9 +58,9 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         if (text === '{') {
             return new Block(this.story, this.path, this, this.ends);
         } else if (text === '=') {
-            return new ExpectLabel(this.story, this.path, this, this.ends);
+            return expression.variable(new ExpectLabel(this.story, this.path, this, this.ends));
         } else if (text === '->') {
-            return new Goto(this.story, this.path, this, this.ends);
+            return expression.variable(new Goto(this.story, this.path, this, this.ends));
         } else if (text === '<-') {
             // Implicitly tie ends to null by dropping them.
             // Continue carrying jumps to the next encountered prompt.
@@ -83,7 +83,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '-') {
             return new Knot(this.story, this.path, new Indent(this), this.ends, []);
         } else { // if (text === '=') {
-            return new LabelThread(this.story, this.path, this, this.ends);
+            return expression.variable(new LabelThread(this.story, this.path, this, this.ends));
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'paragraph');
@@ -322,10 +322,10 @@ function ExpectLabel(story, path, parent, ends) {
     this.ends = ends;
 }
 
-ExpectLabel.prototype.next = function next(type, space, text, scanner) {
+ExpectLabel.prototype.return = function _return(expression, scanner) {
     // istanbul ignore else
-    if (type === 'symbol' || type === 'alphanum') {
-        return new MaybeSubroutine(this.story, this.path, this.parent, this.ends, text);
+    if (expression[0] === 'get') {
+        return new MaybeSubroutine(this.story, this.path, this.parent, this.ends, expression[1]);
     } else {
         // TODO produce a readable error using scanner
         throw new Error('expected label after =, got ' + type + ' ' + text + ' ' + scanner.position());
@@ -340,17 +340,22 @@ function LabelThread(story, path, parent, ends) {
     this.ends = ends;
 }
 
-LabelThread.prototype.next = function next(type, space, text, scanner) {
+LabelThread.prototype.return = function _return(expression, scanner) {
     // istanbul ignore else
-    if (type === 'symbol' || type === 'alphanum') {
-        return new MaybeSubroutine(this.story, this.path, this, this.ends, text);
+    if (expression[0] === 'get') {
+        return new MaybeSubroutine(this.story, this.path, new LabelThreadStop(this.parent), this.ends, expression[1]);
     } else {
         // TODO produce a readable error using scanner
-        throw new Error('expected label after =, got ' + type + ' ' + text + ' ' + scanner.position());
+        throw new Error('expected label after =, got ' + JSON.stringify(expression) + ' ' + scanner.position());
     }
 };
 
-LabelThread.prototype.return = function _return(path, ends, jumps, scanner) {
+function LabelThreadStop(parent) {
+    this.parent = parent;
+    Object.seal(this);
+};
+
+LabelThreadStop.prototype.return = function _return(path, ends, jumps, scanner) {
     return new Expect('stop', '', path, this.parent, ends, jumps);
 };
 
@@ -405,6 +410,7 @@ Subroutine.prototype.next = function next(type, space, text, scanner) {
         return new Knot(this.story, Path.next(path), this, [label, sub], []);
     // istanbul ignore else
     } else if (type === 'alphanum') {
+        // TODO handle expression.variable
         this.locals.push(text);
         return this;
     } else {
@@ -426,13 +432,13 @@ function Goto(story, path, parent, ends) {
     this.ends = ends;
 }
 
-Goto.prototype.next = function next(type, space, text, scanner) {
+Goto.prototype.return = function _return(expression, scanner) {
     // istanbul ignore else
-    if (type === 'alphanum') {
-        tieName(this.ends, text);
+    if (expression[0] === 'get') {
+        tieName(this.ends, expression[1]);
         return this.parent.return(Path.next(this.path), [], [], scanner);
     } else {
-        throw new Error('Unexpected token after goto arrow: ' + type + ' ' + text + ' ' + scanner.position());
+        throw new Error('Unexpected after goto arrow: ' + JSON.stringify(expression) + ' ' + scanner.position());
     }
 };
 
@@ -443,24 +449,29 @@ function Call(story, path, parent, ends) {
     this.parent = parent;
     this.ends = ends;
     this.node = null;
-    this.label = null;
 }
 
-Call.prototype.next = function next(type, space, text, scanner) {
-    // TODO read expression for label instead of just alpha
+Call.prototype.return = function _return(expression, scanner) {
     // istanbul ignore else
-    if (type === 'alphanum') {
-        this.label = text;
-        this.node = this.story.create(this.path, 'call', this.label);
+    if (expression[0] === 'get') {
+        var label = expression[1];
+        this.node = this.story.create(this.path, 'call', label);
         var branch = new Branch(this.node);
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.firstChild(this.path), this, [branch], []);
+        return new Knot(this.story, Path.firstChild(this.path), new EndCall(this.path, this.node, this.parent, label), [branch], []);
     } else {
-        throw new Error('Unexpected token after goto arrow: ' + type + ' ' + text + ' ' + scanner.position());
+        throw new Error('Unexpected token after goto arrow: ' + JSON.stringify(expression) + ' ' + scanner.position());
     }
 };
 
-Call.prototype.return = function _return(path, ends, jumps, scanner) {
+function EndCall(path, node, parent, label) {
+    this.path = path;
+    this.node = node;
+    this.parent = parent;
+    this.label = label;
+}
+
+EndCall.prototype.return = function _return(path, ends, jumps, scanner) {
     tieName(ends, this.label);
     return new Expect('token', '}', Path.next(this.path), this.parent, [this.node], jumps);
 };
@@ -523,7 +534,7 @@ Block.prototype.next = function next(type, space, text, scanner) {
                 .start(null, null, null, switches[text])
                 .case();
         } else if (text === '->') {
-            return new Call(this.story, this.path, this.parent, this.ends);
+            return expression.variable(new Call(this.story, this.path, this.parent, this.ends));
         }
     }
     return new Switch(this.story, this.path, this.parent, this.ends)
@@ -642,7 +653,7 @@ MaybeConditional.prototype.next = function next(type, space, text, scanner) {
         return new Knot(this.story, Path.next(this.path), new Rejoin(this.parent, node), [branch], []);
     }
     // istanbul ignore next
-    throw new Error('Unexpected token after conditional, got ' + type + ' ' + text);
+    throw new Error('Unexpected token after conditional, got ' + type + ' ' + text + ' at ' + scanner.position());
 };
 
 function Set(story, path, parent, ends, op) {

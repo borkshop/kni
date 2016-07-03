@@ -102,7 +102,7 @@ Engine.prototype.$call = function $call() {
     // capturing locals. As such the parser will need to retain a reference to
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
-    this.top = new Frame(this.storage, routine.locals || [], this.instruction.next, this.instruction.branch);
+    this.top = new Frame(this.storage, routine.locals || [], this.instruction.next, this.label);
     this.stack.push(this.top);
     return this.goto(this.instruction.branch);
 };
@@ -182,7 +182,7 @@ Engine.prototype.$prompt = function prompt() {
 };
 
 Engine.prototype.goto = function _goto(name) {
-    while (name === null && this.stack.length > 1 && this.options.length === 0) {
+    while (name === null && this.stack.length > 1) {
         var top = this.stack.pop();
         this.top = this.stack[this.stack.length - 1];
         name = top.next;
@@ -270,12 +270,13 @@ Global.prototype.set = function set(name, value) {
 // istanbul ignore next
 Global.prototype.log = function log() {
     var globals = Object.keys(this.scope);
+    globals.sort();
     for (var i = 0; i < globals.length; i++) {
         var name = globals[i];
         var value = this.scope[name];
         console.log(name + ' = ' + value);
     }
-    render.paragraph();
+    console.log('');
 };
 
 // istanbul ignore next

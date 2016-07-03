@@ -53,7 +53,7 @@ var binary = {
         return x * y;
     },
     '/': function (x, y) {
-        return (x / y) >>> 0;
+        return (x / y) >> 0;
     },
     '%': function (x, y) {
         return x % y;
@@ -103,10 +103,10 @@ var unary = {
 
 evaluate.hash = hash;
 function hash(x) {
-    x = ((x >>> 16) ^ x) * 0x45d9f3b;
-    x = ((x >>> 16) ^ x) * 0x45d9f3b;
-    x = ((x >>> 16) ^ x);
-    return x >>> 0;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x);
+    return x >> 0;
 }
 
 var msb = (-1 >>> 1) + 1;

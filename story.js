@@ -117,7 +117,7 @@ function Call(label) {
 Call.prototype.tie = tie;
 // istanbul ignore next
 Call.prototype.describe = function describe() {
-    return this.branch + '() -> ' + this.next;
+    return this.label + ' ' + this.branch + '() -> ' + this.next;
 };
 Call.prototype.equals = function equals(that) {
     return this.type === that.type &&
