@@ -9,7 +9,6 @@ var debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
 function Engine(args) {
     // istanbul ignore next
-    var start = args.start || 'start';
     var self = this;
     this.story = args.story;
     this.options = [];
@@ -18,6 +17,7 @@ function Engine(args) {
     this.top = this.storage;
     this.stack = [this.top];
     this.label = '';
+    var start = args.start || this.storage.get('@') || 'start';
     this.instruction = new Story.constructors.goto(start);
     this.render = args.render;
     this.dialog = args.dialog;
@@ -25,8 +25,16 @@ function Engine(args) {
     // istanbul ignore next
     this.randomer = args.randomer || Math;
     this.debug = debug;
+    this.end = this.end;
     Object.seal(this);
 }
+
+Engine.prototype.end = function end() {
+    this.display();
+    this.render.break();
+    this.dialog.close();
+    return false;
+};
 
 Engine.prototype.continue = function _continue() {
     var _continue;
@@ -188,10 +196,7 @@ Engine.prototype.goto = function _goto(name) {
         name = top.next;
     }
     if (name == null) {
-        this.display();
-        this.render.break();
-        this.dialog.close();
-        return false;
+        return this.end();
     }
     var next = this.story[name];
     // istanbul ignore if
@@ -219,14 +224,18 @@ Engine.prototype.answer = function answer(text) {
     var n = +text;
     if (n >= 1 && n <= this.options.length) {
         this.render.clear();
-        if (this.goto(this.options[n - 1].branch)) {
+        var at = this.options[n - 1].branch;
+        this.storage.set('@', at);
+        if (this.goto(at)) {
             this.flush();
             this.continue();
         }
     // istanbul ignore next
     } else if (this.keywords[text]) {
         this.render.clear();
-        if (this.goto(this.keywords[text])) {
+        var at = this.keywords[text];
+        this.storage.set('@', at);
+        if (this.goto(at)) {
             this.flush();
             this.continue();
         }

@@ -1,6 +1,7 @@
 'use strict';
 var Engine = require('./engine');
 var story = require('./examples/archery.json');
+var Story = require('./story');
 var Document = require('./document');
 var LocalStorage = require('./localstorage');
 var doc = new Document(document.getElementById('body'));
@@ -10,6 +11,13 @@ var engine = new Engine({
     dialog: doc,
     storage: new LocalStorage(localStorage)
 });
+engine.end = function end() {
+    this.options.push({
+        'label': 'Once more from the top…',
+        'branch': 'start'
+    });
+    return this.$prompt();
+};
 doc.clear();
 engine.continue();
 

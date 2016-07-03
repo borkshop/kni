@@ -14,3 +14,7 @@ LocalStorage.prototype.get = function get(name) {
 LocalStorage.prototype.set = function set(name, value) {
     return this.storage.setItem(this.prefix + name, value);
 };
+
+LocalStorage.prototype.clear = function clear() {
+    this.storage.clear();
+};

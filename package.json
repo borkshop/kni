@@ -31,6 +31,7 @@
     "inkblot.js",
     "inkblot.json",
     "inline-lexer.js",
+    "localstorage.js",
     "outline-lexer.js",
     "parser.js",
     "path.js",
