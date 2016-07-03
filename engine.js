@@ -17,6 +17,7 @@ function Engine(args) {
     this.top = this.storage;
     this.stack = [this.top];
     this.label = '';
+    // istanbul ignore next
     var start = args.start || this.storage.get('@') || 'start';
     this.instruction = new Story.constructors.goto(start);
     this.render = args.render;

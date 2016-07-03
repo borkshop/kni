@@ -4,7 +4,7 @@ var story = require('./examples/archery.json');
 var Story = require('./story');
 var Document = require('./document');
 var LocalStorage = require('./localstorage');
-var doc = new Document(document.getElementById('body'));
+var doc = new Document(document.body);
 var engine = new Engine({
     story: story,
     render: doc,

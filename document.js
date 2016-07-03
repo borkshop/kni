@@ -2,9 +2,12 @@
 
 module.exports = Document;
 
-function Document(element) {
+function Document(element, redraw) {
     var self = this;
-    this.element = element;
+    this.document = element.ownerDocument;
+    this.parent = element;
+    this.container = null;
+    this.element = null;
     this.engine = null;
     this.carry = '';
     this.cursor = null;
@@ -13,6 +16,7 @@ function Document(element) {
     this.p = false;
     this.br = false;
     this.onclick = onclick;
+    this.redraw = redraw;
     function onclick(event) {
         self.answer(event.target.number);
     }
@@ -58,27 +62,64 @@ Document.prototype.option = function option(number, label) {
 };
 
 Document.prototype.flush = function flush() {
+    if (this.redraw) {
+        this.redraw();
+    }
     // No-op (for console only)
 };
 
 Document.prototype.pardon = function pardon() {
-    this.clear();
-    // No-op (for console only)
+    this.options.innerHTML = '';
 };
 
 Document.prototype.display = function display() {
-    // No-op (for console only)
+    if (this.redraw) {
+        this.redraw();
+    }
+    this.container.style.opacity = 0;
+    this.container.style.transform = 'translateX(2ex)';
+    this.parent.appendChild(this.container);
+
+    // TODO not this
+    var container = this.container;
+    setTimeout(function () {
+        container.style.opacity = 1;
+        container.style.transform = 'translateX(0)';
+    }, 10);
 };
 
 Document.prototype.clear = function clear() {
-    var document = this.element.ownerDocument;
-    this.element.innerHTML = "";
-    this.options = document.createElement("table");
+    if (this.container) {
+        this.container.style.opacity = 0;
+        this.container.style.transform = 'translateX(-2ex)';
+        this.container.addEventListener("transitionend", this);
+    }
+
+    this.container = this.document.createElement("div");
+    this.container.classList.add("parent");
+    this.container.style.opacity = 0;
+    var child = this.document.createElement("div");
+    child.classList.add("child");
+    this.container.appendChild(child);
+    var outer = this.document.createElement("outer");
+    outer.classList.add("outer");
+    child.appendChild(outer);
+    this.element = this.document.createElement("inner");
+    this.element.classList.add("inner");
+    outer.appendChild(this.element);
+    this.options = this.document.createElement("table");
     this.element.appendChild(this.options);
+
     this.cursor = null;
     this.br = false;
     this.p = true;
     this.carry = '';
+};
+
+Document.prototype.handleEvent = function handleEvent(event) {
+    if (event.target.parentNode === this.parent) {
+        this.parent.removeChild(event.target);
+    }
 };
 
 Document.prototype.question = function question() {

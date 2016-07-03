@@ -12,7 +12,7 @@ body {
     left: 0;
     height: 100%;
     width: 100%;
-    outline: dotted blue 1px;
+    transition: transform 500ms ease, opacity 500ms ease-out;
 }
 
 .child {
