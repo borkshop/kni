@@ -1,7 +1,17 @@
 {
     "start": {
-        "type": "jnz",
-        "variable": "start",
+        "type": "jump",
+        "condition": [
+            "!=",
+            [
+                "get",
+                "start"
+            ],
+            [
+                "val",
+                0
+            ]
+        ],
         "branch": "start.1",
         "next": "start.0.1"
     },
@@ -13,13 +23,35 @@
         "next": "start.1"
     },
     "start.0.2": {
-        "type": "inc",
+        "type": "set",
         "variable": "start",
-        "next": "start.6"
+        "expression": [
+            "+",
+            [
+                "get",
+                "start"
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "parameter": false,
+        "next": "start"
     },
     "start.1": {
-        "type": "jnz",
-        "variable": "start.1",
+        "type": "jump",
+        "condition": [
+            "!=",
+            [
+                "get",
+                "start.1"
+            ],
+            [
+                "val",
+                0
+            ]
+        ],
         "branch": "start.2",
         "next": "start.1.1"
     },
@@ -31,13 +63,35 @@
         "next": "start.2"
     },
     "start.1.2": {
-        "type": "inc",
+        "type": "set",
         "variable": "start.1",
-        "next": "start.6"
+        "expression": [
+            "+",
+            [
+                "get",
+                "start.1"
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "parameter": false,
+        "next": "start"
     },
     "start.2": {
-        "type": "jnz",
-        "variable": "start.2",
+        "type": "jump",
+        "condition": [
+            "!=",
+            [
+                "get",
+                "start.2"
+            ],
+            [
+                "val",
+                0
+            ]
+        ],
         "branch": "start.3",
         "next": "start.2.1"
     },
@@ -49,13 +103,35 @@
         "next": "start.3"
     },
     "start.2.2": {
-        "type": "inc",
+        "type": "set",
         "variable": "start.2",
-        "next": "start.6"
+        "expression": [
+            "+",
+            [
+                "get",
+                "start.2"
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "parameter": false,
+        "next": "start"
     },
     "start.3": {
-        "type": "jnz",
-        "variable": "start.3",
+        "type": "jump",
+        "condition": [
+            "!=",
+            [
+                "get",
+                "start.3"
+            ],
+            [
+                "val",
+                0
+            ]
+        ],
         "branch": "start.4",
         "next": "start.3.1"
     },
@@ -67,29 +143,30 @@
         "next": "start.4"
     },
     "start.3.2": {
-        "type": "inc",
+        "type": "set",
         "variable": "start.3",
-        "next": "start.6"
+        "expression": [
+            "+",
+            [
+                "get",
+                "start.3"
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "parameter": false,
+        "next": "start"
     },
     "start.4": {
         "type": "option",
         "label": "End",
         "keywords": [],
-        "branch": "start.4.1",
+        "branch": null,
         "next": "start.5"
-    },
-    "start.4.1": {
-        "type": "goto",
-        "label": "end"
     },
     "start.5": {
         "type": "prompt"
-    },
-    "start.6": {
-        "type": "goto",
-        "label": "start"
-    },
-    "end": {
-        "type": "end"
     }
 }
