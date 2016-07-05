@@ -6,6 +6,7 @@ fromJson:          [-J]                   Read ink script as compiled JSON
 toJson:            [-j|--json]            Dump compiled script as JSON instead of running interactively.
 describe:          [-d]                   Describe instead of running interactively.
 transcript:        [-t <script>] :output  Write a transcript.
+expected:          [-v <script>] :input   Verify a prior recorded transcript.
 seed:              [-r <seed>] :number    Seed the random number generator.
 
 debugInput:        [--di]                 Log input file before processing

@@ -12,6 +12,7 @@ var InlineLexer = require('./inline-lexer');
 var Parser = require('./parser');
 var Story = require('./story');
 var grammar = require('./grammar');
+var verify = require('./verify');
 var exec = require('shon/exec');
 var usage = require('./inkblot.json');
 var xorshift = require('xorshift');
@@ -25,22 +26,24 @@ function main() {
         return;
     }
 
-    read(config.script, 'utf8', onScript);
+    read(config.script, 'utf8', onInkscript);
 
-    function onScript(err, ink) {
+    function onInkscript(err, inkscript) {
         if (err) {
+            console.error(err.message);
+            process.exit(-1);
             return;
         }
 
         if (config.debugInput) {
-            console.log(ink);
+            console.log(inkscript);
         }
 
         var interactive = true;
 
         var states;
         if (config.fromJson) {
-            states = JSON.parse(ink);
+            states = JSON.parse(inkscript);
 
         } else {
             var story = new Story();
@@ -67,7 +70,7 @@ function main() {
                 interactive = false;
             }
 
-            s.next(ink);
+            s.next(inkscript);
             s.return();
             states = story.states;
         }
@@ -88,6 +91,7 @@ function main() {
         if (config.transcript === process.stdout) {
             config.transcript = null;
         }
+
         if (config.transcript) {
             out = tee(config.transcript, out);
         }
@@ -99,6 +103,22 @@ function main() {
                 59156 ^ config.seed,
                 24695 ^ config.seed
             ]);
+        }
+
+        if (config.expected === process.stdin) {
+            config.expected = null;
+        }
+
+        if (config.expected) {
+            read(config.expected, 'utf8', function onTypescript(err, typescript) {
+                if (err) {
+                    console.error(err.message);
+                    process.exit(-1);
+                    return;
+                }
+                test(inkscript, typescript);
+            });
+            return;
         }
 
         if (interactive) {
@@ -120,6 +140,14 @@ function main() {
         }
     }
 
+}
+
+function test(inkscript, typescript) {
+    var result = verify(inkscript, typescript);
+    if (!result.pass) {
+        console.log(result.actual);
+        process.exit(1);
+    }
 }
 
 function describe(states) {
@@ -145,11 +173,11 @@ function no() {
 }
 
 function read(stream, encoding, callback) {
+    stream.setEncoding(encoding);
+    var string = '';
     stream.on('data', onData);
     stream.on('end', onEnd);
     stream.on('error', onEnd);
-    stream.setEncoding(encoding);
-    var string = '';
     function onData(chunk) {
         string += chunk;
     }

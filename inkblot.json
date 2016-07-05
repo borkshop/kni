@@ -10,6 +10,7 @@
     "[-j|--json]            Dump compiled script as JSON instead of running interactively.",
     "[-d]                   Describe instead of running interactively.",
     "[-t <script>] :output  Write a transcript.",
+    "[-v <script>] :input   Verify a prior recorded transcript.",
     "[-r <seed>] :number    Seed the random number generator.",
     "[--di]                 Log input file before processing",
     "[--dr]                 Enable runtime debug logging",
@@ -113,6 +114,22 @@
       "minLength": null,
       "maxLength": null,
       "help": "Write a transcript."
+    },
+    "expected": {
+      "flags": [
+        {
+          "flag": "-v",
+          "short": true
+        }
+      ],
+      "arg": "script",
+      "command": null,
+      "collectorType": null,
+      "type": "input",
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Verify a prior recorded transcript."
     },
     "seed": {
       "flags": [

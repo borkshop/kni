@@ -1,15 +1,7 @@
 'use strict';
 
 var fs = require('fs');
-var xorshift = require('xorshift');
-var Engine = require('./engine');
-var Console = require('./console');
-var Scanner = require('./scanner');
-var OutlineLexer = require('./outline-lexer');
-var InlineLexer = require('./inline-lexer');
-var Parser = require('./parser');
-var Story = require('./story');
-var grammar = require('./grammar');
+var verify = require('./verify');
 
 function main() {
     test('examples/archery.ink', 'tests/archery.1');
@@ -37,87 +29,17 @@ function main() {
 function test(inkscript, transcript) {
     var ink = fs.readFileSync(inkscript, 'utf8');
     var trans = fs.readFileSync(transcript, 'utf8');
-    var lines = trans.split('\n');
-
-    // filter the transcript for given answers
-    var answers = [];
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if (line.lastIndexOf('> ', 0) === 0) {
-            answers.push(line.slice(2));
-        }
-    }
-
-    // build a story from the ink
-    var story = new Story();
-    var p = new Parser(grammar.start(story));
-    var il = new InlineLexer(p);
-    var ol = new OutlineLexer(il);
-    var s = new Scanner(ol);
-
-    s.next(ink);
-    s.return();
-    var states = story.states;
-
-    // TODO support alternate seeds
-    var seed = 0;
-    // I rolled 4d64k this morning, for inkblot.js
-    var randomer = new xorshift.constructor([
-        37615 ^ seed,
-        54552 ^ seed,
-        59156 ^ seed,
-        24695 ^ seed
-    ]);
-
-    var writer = new StringWriter();
-    var render = new Console(writer);
-    var readline = new FakeReadline(writer, answers);
-    var engine = new Engine({
-        story: states,
-        start: 'start',
-        render: render,
-        dialog: readline,
-        randomer: randomer
-    });
-    readline.engine = engine;
-    engine.continue();
+    var result = verify(ink, trans);
 
     // istanbul ignore if
-    if (writer.string.trim() !== trans.trim()) {
+    if (!result.pass) {
         global.fail = true;
         console.log("FAIL");
         console.log("expected");
-        console.log(trans);
+        console.log(result.expected);
         console.log("got");
-        console.log(writer.string);
+        console.log(result.actual);
     }
 }
-
-function FakeReadline(writer, answers) {
-    this.writer = writer;
-    this.answers = answers;
-    this.engine = null;
-}
-
-FakeReadline.prototype.question = function question() {
-    var answer = this.answers.shift();
-    // istanbul ignore if
-    if (answer == null) {
-        return;
-    }
-    this.writer.write('> ' + answer + '\n');
-    this.engine.answer(answer);
-};
-
-FakeReadline.prototype.close = function close() {
-};
-
-function StringWriter() {
-    this.string = '';
-}
-
-StringWriter.prototype.write = function write(string) {
-    this.string += string;
-};
 
 main();
