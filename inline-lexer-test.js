@@ -215,3 +215,37 @@ test([
     ' ', 'STOP',
     ' ', 'STOP'
 ]);
+
+test([
+    '\\-'
+], [
+    'LITERAL', '-',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
+    'Fahren\\',
+    'vergnügen'
+], [
+    'Fahrenvergnügen',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
+    'Fahren\\   ',
+    'vergnügen'
+], [
+    'Fahrenvergnügen',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
+    'Space\\ Lord'
+], [
+    'Space', ' ', 'Lord',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);

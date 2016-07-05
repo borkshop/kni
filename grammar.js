@@ -52,7 +52,7 @@ function Knot(story, path, parent, ends, jumps) {
 }
 
 Knot.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'symbol'|| type === 'alphanum' || type === 'number') {
+    if (type === 'symbol'|| type === 'alphanum' || type === 'number' || type === 'literal') {
         return new Text(this.story, this.path, space, text, this, this.ends);
     }  else if (type === 'token') {
         if (text === '{') {
@@ -92,8 +92,11 @@ Knot.prototype.next = function next(type, space, text, scanner) {
     } else if (type === 'break') {
         return this;
     }
-    return this.parent.return(this.path, this.ends, this.jumps, scanner)
-        .next(type, space, text, scanner);
+    if (type === 'stop' || text === '|' || text === ']' || text === '[' || text === '}') {
+        return this.parent.return(this.path, this.ends, this.jumps, scanner)
+            .next(type, space, text, scanner);
+    }
+    return new Text(this.story, this.path, space, text, this, this.ends);
 };
 
 Knot.prototype.return = function _return(path, ends, jumps, scanner) {
@@ -122,7 +125,7 @@ function Text(story, path, lift, text, parent, ends) {
 }
 
 Text.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'alphanum' || type === 'number' || type === 'symbol') {
+    if (type === 'alphanum' || type === 'number' || type === 'symbol' || type === 'literal') {
         this.text += space + text;
         return this;
     } else {

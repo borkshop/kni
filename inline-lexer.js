@@ -19,7 +19,8 @@ var L1 = '=[]{}|/<>';
 var L2 = ['->', '<-', '==', '!=', '>=', '<='];
 var num = /\d/;
 var space = /\s/;
-var alpha = /[\w\d_]/;
+// alphanumerics including non-english
+var alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\w\d_]/;
 
 function InlineLexer(generator) {
     this.generator = generator;
@@ -42,24 +43,53 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         return this;
     }
 
+    var wrap = false;
     for (var i = 0; i < text.length - 1; i++) {
         var c = text[i];
-        var cc = c + text[i + 1];
+        var d = text[i + 1];
+        var cd = c + d;
         var numeric = num.test(c);
         var alphanum = alpha.test(c);
         if (c === ' ' || c === '\t') {
             this.flush(scanner);
             this.space = ' ';
-        } else if (L2.indexOf(cc) >= 0) {
+        } else if (cd === '\\ ') {
+            // Scan forward to end of line until encountering a non-space
+            // character.
+            for (i = i + 2; i < text.length; i++) {
+                c = text[i];
+                if (c !== ' ' && c !== '\t') {
+                    i--;
+                    break;
+                }
+            }
+            if (i === text.length) {
+                // If everything after \ is whitespace, then treat it as if
+                // there is no whitespace, meaning that the \ means continue
+                // through next line.
+                wrap = true;
+                this.space = '';
+            } else {
+                // Otherwise, treat all following space as a single space.
+                this.flush(scanner);
+                this.space = ' ';
+            }
+        } else if (c === '\\') {
+            // TODO account for escaped space through to the end of line
             this.flush(scanner);
-            this.generator.next('token', this.space, cc, scanner);
+            this.generator.next('literal', this.space, d, scanner);
+            this.space = '';
+            i++;
+        } else if (L2.indexOf(cd) >= 0) {
+            this.flush(scanner);
+            this.generator.next('token', this.space, cd, scanner);
             this.space = '';
             i++;
         } else if (L1.indexOf(c) >= 0) {
             this.flush(scanner);
             this.generator.next('token', this.space, c, scanner);
             this.space = '';
-        } else if (cc === '--') {
+        } else if (cd === '--') {
             this.flush(scanner);
             for (var j = i + 2; j < text.length; j++) {
                 c = text[j];
@@ -89,7 +119,10 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         var c = text[i];
         var numeric = num.test(c);
         var alphanum = alpha.test(c);
-        if (c === ' ' || c === '\t') {
+        if (c === '\\') {
+            this.space = '';
+            wrap = true;
+        } else if (c === ' ' || c === '\t') {
             // noop
         } else if (L1.indexOf(c) >= 0) {
             this.flush(scanner);
@@ -99,15 +132,16 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         } else if (!alphanum) {
             this.flush(scanner);
             this.generator.next(this.type, this.space, c, scanner);
-            this.space = '';
         } else {
             this.type = 'alphanum';
             this.accumulator += c;
         }
     }
 
-    this.flush(scanner);
-    this.space = ' ';
+    if (!wrap) {
+        this.flush(scanner);
+        this.space = ' ';
+    }
     return this;
 };
 
