@@ -12,20 +12,26 @@ var Story = require('./story');
 var grammar = require('./grammar');
 
 function main() {
-    test('examples/fish.ink', 'transcripts/fish.1');
-    test('examples/fish.ink', 'transcripts/fish.2');
-    test('examples/bottles.ink', 'transcripts/bottles.1');
-    test('examples/distribution.ink', 'transcripts/distribution.1');
-    test('examples/hilbert.ink', 'transcripts/hilbert.1');
-    test('examples/plane.ink', 'transcripts/plane.1');
-    test('examples/archery.ink', 'transcripts/archery.1');
-    test('examples/archery.ink', 'transcripts/pardon.1');
-    test('examples/math.ink', 'transcripts/math.1');
-    test('examples/procedure.ink', 'transcripts/procedure.1');
-    test('examples/german.ink', 'transcripts/german.1');
-    test('examples/archery.ink', 'transcripts/quit.1');
-    test('examples/conjunctions.ink', 'transcripts/conjunctions.1');
-    test('examples/indirect.ink', 'transcripts/indirect.1');
+    test('examples/archery.ink', 'tests/archery.1');
+    test('examples/archery.ink', 'tests/pardon.1');
+    test('examples/archery.ink', 'tests/quit.1');
+    test('examples/bottles.ink', 'tests/bottles.1');
+    test('examples/distribution.ink', 'tests/distribution.1');
+    test('examples/fish.ink', 'tests/fish.1');
+    test('examples/fish.ink', 'tests/fish.2');
+    test('examples/german.ink', 'tests/german.1');
+    test('examples/hilbert.ink', 'tests/hilbert.1');
+    test('examples/liftoff.ink', 'tests/liftoff.1');
+    test('examples/paint.ink', 'tests/paint.1');
+    test('examples/plane.ink', 'tests/plane.1');
+
+    test('tests/conjunctions.ink', 'tests/conjunctions.1');
+    test('tests/indirect.ink', 'tests/indirect.1');
+    test('tests/literals.ink', 'tests/literals.1');
+    test('tests/math.ink', 'tests/math.1');
+    test('tests/procedure.ink', 'tests/procedure.1');
+    test('tests/steady.ink', 'tests/steady.1');
+    test('tests/switch-list.ink', 'tests/switch-list.1');
 }
 
 function test(inkscript, transcript) {

@@ -38,6 +38,7 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
     }
 
     if (type !== 'text') {
+        this.flush();
         this.generator.next(type, ' ', text, scanner);
         this.space = '';
         return this;
@@ -68,7 +69,6 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
                 // there is no whitespace, meaning that the \ means continue
                 // through next line.
                 wrap = true;
-                this.space = '';
             } else {
                 // Otherwise, treat all following space as a single space.
                 this.flush(scanner);
@@ -120,7 +120,6 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         var numeric = num.test(c);
         var alphanum = alpha.test(c);
         if (c === '\\') {
-            this.space = '';
             wrap = true;
         } else if (c === ' ' || c === '\t') {
             // noop
