@@ -12,7 +12,6 @@ function Engine(args) {
     var self = this;
     this.story = args.story;
     this.options = [];
-    this.keywords = {};
     this.storage = args.storage || new Global();
     this.top = this.storage;
     this.stack = [this.top];
@@ -124,10 +123,6 @@ Engine.prototype.$subroutine = function $subroutine() {
 
 Engine.prototype.$option = function option() {
     this.options.push(this.instruction);
-    // for (var i = 0; i < this.instruction.keywords.length; i++) {
-    //     var keyword = this.instruction.keywords[i];
-    //     this.keywords[keyword] = this.instruction.branch;
-    // }
     return this.goto(this.instruction.next);
 };
 
@@ -231,15 +226,6 @@ Engine.prototype.answer = function answer(text) {
             this.flush();
             this.continue();
         }
-    // istanbul ignore next
-    } else if (this.keywords[text]) {
-        this.render.clear();
-        var at = this.keywords[text];
-        this.storage.set('@', at);
-        if (this.goto(at)) {
-            this.flush();
-            this.continue();
-        }
     } else {
         this.render.pardon();
         this.prompt();
@@ -261,7 +247,6 @@ Engine.prototype.prompt = function prompt() {
 
 Engine.prototype.flush = function flush() {
     this.options.length = 0;
-    this.keywords = {};
 };
 
 function Global() {
