@@ -7,36 +7,39 @@ var expression = require('./expression');
 exports.start = start;
 
 function start(story) {
-    var path = ['start'];
-    var stop = new Stop();
+    var path = Path.start();
+    var stop = new Stop(story);
     var start = story.create(path, 'goto', null);
-    return new Knot(story, ['start', 0], stop, [start], []);
+    return new Knot(story, Path.zerothChild(path), stop, [start], []);
 }
 
-function Stop() {
-    this.type = 'end';
+function Stop(story) {
+    this.type = 'stop';
+    this.story = story;
     Object.seal(this);
 }
 
 // istanbul ignore next
 Stop.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
-    if (type === 'stop') {
-        return new End();
-    } else {
-        throw new Error('expected end of file, got ' + type + ' ' + text);
+    if (type !== 'stop') {
+        this.story.error('Expected end of file, got ' + type + '/' + text + ' at ' + scanner.position());
     }
+    return new End();
 };
 
 Stop.prototype.return = function _return() {
     return this;
 };
 
-function End() {}
+function End() {
+    this.type = 'end';
+    Object.seal(this);
+}
 
 // istanbul ignore next
 End.prototype.next = function next(type, space, text, scanner) {
-    throw new Error('nodes beyond root ' + type + ' ' + JSON.stringify(text));
+    return this;
 };
 
 // ends are tied to the next instruction
@@ -58,9 +61,9 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         if (text === '{') {
             return new Block(this.story, this.path, this, this.ends);
         } else if (text === '=') {
-            return expression.variable(new ExpectLabel(this.story, this.path, this, this.ends));
+            return expression.variable(this.story, new ExpectLabel(this.story, this.path, this, this.ends));
         } else if (text === '->') {
-            return expression.variable(new Goto(this.story, this.path, this, this.ends));
+            return expression.variable(this.story, new Goto(this.story, this.path, this, this.ends));
         } else if (text === '<-') {
             // Implicitly tie ends to null by dropping them.
             // Continue carrying jumps to the next encountered prompt.
@@ -81,9 +84,9 @@ Knot.prototype.next = function next(type, space, text, scanner) {
             tie(this.ends, this.path);
             return new Option(text, this.story, this.path, this, []);
         } else if (text === '-') {
-            return new Knot(this.story, this.path, new Indent(this), this.ends, []);
+            return new Knot(this.story, this.path, new Indent(this.story, this), this.ends, []);
         } else { // if (text === '=') {
-            return expression.variable(new LabelThread(this.story, this.path, this, this.ends));
+            return expression.variable(this.story, new LabelThread(this.story, this.path, this, this.ends));
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'paragraph');
@@ -106,12 +109,14 @@ Knot.prototype.return = function _return(path, ends, jumps, scanner) {
     return new Knot(this.story, path, this.parent, ends, this.jumps.concat(jumps));
 };
 
-function Indent(parent) {
+function Indent(story, parent) {
+    this.story = story;
     this.parent = parent;
+    Object.seal(this);
 }
 
 Indent.prototype.return = function _return(path, ends, jumps, scanner) {
-    return new Expect('stop', '', path, this.parent, ends, jumps);
+    return new Expect('stop', '', this.story, path, this.parent, ends, jumps);
 };
 
 function Text(story, path, lift, text, parent, ends) {
@@ -219,7 +224,8 @@ Option.prototype.next = function next(type, space, text, scanner) {
         return this.create(null, null, this.answer, this.direction, type, space, text, scanner);
     // istanbul ignore next
     } else if (this.position === 2 || this.position === 3) {
-        throw new Error('expected matching ]');
+        this.story.error('Expected matching ], got ' + type + '/' + text + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, this.jumps);
     } else {
         this.common.drop = space;
         return this.create(this.answer, this.question, this.common, this.direction, type, space, text, scanner);
@@ -285,7 +291,7 @@ Option.prototype.create = function create(answer, question, common, direction, t
         prev = next;
     }
 
-    var state = new Knot(this.story, path, new Indent(this), [prev], []);
+    var state = new Knot(this.story, path, new Indent(this.story, this), [prev], []);
 
     if (text !== '/') {
         state = state.next(type, space, text, scanner);
@@ -330,8 +336,8 @@ ExpectLabel.prototype.return = function _return(expression, scanner) {
     if (expression[0] === 'get') {
         return new MaybeSubroutine(this.story, this.path, this.parent, this.ends, expression[1]);
     } else {
-        // TODO produce a readable error using scanner
-        throw new Error('expected label after =, got ' + type + ' ' + text + ' ' + scanner.position());
+        this.story.error('Expected label after =, got ' + JSON.stringify(expression) + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -346,20 +352,21 @@ function LabelThread(story, path, parent, ends) {
 LabelThread.prototype.return = function _return(expression, scanner) {
     // istanbul ignore else
     if (expression[0] === 'get') {
-        return new MaybeSubroutine(this.story, this.path, new LabelThreadStop(this.parent), this.ends, expression[1]);
+        return new MaybeSubroutine(this.story, this.path, new LabelThreadStop(this.story, this.parent), this.ends, expression[1]);
     } else {
-        // TODO produce a readable error using scanner
-        throw new Error('expected label after =, got ' + JSON.stringify(expression) + ' ' + scanner.position());
+        this.story.error('Expected label after =, got ' + JSON.stringify(expression) + ' ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
-function LabelThreadStop(parent) {
+function LabelThreadStop(story, parent) {
+    this.story = story;
     this.parent = parent;
     Object.seal(this);
 };
 
 LabelThreadStop.prototype.return = function _return(path, ends, jumps, scanner) {
-    return new Expect('stop', '', path, this.parent, ends, jumps);
+    return new Expect('stop', '', this.story, path, this.parent, ends, jumps);
 };
 
 function MaybeSubroutine(story, path, parent, ends, label) {
@@ -417,7 +424,8 @@ Subroutine.prototype.next = function next(type, space, text, scanner) {
         this.locals.push(text);
         return this;
     } else {
-        throw new Error('Expected variable name or close paren at ' + scanner.position());
+        this.story.error('Expected variable name or close paren, got ' + type + '/' + text + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this, [], []);
     }
 };
 
@@ -441,7 +449,8 @@ Goto.prototype.return = function _return(expression, scanner) {
         tieName(this.ends, expression[1]);
         return this.parent.return(Path.next(this.path), [], [], scanner);
     } else {
-        throw new Error('Unexpected after goto arrow: ' + JSON.stringify(expression) + ' ' + scanner.position());
+        this.story.error('Expected label after goto arrow, got expression ' + JSON.stringify(expression) + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -451,32 +460,35 @@ function Call(story, path, parent, ends) {
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    this.node = null;
+    Object.seal(this);
 }
 
 Call.prototype.return = function _return(expression, scanner) {
     // istanbul ignore else
     if (expression[0] === 'get') {
         var label = expression[1];
-        this.node = this.story.create(this.path, 'call', label);
-        var branch = new Branch(this.node);
+        var node = this.story.create(this.path, 'call', label);
+        var branch = new Branch(node);
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.firstChild(this.path), new EndCall(this.path, this.node, this.parent, label), [branch], []);
+        return new Knot(this.story, Path.firstChild(this.path), new EndCall(this.story, this.path, node, this.parent, label), [branch], []);
     } else {
-        throw new Error('Unexpected token after goto arrow: ' + JSON.stringify(expression) + ' ' + scanner.position());
+        this.story.error('Expected label after call arrow, got expression ' + JSON.stringify(expression) + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
-function EndCall(path, node, parent, label) {
+function EndCall(story, path, node, parent, label) {
+    this.story = story;
     this.path = path;
     this.node = node;
     this.parent = parent;
     this.label = label;
+    Object.seal(this);
 }
 
 EndCall.prototype.return = function _return(path, ends, jumps, scanner) {
     tieName(ends, this.label);
-    return new Expect('token', '}', Path.next(this.path), this.parent, [this.node], jumps);
+    return new Expect('token', '}', this.story, Path.next(this.path), this.parent, [this.node], jumps);
 };
 
 function Block(story, path, parent, ends) {
@@ -523,13 +535,13 @@ var switches = {
 Block.prototype.next = function next(type, space, text, scanner) {
     if (type === 'symbol' || type === 'alphanum' || type === 'token') {
         if (jumps[text]) {
-            return expression(new Jump(this.story, this.path, this.parent, this.ends, jumps[text], ['val', 0]));
+            return expression(this.story, new Jump(this.story, this.path, this.parent, this.ends, jumps[text], ['val', 0]));
         } else if (comparators[text]) {
-            return expression(new JumpCompare(this.story, this.path, this.parent, this.ends, text));
+            return expression(this.story, new JumpCompare(this.story, this.path, this.parent, this.ends, text));
         } else if (mutators[text]) {
-            return expression(new Set(this.story, this.path, this.parent, this.ends, text));
+            return expression(this.story, new Set(this.story, this.path, this.parent, this.ends, text));
         } else if (variables[text]) {
-            return expression(new ExpressionSwitch(this.story, this.path, this.parent, this.ends, variables[text]));
+            return expression(this.story, new ExpressionSwitch(this.story, this.path, this.parent, this.ends, variables[text]));
         } else if (text === ',') {
             return new Conjunction(this.story, this.path, this.parent, this.ends);
         } else if (switches[text]) {
@@ -537,7 +549,7 @@ Block.prototype.next = function next(type, space, text, scanner) {
                 .start(null, null, null, switches[text])
                 .case();
         } else if (text === '->') {
-            return expression.variable(new Call(this.story, this.path, this.parent, this.ends));
+            return expression.variable(this.story, new Call(this.story, this.path, this.parent, this.ends));
         }
     }
     return new Switch(this.story, this.path, this.parent, this.ends)
@@ -565,9 +577,10 @@ Conjunction.prototype.next = function next(type, space, text, scanner) {
         var delimit = this.story.create(this.path, 'delimit');
         tie(this.ends, this.path);
         return this.parent.return(Path.next(this.path), [delimit], [], scanner);
+    } else {
+        this.story.error('Expected conjunction text or delimiter in {,} block, got: ' + type + '/' + text + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
-    // istanbul ignore next
-    throw new Error('Expected conjunction text or delimiter, got ' + type + ' ' + text + ' at ' + scanner.position());
 };
 
 function ContinueConjunction(story, path, parent, ends, lift, text) {
@@ -594,15 +607,16 @@ ContinueConjunction.prototype.next = function next(type, space, text, scanner) {
         // TODO thread text lift drop of conjunction
         tie(this.ends, this.path);
         return new Knot(this.story, Path.next(this.path), this, [start], []);
+    } else {
+        this.story.error('Expected conjunction text or pipe |, got ' + type + '/' + text + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
-    // istanbul ignore next
-    throw new Error('Expected conjunction text or pipe |, got ' + type + ' ' + text + ' at ' + scanner.position());
 };
 
 ContinueConjunction.prototype.return = function _return(path, ends, jumps, scanner) {
     var stop = this.story.create(path, 'stopJoin');
     tie(ends, path);
-    return new Expect('token', '}', Path.next(path), this.parent, [stop], jumps);
+    return new Expect('token', '}', this.story, Path.next(path), this.parent, [stop], jumps);
 };
 
 function JumpCompare(story, path, parent, ends, condition) {
@@ -616,7 +630,7 @@ function JumpCompare(story, path, parent, ends, condition) {
 }
 
 JumpCompare.prototype.return = function _return(right) {
-    return expression(new Jump(this.story, this.path, this.parent, this.ends, this.condition, right));
+    return expression(this.story, new Jump(this.story, this.path, this.parent, this.ends, this.condition, right));
 };
 
 function Jump(story, path, parent, ends, condition, right) {
@@ -654,9 +668,10 @@ MaybeConditional.prototype.next = function next(type, space, text, scanner) {
         var branch = new Branch(node);
         tie(this.ends, this.path);
         return new Knot(this.story, Path.next(this.path), new Rejoin(this.parent, node), [branch], []);
+    } else {
+        this.story.error('Expected | or } after condition, got ' + type + '/' + text + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
-    // istanbul ignore next
-    throw new Error('Unexpected token after conditional, got ' + type + ' ' + text + ' at ' + scanner.position());
 };
 
 function Set(story, path, parent, ends, op) {
@@ -670,7 +685,7 @@ function Set(story, path, parent, ends, op) {
 
 Set.prototype.return = function _return(expression) {
     return new MaybeSetVariable(this.story, this.path, this.parent, this.ends, this.op, expression);
-    // return expression.variable(new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, source));
+    // return expression.variable(this.story, new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, source));
 };
 
 function MaybeSetVariable(story, path, parent, ends, op, expression) {
@@ -687,7 +702,7 @@ MaybeSetVariable.prototype.next = function next(type, space, text, scanner) {
         return setVariable(this.story, this.path, this.parent, this.ends, this.op, ['val', 1], this.expression, scanner)
             .next(type, space, text, scanner);
     }
-    return expression(new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, this.expression))
+    return expression(this.story, new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, this.expression))
         .next(type, space, text, scanner);
 };
 
@@ -715,7 +730,7 @@ function setVariable(story, path, parent, ends, op, source, target, scanner) {
         }
         node.variable = variable;
         tie(ends, path);
-        return new Expect('token', '}', Path.next(path), parent, [node], []);
+        return new Expect('token', '}', story, Path.next(path), parent, [node], []);
     // istanbul ignore else
     } else if (target[0] === 'var') {
         var node = story.create(path, 'mov');
@@ -726,10 +741,11 @@ function setVariable(story, path, parent, ends, op, source, target, scanner) {
         }
         node.target = target;
         tie(ends, path);
-        return new Expect('token', '}', Path.next(path), parent, [node], []);
+        return new Expect('token', '}', story, Path.next(path), parent, [node], []);
+    } else {
+        this.story.error('Expected a variable to set, got expression ' + JSON.stringify(source) + ' ' + op + ' ' + JSON.stringify(target) + ' at ' + scanner.position());
+        return new Knot(story, path, parent, ends, []);
     }
-    // istanbul ignore next
-    throw new Error('Expected a variable to set, got ' + JSON.stringify(source) + ' ' + op + ' ' + JSON.stringify(target) + ' at ' + scanner.position());
 }
 
 function ExpressionSwitch(story, path, parent, ends, mode) {
@@ -769,9 +785,10 @@ Variable.prototype.next = function next(type, space, text, scanner) {
             tie(this.ends, this.path);
             return new Knot(this.story, Path.next(this.path), this.parent, [node], []);
         }
+    } else {
+        this.story.error('Expected | or } after expression in {$} block, got ' + type + '/' + text + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
-    // istanbul ignore next
-    throw new Error('Unexpected token in jump, ' + type + ' ' + text + ' at ' + scanner.position());
 };
 
 function Switch(story, path, parent, ends) {
@@ -799,7 +816,7 @@ Switch.prototype.start = function start(expression, variable, value, mode, min) 
 };
 
 Switch.prototype.return = function _return(path, ends, jumps, scanner) {
-    return new Expect('token', '}', Path.next(this.path), this.parent, ends, jumps);
+    return new Expect('token', '}', this.story, Path.next(this.path), this.parent, ends, jumps);
 };
 
 function Case(story, path, parent, ends, branches, min) {
@@ -840,10 +857,11 @@ Case.prototype.return = function _return(path, ends, jumps, scanner) {
     return new Case(this.story, Path.next(this.path), this.parent, this.ends.concat(ends, jumps), this.branches, this.min);
 };
 
-function Expect(type, text, path, parent, ends, jumps) {
+function Expect(type, text, story, path, parent, ends, jumps) {
     this.type = 'expect';
     this.expect = type;
     this.text = text;
+    this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
@@ -855,7 +873,8 @@ Expect.prototype.next = function next(type, space, text, scanner) {
     if (type === this.expect && text === this.text) {
         return this.parent.return(this.path, this.ends, this.jumps, scanner);
     } else {
-        throw new Error('expected ' + this.expect + ' ' + this.text + ', got ' + type + ' ' + text + ' at ' + scanner.position());
+        this.story.error('Expected ' + this.expect + ' ' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
+        return new Knot(this.story, this.path, this.parent, this.ends, this.jumps);
     }
 };
 

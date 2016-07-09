@@ -20,7 +20,7 @@ function testVar(text, expected) {
             return end;
         }
     };
-    var p = new Parser(Expression.variable(parent));
+    var p = new Parser(Expression.variable(null, parent));
     var il = new InlineLexer(p);
     var ol = new OutlineLexer(il);
     var s = new Scanner(ol);

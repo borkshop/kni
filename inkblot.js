@@ -73,6 +73,11 @@ function main() {
             s.next(inkscript);
             s.return();
             states = story.states;
+
+            if (story.errors.length) {
+                dump(story.errors);
+                return;
+            }
         }
 
         if (config.describe) {
@@ -137,6 +142,8 @@ function main() {
             }
 
             engine.continue();
+        } else {
+            process.stdin.pause();
         }
     }
 
@@ -188,6 +195,13 @@ function read(stream, encoding, callback) {
         }
         callback(null, string);
     }
+}
+
+function dump(errors) {
+    for (var i = 0; i < errors.length; i++) {
+        console.error(errors[i]);
+    }
+    process.exit(-1);
 }
 
 main();

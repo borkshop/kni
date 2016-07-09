@@ -9,6 +9,7 @@ module.exports = Story;
 
 function Story() {
     this.states = {};
+    this.errors = [];
     Object.seal(this);
 }
 
@@ -24,6 +25,11 @@ Story.prototype.create = function create(path, type, text) {
     var node = new Node(text);
     this.states[name] = node;
     return node;
+};
+
+// istanbul ignore next
+Story.prototype.error = function _error(error) {
+    this.errors.push(error);
 };
 
 constructors.text = Text;

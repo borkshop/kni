@@ -1,5 +1,11 @@
 'use strict';
 
+exports.start = start;
+
+function start() {
+    return ['start'];
+}
+
 exports.toName = pathToName;
 
 function pathToName(path) {
