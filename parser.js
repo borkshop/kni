@@ -13,6 +13,10 @@ Parser.prototype.next = function next(type, space, text, scanner) {
     var prior = this.generator.type;
     this.generator = this.generator.next(type, space, text, scanner);
     // istanbul ignore if
+    if (!this.generator) {
+        throw new Error(prior + ' returned undefined next state given ' + type + '/' + text + ' at ' + scanner.position());
+    }
+    // istanbul ignore if
     if (this.debug) {
         console.error(
             'PAR',

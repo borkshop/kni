@@ -779,12 +779,9 @@ Variable.prototype.next = function next(type, space, text, scanner) {
             .case();
     // istanbul ignore else
     } else if (text === '}') {
-        // istanbul ignore else
-        if (this.mode === 'walk') {
-            var node = this.story.create(this.path, 'print', this.expression);
-            tie(this.ends, this.path);
-            return new Knot(this.story, Path.next(this.path), this.parent, [node], []);
-        }
+        var node = this.story.create(this.path, 'print', this.expression);
+        tie(this.ends, this.path);
+        return new Knot(this.story, Path.next(this.path), this.parent, [node], []);
     } else {
         this.story.error('Expected | or } after expression in {$} block, got ' + type + '/' + text + ' at ' + scanner.position());
         return new Knot(this.story, this.path, this.parent, this.ends, []);

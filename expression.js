@@ -3,7 +3,7 @@
 module.exports = expression;
 
 function expression(story, parent) {
-    return new Value(story,
+    return new Unary(story,
         new MultiplicativeExpression(story,
             new ArithmeticExpression(story,
                 new ComparisonExpression(story, parent))));
@@ -39,6 +39,8 @@ function Open(story, parent) {
     Object.seal(this);
 }
 
+Open.prototype.type = 'parenthetical-expression';
+
 Open.prototype.return = function _return(expression, scanner) {
     return new Close(this.story, this.parent, expression);
 };
@@ -49,6 +51,8 @@ function Close(story, parent, expression) {
     this.expression = expression;
     Object.seal(this);
 }
+
+Close.prototype.type = 'end-of-expression';
 
 Close.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
@@ -66,6 +70,8 @@ function Value(story, parent) {
     Object.seal(this);
 }
 
+Value.prototype.type = 'expect-value';
+
 Value.prototype.next = function next(type, space, text, scanner) {
     if (type === 'number') {
         return this.parent.return(['val', +text], scanner);
@@ -82,6 +88,33 @@ Value.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
+function Unary(story, parent) {
+    this.story = story;
+    this.parent = parent;
+    Object.seal(this);
+}
+
+Unary.prototype.type = 'unary-expression';
+
+Unary.prototype.next = function next(type, space, text, scanner) {
+    if (text === '!' || text === '-' || text === '~' || text === '#') {
+        return new Value(this.story, new UnaryOperator(this.story, this.parent, text));
+    } else {
+        return new Value(this.story, this.parent)
+            .next(type, space, text, scanner);
+    }
+};
+
+function UnaryOperator(story, parent, op) {
+    this.story = story;
+    this.parent = parent;
+    this.op = op;
+}
+
+UnaryOperator.prototype.return = function _return(expression, scanner) {
+    return this.parent.return([this.op, expression]);
+};
+
 expression.variable = variable;
 function variable(story, parent) {
     return new GetStaticVariable(story, parent, [], [], '', true);
@@ -95,6 +128,8 @@ function GetDynamicVariable(story, parent, literals, variables) {
     this.variable = '';
     Object.seal(this);
 }
+
+GetDynamicVariable.prototype.type = 'dynamic-variable';
 
 GetDynamicVariable.prototype.next = function next(type, space, text, scanner) {
     if ((type ===  'alphanum' || type === 'number') && space === '') {
@@ -114,6 +149,8 @@ function GetStaticVariable(story, parent, literals, variables, literal, fresh) {
     this.fresh = fresh;
     Object.seal(this);
 }
+
+GetStaticVariable.prototype.type = 'static-variable';
 
 GetStaticVariable.prototype.next = function next(type, space, text, scanner) {
     if (space === '' || this.fresh) {
@@ -166,9 +203,11 @@ function MaybeMultiplicative(story, parent, expression) {
     Object.seal(this);
 }
 
+MaybeMultiplicative.prototype.type = 'multiplicative-expression';
+
 MaybeMultiplicative.prototype.next = function next(type, space, text, scanner) {
     if (text === '*' || text === '/' || text === '%' || text === '~' || text === '^') {
-        return new Value(this.story,
+        return new Unary(this.story,
             new Multiplicative(this.story, this.parent, text, this.expression));
     } else {
         return this.parent.return(this.expression, scanner)
@@ -204,9 +243,11 @@ function MaybeArithmetic(story, parent, expression) {
     this.expression = expression;
 }
 
+MaybeArithmetic.prototype.type = 'arithmetic-expression';
+
 MaybeArithmetic.prototype.next = function next(type, space, text, scanner) {
     if (text === '+' || text === '-' || text === 'v') {
-        return new Value(this.story,
+        return new Unary(this.story,
             new MultiplicativeExpression(this.story,
                 new Arithmetic(this.story, this.parent, text, this.expression)));
     } else {
@@ -257,9 +298,11 @@ function MaybeComparison(story, parent, expression) {
     Object.seal(this);
 }
 
+MaybeComparison.prototype.type = 'comparison-expression';
+
 MaybeComparison.prototype.next = function next(type, space, text, scanner) {
     if (comparison[text] === true) {
-        return new Value(this.story,
+        return new Unary(this.story,
             new MultiplicativeExpression(this.story,
                 new ArithmeticExpression(this.story,
                     new Comparison(this.story, this.parent, text, this.expression))));
