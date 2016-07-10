@@ -34,25 +34,23 @@ function invert(expression) {
 }
 
 function Open(story, parent) {
+    this.type = 'parenthetical-expression';
     this.story = story;
     this.parent = parent;
     Object.seal(this);
 }
-
-Open.prototype.type = 'parenthetical-expression';
 
 Open.prototype.return = function _return(expression, scanner) {
     return new Close(this.story, this.parent, expression);
 };
 
 function Close(story, parent, expression) {
+    this.type = 'end-of-expression';
     this.story = story;
     this.parent = parent;
     this.expression = expression;
     Object.seal(this);
 }
-
-Close.prototype.type = 'end-of-expression';
 
 Close.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
@@ -65,12 +63,11 @@ Close.prototype.next = function next(type, space, text, scanner) {
 };
 
 function Value(story, parent) {
+    this.type = 'expect-value';
     this.story = story;
     this.parent = parent;
     Object.seal(this);
 }
-
-Value.prototype.type = 'expect-value';
 
 Value.prototype.next = function next(type, space, text, scanner) {
     if (type === 'number') {
@@ -89,12 +86,11 @@ Value.prototype.next = function next(type, space, text, scanner) {
 };
 
 function Unary(story, parent) {
+    this.type = 'unary-expression;'
     this.story = story;
     this.parent = parent;
     Object.seal(this);
 }
-
-Unary.prototype.type = 'unary-expression';
 
 Unary.prototype.next = function next(type, space, text, scanner) {
     if (text === '!' || text === '-' || text === '~' || text === '#') {
@@ -121,6 +117,7 @@ function variable(story, parent) {
 }
 
 function GetDynamicVariable(story, parent, literals, variables) {
+    this.type = 'dynamic-variable';
     this.story = story;
     this.parent = parent;
     this.literals = literals;
@@ -128,8 +125,6 @@ function GetDynamicVariable(story, parent, literals, variables) {
     this.variable = '';
     Object.seal(this);
 }
-
-GetDynamicVariable.prototype.type = 'dynamic-variable';
 
 GetDynamicVariable.prototype.next = function next(type, space, text, scanner) {
     if ((type ===  'alphanum' || type === 'number') && space === '') {
@@ -141,6 +136,7 @@ GetDynamicVariable.prototype.next = function next(type, space, text, scanner) {
 };
 
 function GetStaticVariable(story, parent, literals, variables, literal, fresh) {
+    this.type = 'static-variable';
     this.story = story;
     this.parent = parent;
     this.literals = literals;
@@ -149,8 +145,6 @@ function GetStaticVariable(story, parent, literals, variables, literal, fresh) {
     this.fresh = fresh;
     Object.seal(this);
 }
-
-GetStaticVariable.prototype.type = 'static-variable';
 
 GetStaticVariable.prototype.next = function next(type, space, text, scanner) {
     if (space === '' || this.fresh) {
@@ -197,13 +191,12 @@ MultiplicativeExpression.prototype.return = function _return(expression, scanner
 };
 
 function MaybeMultiplicative(story, parent, expression) {
+    this.type = 'multiplicative-expression';
     this.story = story;
     this.parent = parent;
     this.expression = expression;
     Object.seal(this);
 }
-
-MaybeMultiplicative.prototype.type = 'multiplicative-expression';
 
 MaybeMultiplicative.prototype.next = function next(type, space, text, scanner) {
     if (text === '*' || text === '/' || text === '%' || text === '~' || text === '^') {
@@ -238,12 +231,11 @@ ArithmeticExpression.prototype.return = function _return(expression, scanner) {
 };
 
 function MaybeArithmetic(story, parent, expression) {
+    this.type = 'arithmetic-expression';
     this.story = story;
     this.parent = parent;
     this.expression = expression;
 }
-
-MaybeArithmetic.prototype.type = 'arithmetic-expression';
 
 MaybeArithmetic.prototype.next = function next(type, space, text, scanner) {
     if (text === '+' || text === '-' || text === 'v') {
@@ -292,13 +284,12 @@ ComparisonExpression.prototype.return = function _return(expression, scanner) {
 };
 
 function MaybeComparison(story, parent, expression) {
+    this.type = 'comparision-expression';
     this.story = story;
     this.parent = parent;
     this.expression = expression;
     Object.seal(this);
 }
-
-MaybeComparison.prototype.type = 'comparison-expression';
 
 MaybeComparison.prototype.next = function next(type, space, text, scanner) {
     if (comparison[text] === true) {
