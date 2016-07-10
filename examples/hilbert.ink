@@ -11,9 +11,9 @@ the origin. The Hilbert curve is produced by the "#" operator.
 
 {=10 s} # size: height and width
 {=0 y}
-= outer
+- @outer
   {=0 x}
-  = inner
+  - @inner
     {@(x-s/2)#(y-s/2)
     |A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z} -
   {+x} {<=s x|->inner} /

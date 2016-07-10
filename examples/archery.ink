@@ -10,7 +10,7 @@ more gold!”
 
 -> shop
 
-= shop
+- @shop
 
   You have {$arrow|no arrows|an arrow|{$arrow} arrows}
   {$arrow|{$gold| and | but }| and } {-> gold}.
@@ -27,7 +27,7 @@ more gold!”
   + Leave the store -> exit
   >
 
-= range
+- @range
 
   You have {$arrow|no arrows|an arrow|{$arrow} arrows}.
 
@@ -39,9 +39,9 @@ more gold!”
   + You r[R]eturn to the archery shop. -> shop
   >
 
-= gold()
+- @gold()
   {$gold|no gold|a gold piece|{$gold} gold}
 
-= exit
+- @exit
   You depart the store through the back door with {->gold}.
   {?hit} All told, you scored {$hit} hit{$hit|s||s}.

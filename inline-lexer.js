@@ -15,7 +15,7 @@ module.exports = InlineLexer;
 
 var debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER;
 
-var L1 = '=[]{}|/<>';
+var L1 = '@[]{}|/<>';
 var L2 = ['->', '<-', '==', '!=', '>=', '<='];
 var num = /\d/;
 var space = /\s/;

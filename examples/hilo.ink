@@ -4,7 +4,7 @@
 {=1 lo}
 {=100 hi}
 
-= try
+@try
 
 {=(hi+lo)/2 mid}
 {? hi == lo | -> end}
@@ -26,9 +26,8 @@ Is the number greater than {$mid}? {+q}
   {=mid hi}
 >
 
--> try
+->try
 
-= end
-
+@end
 The number is {$hi}.
 I guessed after asking {$q} question{$q|s||s}.

@@ -1,10 +1,9 @@
-
-= blue
+@blue
 
 You are in a blue room.
 There is a door.
 
-= blue2
+@blue2
 
 - {?door} The door is open.
   + You w[W]alk through the open door. -> red
@@ -16,12 +15,12 @@ There is a door.
 + Where am I again? -> blue
 >
 
-= red
+@red
 
 You are in a red room.
 There is a door and a bell.
 
-= red2
+@red2
 
 - {?door} The door is open.
   + You w[W]alk through the open door. -> blue
@@ -37,4 +36,3 @@ There is a door and a bell.
 A dark portal opens and swallows you whole.
 You lose consciousness.
 When you come to, you see…
-

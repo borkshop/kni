@@ -60,7 +60,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
     }  else if (type === 'token') {
         if (text === '{') {
             return new Block(this.story, this.path, this, this.ends);
-        } else if (text === '=') {
+        } else if (text === '@') {
             return expression.variable(this.story, new ExpectLabel(this.story, this.path, this, this.ends));
         } else if (text === '->') {
             return expression.variable(this.story, new Goto(this.story, this.path, this, this.ends));
@@ -83,10 +83,8 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         if (text === '+' || text === '*') {
             tie(this.ends, this.path);
             return new Option(text, this.story, this.path, this, []);
-        } else if (text === '-') {
+        } else { // if (text === '-') {
             return new Knot(this.story, this.path, new Indent(this.story, this), this.ends, []);
-        } else { // if (text === '=') {
-            return expression.variable(this.story, new LabelThread(this.story, this.path, this, this.ends));
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'paragraph');
@@ -339,34 +337,6 @@ ExpectLabel.prototype.return = function _return(expression, scanner) {
         this.story.error('Expected label after =, got ' + JSON.stringify(expression) + ' at ' + scanner.position());
         return new Knot(this.story, this.path, this.parent, this.ends, []);
     }
-};
-
-function LabelThread(story, path, parent, ends) {
-    this.type = 'label-thread';
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.ends = ends;
-}
-
-LabelThread.prototype.return = function _return(expression, scanner) {
-    // istanbul ignore else
-    if (expression[0] === 'get') {
-        return new MaybeSubroutine(this.story, this.path, new LabelThreadStop(this.story, this.parent), this.ends, expression[1]);
-    } else {
-        this.story.error('Expected label after =, got ' + JSON.stringify(expression) + ' ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, []);
-    }
-};
-
-function LabelThreadStop(story, parent) {
-    this.story = story;
-    this.parent = parent;
-    Object.seal(this);
-};
-
-LabelThreadStop.prototype.return = function _return(path, ends, jumps, scanner) {
-    return new Expect('stop', '', this.story, path, this.parent, ends, jumps);
 };
 
 function MaybeSubroutine(story, path, parent, ends, label) {

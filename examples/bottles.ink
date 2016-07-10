@@ -1,5 +1,5 @@
 {=99 bottle}
-= refrain
+@refrain
 {$bottle||1 bottle|{$bottle} bottles} of beer on the wall. /
 {$bottle||1 bottle|{$bottle} bottles} of beer. /
 You take one down and pass it around. {-bottle} /

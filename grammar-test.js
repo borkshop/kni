@@ -45,18 +45,18 @@ test([
 });
 
 test([
-    '= end\n'
+    '@end\n'
 ], {
     start: {type: 'goto', next: "end"},
     end: {type: 'goto', next: null}
 });
 
 test([
-    '= end\n',
+    '@end\n',
     'The End\n'
 ], {
     start: {type: 'goto', next: 'end'},
-    end: {type: 'text', text: 'The End', lift: '', drop: ' ', next: null}
+    end: {type: 'text', text: 'The End', lift: ' ', drop: ' ', next: null}
 });
 
 test([
@@ -794,7 +794,7 @@ test([
 });
 
 test([
-    '= hi\n',
+    '@hi\n',
     'Hello, World!\n',
 ], {
     "start": {
@@ -804,14 +804,14 @@ test([
     "hi": {
         "type": "text",
         "text": "Hello, World!",
-        "lift": "",
+        "lift": " ",
         "drop": " ",
         "next": null
     }
 });
 
 test([
-    '= hi Hello, World!\n',
+    '@hi Hello, World!\n',
 ], {
     "start": {
         "type": "goto",
@@ -828,7 +828,7 @@ test([
 
 test([
     'Hello, World!\n',
-    '-> start\n'
+    '->start\n'
 ], {
     "start": {
         "type": "text",
@@ -868,8 +868,8 @@ test([
 });
 
 test([
-    '-> hi\n',
-    '= hi\n'
+    '->hi\n',
+    '@hi\n'
 ], {
     "start": {
         "type": "goto",
@@ -882,10 +882,10 @@ test([
 });
 
 test([
-    '-> hi\n',
-    '= hi\n',
+    '->hi\n',
+    '@hi\n',
     'Hello, World!\n',
-    '-> hi\n'
+    '->hi\n'
 ], {
     "start": {
         "type": "goto",
@@ -894,7 +894,7 @@ test([
     "hi": {
         "type": "text",
         "text": "Hello, World!",
-        "lift": "",
+        "lift": " ",
         "drop": " ",
         "next": "hi"
     }
@@ -1790,9 +1790,9 @@ test([
 });
 
 test([
-    "= top\n",
+    "@top\n",
     "Text\n",
-    "= bottom\n"
+    "@bottom\n"
 ], {
     "start": {
         "type": "goto",
@@ -1801,7 +1801,7 @@ test([
     "top": {
         "type": "text",
         "text": "Text",
-        "lift": "",
+        "lift": " ",
         "drop": " ",
         "next": "bottom"
     },
@@ -2416,7 +2416,7 @@ test([
 });
 
 test([
-    '=hello() Hello.',
+    '@hello() Hello.',
 ], {
     "start": {
         "type": "goto",
@@ -2437,7 +2437,7 @@ test([
 });
 
 test([
-    '- =hello(name) Hello, {$name}.\n',
+    '- @hello(name) Hello, {$name}.\n',
     'Good bye'
 ], {
     "start": {

@@ -2,7 +2,7 @@
 {=2rat}
 {=1bat}
 
-= loop
+@loop
 
 There are {, and |
 - {>0 rat} rats{,}
@@ -14,6 +14,4 @@ There are {, and |
 {-cat}
 {-bat}
 
-{>0 rat|->loop}
-{>0 cat|->loop}
-{>0 bat|->loop}
+{?(rat>0) v (cat>0) v (bat>0)|->loop}

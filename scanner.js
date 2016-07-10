@@ -2,7 +2,9 @@
 
 // Transforms a stream of text into a sequence of 'lines', tracking each line's
 // level of indentation.
-
+// Trims lines and collapses internal white space.
+// Stips comments.
+//
 // The scanner feeds into an outline lexer.
 
 var tabWidth = 4;
@@ -50,7 +52,7 @@ Scanner.prototype.next = function next(text) {
             this.columnNo++;
         } else if (
             this.leading &&
-            (c === '-' || c === '+' || c === '*' || c === '=') &&
+            (c === '-' || c === '+' || c === '*') &&
             (d === ' ' || d === '\t')
         ) {
             this.leader += c;

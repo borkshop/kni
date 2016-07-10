@@ -2,7 +2,7 @@
 
 This room is {$$x.$y|red|green|blue}.
 
-=decide
+@decide
 + You p[P]aint this room red. {=red $x.$y} ->decide
 + You p[P]aint this room green. {=green $x.$y} ->decide
 + You p[P]aint this room blue. {=blue $x.$y} ->decide
