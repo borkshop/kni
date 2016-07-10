@@ -213,3 +213,22 @@ test([
     'Foxtrot',
     'STOP'
 ]);
+
+test([
+    '+ A',
+    '  + B',
+    '  >',
+    '>',
+    'B'
+], [
+    'START', '+',
+        'A',
+        'START', '+',
+            'B',
+        'STOP',
+        'START', '>', 'BREAK', 'STOP',
+    'STOP',
+    'START', '>', 'BREAK', 'STOP',
+    'B',
+    'STOP'
+]);

@@ -31,9 +31,22 @@ function only(input, output) {
     }
     s.return();
     // istanbul ignore if
-    if (!equals(story.states, output)) {
+    if (story.errors.length) {
         console.error('ERROR');
         console.error(input.join(''));
+        for (var i = 0; i < story.errors.length; i++) {
+            console.error(story.errors[i]);
+        }
+        global.fail = true;
+    // istanbul ignore if
+    } else if (!equals(story.states, output)) {
+        console.error('ERROR');
+        console.error(input.join(''));
+        console.error('EXPECTED');
+        console.error(JSON.stringify(output, null, 4));
+        console.error('ACTUAL');
+        console.error(JSON.stringify(story.states, null, 4));
+        console.error('DIFF');
         console.error(colorize(diff(output, story.states)));
         global.fail = true;
     }
@@ -248,7 +261,7 @@ test([
     "start.3": {
         "type": "text",
         "text": "Fruit!",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -282,7 +295,7 @@ test([
     "start.2": {
         "type": "text",
         "text": "Fruit!",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -323,7 +336,7 @@ test([
     "start.3": {
         "type": "text",
         "text": "Fruit!",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -458,7 +471,7 @@ test([
     "start.4": {
         "type": "text",
         "text": "Foxtrot",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -531,7 +544,7 @@ test([
     "start.4": {
         "type": "text",
         "text": "Delta",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -721,7 +734,7 @@ test([
     "start.3": {
         "type": "text",
         "text": "Fruit!",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -787,7 +800,7 @@ test([
     "start.3": {
         "type": "text",
         "text": "Fruit!",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -1181,7 +1194,7 @@ test([
 
 test([
     '* [Choice]\n',
-    '>',
+    '>\n',
     'Fin\n'
 ], {
     "start": {
@@ -1208,7 +1221,7 @@ test([
     "start.2": {
         "type": "text",
         "text": "Fin",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }
@@ -1312,7 +1325,7 @@ test([
     "start.3": {
         "type": "text",
         "text": "Fin",
-        "lift": " ",
+        "lift": "",
         "drop": " ",
         "next": null
     }

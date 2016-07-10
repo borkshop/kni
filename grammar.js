@@ -72,19 +72,19 @@ Knot.prototype.next = function next(type, space, text, scanner) {
             var node = this.story.create(this.path, 'break');
             tie(this.ends, this.path);
             return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
-        } else if (text === '>') {
-            var node = this.story.create(this.path, 'prompt');
-            // tie off ends to the prompt.
-            tie(this.ends, this.path);
-            // promote jumps to ends, tying them off after the prompt.
-            return new Knot(this.story, Path.next(this.path), this.parent, this.jumps, []);
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
             tie(this.ends, this.path);
             return new Option(text, this.story, this.path, this, []);
-        } else { // if (text === '-') {
+        } else if (text === '-') {
             return new Knot(this.story, this.path, new Indent(this.story, this), this.ends, []);
+        } else if (text === '>') {
+            var node = this.story.create(this.path, 'prompt');
+            // tie off ends to the prompt.
+            tie(this.ends, this.path);
+            // promote jumps to ends, tying them off after the prompt.
+            return new Knot(this.story, Path.next(this.path), new Indent(this.story, this), this.jumps, []);
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'paragraph');

@@ -31,7 +31,7 @@ Scanner.prototype.next = function next(text) {
         var d = text[i + 1];
         // istanbul ignore if
         if (this.debug) {
-            console.error('SCN', this.position() + ':' + i, JSON.stringify(c + d));
+            console.error('SCN', this.position() + ':' + i, JSON.stringify(c + (d || '')));
         }
         if (
             ((c === '\t' || c === ' ') && d === '#') ||
@@ -57,6 +57,10 @@ Scanner.prototype.next = function next(text) {
         ) {
             this.leader += c;
             this.columnNo++;
+        } else if (this.leading && c === '>' && d === '\n') {
+            this.leader += c;
+            this.indentStart = i;
+            this.indent = this.columnNo + 2;
         } else if (this.leading) {
             this.indent = this.columnNo;
             this.indentStart = i;
