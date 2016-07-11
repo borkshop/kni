@@ -4,6 +4,8 @@ var fs = require('fs');
 var verify = require('./verify');
 
 function main() {
+    test('hello.ink', 'tests/hello.1');
+
     test('examples/archery.ink', 'tests/archery.1');
     test('examples/archery.ink', 'tests/pardon.1');
     test('examples/archery.ink', 'tests/quit.1');

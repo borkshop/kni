@@ -28,8 +28,9 @@ Stories consist of text and symbols.
 Text appears in the generated narrative, and symbols provide instructions
 to Inkblot.
 
-Symbols include: `-`, `*`, `+`, `/`, `=`, ``->``, ``<-``, ``{``, ``|``, ``}``,
-and ``>``.
+Symbols include `>` on stand alone lines indicating a prompt instruction, `-`,
+`*`, and `+` for bullets, sequences of dashes, `/`, `@`, ``->``, ``<-``, ``{``,
+``|``, ``}``, for all other instructions.
 Within an option, `[`, and `]` are also special.
 The first non-space character after a curly brace may be a symbol.
 These symbols include `%`, `~`, `$`, `@`, `#`, `$`, `?`, `!`, `>`, `<`, `<=`,
@@ -100,12 +101,12 @@ once.
 The plus denotes a thread that the narrator will always propose.
 The hyphen denotes a thread that is separated purely for organizational purposes.
 All loose ends in the subthread will be gathered and flow into the next sibling
-of the parent thread, ,skipping any subsequent siblings.
+of the parent thread, skipping any subsequent siblings.
 
 Within a thread, conditional jumps can optionally skip to the end of a thread.
 
 ```
-- {!arrows} {!gold} <-
+- {!arrows or !gold} <-
 You still have either gold or arrows!
 ```
 
@@ -121,12 +122,12 @@ ends.
 ## Options
 
 Inkblot will accumulate options until it encounters a prompt, depicted as
-a right angle bracket, ``>``.
+a right angle bracket, ``>``, alone on a line.
 All loose ends from option branches will resume after the prompt unless
 redirected elsewhere.
 
 ```
-= blue
+@blue
 
 You are in a blue room.
 There is a door.
@@ -134,14 +135,14 @@ There is a door.
 - {?door} The door is open.
   + You w[W]alk through the open door.
   + You c[C]lose the door.
-    - {=0 door} -> blue
+    - {=0 door} ->blue
 - {!door} The door is closed.
   + You o[O]pen the door.
-    - {=1 door} -> blue
-+ Where am I again? -> blue
+    - {=1 door} ->blue
++ Where am I again? ->blue
 >
 
-= red
+@red
 
 You are in a red room.
 There is a door and a bell.
@@ -186,7 +187,7 @@ explicitly with the solidus.
 ```
 + You s[S]ay, “Hello”. /
   You are too kind, hello
-  again to you too. -> loop
+  again to you too. ->loop
 ```
 
 
@@ -225,7 +226,7 @@ Every narrative implicitly starts with the `start` label.
 
 ```
 {Three... |Two.. |One. |Liftoff! <-} /
--> start
+->start
 ```
 
 ## Labels
@@ -236,14 +237,14 @@ The first transition is implicitly called `start`.
 Its first child is called `start.0.1` and its first sibling is called `start.1`.
 To be able to go to other transitions, they must have labels.
 
-A label is the symbol `=` followed by a name, appearing anywhere in a
+A label is the symbol `@` followed by a name, appearing anywhere in a
 narrative.
 The following song begins with a `refrain`, to which we repeatedly return until
 the song exhausts itself or the interlocutor.
 
 ```
 {=99 bottles}
-= refrain
+@refrain
 {$bottles||1 bottle|{$bottles} bottles} of beer on the wall. /
 {$bottles||1 bottle|{$bottles} bottles} of beer. /
 You take one down and pass it around. {-1 bottles} /
@@ -251,22 +252,20 @@ You take one down and pass it around. {-1 bottles} /
 {$bottles||->refrain}
 ```
 
-Additionally, the `=` sign can be used as a bullet to start a thread with a
-label, as seen in the next example of declaring and calling a procedure.
-
 ## Calling a procedure
 
 A procedure is a label that can be called and returned from.
 Procedures can be used as goto targets, but with the special syntax for calling
 a procedure, they can introduce a scope with local variables and
 return to the next transition after where they were called.
+The procedure implicitly returns at the end of the thread.
 
 ```
-= greet(time)
+- @greet(time)
   {$time|Hello|Good bye}, World!
 
-{-> greet {=0 time}}
-{-> greet {=1 time}}
+{->greet {=0 time}}
+{->greet {=1 time}}
 ```
 
 A forward arrow within a block signifies calling a procedure and returning
@@ -399,8 +398,8 @@ Each place in the forest has an arbitrary, but not random, tree.
 
 ```
 There is an {#x|an ash|an oak|a birch|a yew} here.
-+ You g[G]o east. {+1 x} -> start
-+ You g[G]o west. {-1 x} -> start
++ You g[G]o east. {+1 x} ->start
++ You g[G]o west. {-1 x} ->start
 + You l[L]eave the forest.
 ```
 
@@ -456,9 +455,12 @@ There are three tiers of precedence from tightly binding to loosely binding.
 All of these operators produce 32 bit integers.
 Logical operators return 0 or 1.
 
-- `*`, `/`, `%`, `~`, and `^`
-- `+`, `-`, and `v`
+- unary `!`, `-`, `~`, `#`
+- `*`, `/`, `%`, `~`
+- `+`, `-`
 - ``<``, ``<=``, `==`, `!=`, `>=`, `>`, `#`.
+- `and`
+- `or`
 
 `*` is multiplication.
 
@@ -474,36 +476,41 @@ Logical operators return 0 or 1.
 
 `>` is greater-than.
 
-`<=` is less-than-or-equal-to
+`<=` is less-than-or-equal-to.
 
-`>=` is greater-than-or-equal-to
+`>=` is greater-than-or-equal-to.
 
-`==` is equality
+`==` is equality.
 
-`!=` is inequality
+`!=` is inequality.
 
-I have not yet implemented unary negation.
+`and` is logical intersection.
 
-`^` and `v` are logical union and intersection (`and` and `or`).  Note that `v`
-must be separated from subsequent text with a space to unambiguously produce
-the operator token.  These symbols are consistent with symbolic logic notation
-but not typical for programming languages.  I chose them because the pipe
-operator is reserved for delimiting block sections.
+`or` is logical union.
 
-`~` is a random variable. In `x~y`, X is the number of samples and `Y` is the
+unary `!` is logical negation.
+
+unary `-` is negative.
+
+unary `~` produces a random variable from 0 to less than the operand.
+
+unary `#` is a hash, consistently producing the same ostensibly random number
+for the operand.
+
+binary `~` is a random variable. In `x~y`, X is the number of samples and `Y` is the
 upper bound of the random variable for each sample. As such,
 `2~6` produces a random variable in the half open interval of [0, 12) with a
 mean value of 6, where 6 is the most likely variable, with diminishing
 probability toward 0 and 12. The D&D expression `2d6` is equivalent to
 `1~6 + 1~6 + 2` owing to the vagaries of math.
 
-I have not yet implemented unary random variables, essentially an implicit X
-= 1.  I also haven't implemented simplified notation for die rolls, favoring
-the ~ operator initially because it composes better mathematically.
+I haven't implemented simplified notation for die rolls, favoring the ~
+operator initially because it composes better mathematically.
 
-`#` produces the equivalent point on a Hilbert Curve for a coordinate X, Y.
+binary `#` produces the equivalent point on a Hilbert Curve for a coordinate X, Y.
 This, in combination with `#` consistent hash blocks, is handy for generating
 arbitrary but consistent content in a two-dimensional plane without
 accidental symmetry over any axis.  For example `{#x+y}` creates symmetry
 along a diagonal. `{#x*y}` produces symmetry across multiple axes about the
-origin.
+origin.  The Hilbert operator presumes a space with 4 billion unique
+coordinates in a square of height and width 64k centered about the origin.

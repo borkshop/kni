@@ -1,9 +1,9 @@
 Hello, "World!"
 
-= loop
+@loop
 + You s[S]ay, "Hello". /
   You are too kind, hello
-  again to you too. -> loop
+  again to you too. ->loop
 + You s[S]ay, "Farewell."
 >
 

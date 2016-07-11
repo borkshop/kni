@@ -15,11 +15,10 @@ chose the direction of the narrative.
 ```
 Hello, "World!"
 
-= loop
-
+@loop
 + You s[S]ay, "Hello". /
   You are too kind, hello
-  again to you too. -> loop
+  again to you too. ->loop
 + You s[S]ay, "Farewell."
 >
 
@@ -46,7 +45,7 @@ The End.
 ```
 
 The command line tool can also generate the intermediate JSON representation of
-a dialog graph, suitable for use with alternate ink readers.
+a dialog graph, suitable for use with alternate inkblot readers.
 
 ```
 ❯ inkblot -j hello.ink
@@ -119,3 +118,22 @@ a dialog graph, suitable for use with alternate ink readers.
     }
 }
 ```
+
+Inkblot can also produce a diagnostique view of a story.
+
+```
+❯ inkblot hello.ink -d
+start     text    -Hello, "World!"                loop
+loop      option  Say, "Hello". -> loop.0.1       loop.1
+loop.0.1  text    -You s-                         loop.0.2
+loop.0.2  text    -ay, "Hello".                   loop.0.3
+loop.0.3  text    You are too kind, hello again   loop
+loop.1    option  Say, "Farewell." -> loop.1.1    loop.2
+loop.1.1  text    -You s-                         loop.1.2
+loop.1.2  text    -ay, "Farewell."                loop.3
+loop.2    prompt
+loop.3    text    -The End.
+```
+
+It can also record a transcript with `-t`, or verify a prior recorded
+transcript with `-v`.
