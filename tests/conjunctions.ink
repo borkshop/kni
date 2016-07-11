@@ -14,4 +14,4 @@ There are {, and |
 {-cat}
 {-bat}
 
-{?(rat>0) v (cat>0) v (bat>0)|->loop}
+{?(rat>0) or (cat>0) or (bat>0)|->loop}

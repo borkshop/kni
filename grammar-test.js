@@ -2742,6 +2742,54 @@ test([
 });
 
 test([
+    '{$1 and 0}\n'
+], {
+    "start": {
+        "type": "print",
+        "expression": [
+            "and",
+            ["val", 1],
+            ["val", 0]
+        ],
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+});
+
+test([
+    '{$1 and 2 or 3}\n'
+], {
+    "start": {
+        "type": "print",
+        "expression": [
+            "or",
+            ["and", ["val", 1], ["val", 2]],
+            ["val", 3]
+        ],
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+});
+
+test([
+    '{$x < 10 and y > 20}\n'
+], {
+    "start": {
+        "type": "print",
+        "expression": [
+            "and",
+            ["<", ["get", "x"], ["val", 10]],
+            [">", ["get", "y"], ["val", 20]]
+        ],
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+});
+
+test([
     '{$2~6 + 1}\n'
 ], {
     "start": {

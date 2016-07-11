@@ -1,16 +1,65 @@
 'use strict';
 
+var Variable = require('./variable');
+
 module.exports = expression;
 
+var unary = {
+    '!': true,
+    '-': true,
+    '~': true,
+    '#': true
+};
+
+var multiplicative = {
+    '*': true,
+    '/': true,
+    '%': true,
+    '~': true,
+};
+
+var arithmetic = {
+    '+': true,
+    '-': true,
+};
+
+var comparison = {
+    '<': true,
+    '<=': true,
+    '==': true,
+    '!=': true,
+    '>=': true,
+    '>': true,
+    '#': true
+};
+
+var intersection = {
+    'and': true
+};
+
+var union = {
+    'or': true
+};
+
+var precedence = [
+    multiplicative,
+    arithmetic,
+    comparison,
+    intersection,
+    union
+];
+
 function expression(story, parent) {
-    return new Unary(story,
-        new MultiplicativeExpression(story,
-            new ArithmeticExpression(story,
-                new ComparisonExpression(story, parent))));
+    for (var i = precedence.length - 1; i >= 0; i--) {
+        var operators = precedence[i];
+        parent = new BinaryExpression(story, operators, parent);
+    }
+    return new Unary(story, parent);
 }
 
-function parenthesized(story, parent) {
-    return expression(story, new Open(story, parent));
+expression.variable = variable;
+function variable(story, parent) {
+    return new Variable.GetStaticVariable(story, parent, [], [], '', true);
 }
 
 var inversions = {
@@ -24,13 +73,13 @@ var inversions = {
 
 expression.invert = invert;
 function invert(expression) {
-    // if (expression[0] === '!') {
-    //     return expression[1];
-    // if (inversions[expression[0]]) {
+    if (expression[0] === '!') {
+        return expression[1];
+    } else if (inversions[expression[0]]) {
         return [inversions[expression[0]], expression[1], expression[2]];
-    // } else {
-    //     return ['!', expression];
-    // }
+    } else {
+        return ['!', expression];
+    }
 }
 
 function Open(story, parent) {
@@ -73,12 +122,12 @@ Value.prototype.next = function next(type, space, text, scanner) {
     if (type === 'number') {
         return this.parent.return(['val', +text], scanner);
     } else if (text === '(') {
-        return parenthesized(this.story, this.parent);
+        return expression(this.story, new Open(this.story, this.parent));
     } else if (text === '$') {
-        return new GetDynamicVariable(this.story, this.parent, [''], []);
+        return new Variable.GetDynamicVariable(this.story, this.parent, [''], []);
     // istanbul ignore else
     } else if (type === 'alphanum') {
-        return new GetStaticVariable(this.story, this.parent, [], [], text, false);
+        return new Variable.GetStaticVariable(this.story, this.parent, [], [], text, false);
     } else {
         this.story.error('Expected expression, got ' + type + '/' + text + ' at ' + scanner.position());
         return this.parent.return(['val', 0]).next(type, space, text, scanner);
@@ -86,14 +135,14 @@ Value.prototype.next = function next(type, space, text, scanner) {
 };
 
 function Unary(story, parent) {
-    this.type = 'unary-expression;'
+    this.type = 'unary-expression';
     this.story = story;
     this.parent = parent;
     Object.seal(this);
 }
 
 Unary.prototype.next = function next(type, space, text, scanner) {
-    if (text === '!' || text === '-' || text === '~' || text === '#') {
+    if (unary[text] === true) {
         return new Value(this.story, new UnaryOperator(this.story, this.parent, text));
     } else {
         return new Value(this.story, this.parent)
@@ -111,104 +160,47 @@ UnaryOperator.prototype.return = function _return(expression, scanner) {
     return this.parent.return([this.op, expression]);
 };
 
-expression.variable = variable;
-function variable(story, parent) {
-    return new GetStaticVariable(story, parent, [], [], '', true);
-}
-
-function GetDynamicVariable(story, parent, literals, variables) {
-    this.type = 'dynamic-variable';
+function MaybeOperator(story, parent, expression, operators) {
     this.story = story;
     this.parent = parent;
-    this.literals = literals;
-    this.variables = variables;
-    this.variable = '';
+    this.expression = expression;
+    this.operators = operators;
     Object.seal(this);
 }
 
-GetDynamicVariable.prototype.next = function next(type, space, text, scanner) {
-    if ((type ===  'alphanum' || type === 'number') && space === '') {
-        this.variable += text;
-        return this;
+MaybeOperator.prototype.next = function next(type, space, text, scanner) {
+    if (this.operators[text] === true) {
+        return new Unary(this.story,
+            this.maybeAnother(new PartialExpression(this.story, this, text, this.expression)));
+    } else {
+        return this.parent.return(this.expression, scanner)
+            .next(type, space, text, scanner);
     }
-    return new GetStaticVariable(this.story, this.parent, this.literals, this.variables.concat([this.variable]), '')
-        .next(type, space, text, scanner);
 };
 
-function GetStaticVariable(story, parent, literals, variables, literal, fresh) {
-    this.type = 'static-variable';
-    this.story = story;
-    this.parent = parent;
-    this.literals = literals;
-    this.variables = variables;
-    this.literal = literal;
-    this.fresh = fresh;
-    Object.seal(this);
-}
-
-GetStaticVariable.prototype.next = function next(type, space, text, scanner) {
-    if (space === '' || this.fresh) {
-        this.fresh = false;
-        if (text === '$') {
-            return new GetDynamicVariable(
-                this.story,
-                this.parent,
-                this.literals.concat([this.literal]),
-                this.variables
-            );
-        } else if (text === '.') {
-            this.literal += text;
-            return this;
-        } else if (type === 'alphanum' || type === 'number') {
-            this.literal += text;
-            return this;
+MaybeOperator.prototype.maybeAnother = function maybeAnother(expression) {
+    for (var i = 0; i < precedence.length; i++) {
+        var operators = precedence[i];
+        expression = new BinaryExpression(this.story, operators, expression);
+        if (operators === this.operators) {
+            break;
         }
     }
-
-    var state;
-    if (this.literals.length === 0 && this.variables.length === 0) {
-        // istanbul ignore if
-        if (this.literal === '') {
-            this.story.error('Expected variable but got ' + type + '/' + text + ' at ' + scanner.position());
-            state = this.parent.return([], scanner);
-        } else {
-            state = this.parent.return(['get', this.literal], scanner);
-        }
-    } else {
-        state = this.parent.return(['var', this.literals.concat([this.literal]), this.variables], scanner);
-    }
-    return state.next(type, space, text, scanner);
+    return expression;
 };
 
-function MultiplicativeExpression(story, parent) {
+function BinaryExpression(story, operators, parent) {
     this.story = story;
     this.parent = parent;
+    this.operators = operators;
     Object.seal(this);
 }
 
-MultiplicativeExpression.prototype.return = function _return(expression, scanner) {
-    return new MaybeMultiplicative(this.story, this.parent, expression);
+BinaryExpression.prototype.return = function _return(expression, scanner) {
+    return new MaybeOperator(this.story, this.parent, expression, this.operators);
 };
 
-function MaybeMultiplicative(story, parent, expression) {
-    this.type = 'multiplicative-expression';
-    this.story = story;
-    this.parent = parent;
-    this.expression = expression;
-    Object.seal(this);
-}
-
-MaybeMultiplicative.prototype.next = function next(type, space, text, scanner) {
-    if (text === '*' || text === '/' || text === '%' || text === '~' || text === '^') {
-        return new Unary(this.story,
-            new Multiplicative(this.story, this.parent, text, this.expression));
-    } else {
-        return this.parent.return(this.expression, scanner)
-            .next(type, space, text, scanner);
-    }
-};
-
-function Multiplicative(story, parent, op, left) {
+function PartialExpression(story, parent, op, left) {
     this.story = story;
     this.parent = parent;
     this.op = op;
@@ -216,105 +208,6 @@ function Multiplicative(story, parent, op, left) {
     Object.seal(this);
 }
 
-Multiplicative.prototype.return = function _return(right, scanner) {
-    return new MaybeMultiplicative(this.story, this.parent, [this.op, this.left, right]);
-};
-
-function ArithmeticExpression(story, parent) {
-    this.story = story;
-    this.parent = parent;
-    Object.seal(this);
-}
-
-ArithmeticExpression.prototype.return = function _return(expression, scanner) {
-    return new MaybeArithmetic(this.story, this.parent, expression);
-};
-
-function MaybeArithmetic(story, parent, expression) {
-    this.type = 'arithmetic-expression';
-    this.story = story;
-    this.parent = parent;
-    this.expression = expression;
-}
-
-MaybeArithmetic.prototype.next = function next(type, space, text, scanner) {
-    if (text === '+' || text === '-' || text === 'v') {
-        return new Unary(this.story,
-            new MultiplicativeExpression(this.story,
-                new Arithmetic(this.story, this.parent, text, this.expression)));
-    } else {
-        return this.parent.return(this.expression, scanner)
-            .next(type, space, text, scanner);
-    }
-};
-
-function Arithmetic(story, parent, op, left) {
-    this.story = story;
-    this.parent = parent;
-    this.op = op;
-    this.left = left;
-    Object.seal(this);
-}
-
-Arithmetic.prototype.return = function _return(right, scanner) {
-    return new MaybeMultiplicative(this.story,
-        new ArithmeticExpression(this.story, this.parent),
-        [this.op, this.left, right]
-    );
-};
-
-var comparison = {
-    '<': true,
-    '<=': true,
-    '==': true,
-    '!=': true,
-    '>=': true,
-    '>': true,
-    '#': true
-};
-
-function ComparisonExpression(story, parent) {
-    this.story = story;
-    this.parent = parent;
-    Object.seal(this);
-}
-
-ComparisonExpression.prototype.return = function _return(expression, scanner) {
-    return new MaybeComparison(this.story, this.parent, expression);
-};
-
-function MaybeComparison(story, parent, expression) {
-    this.type = 'comparision-expression';
-    this.story = story;
-    this.parent = parent;
-    this.expression = expression;
-    Object.seal(this);
-}
-
-MaybeComparison.prototype.next = function next(type, space, text, scanner) {
-    if (comparison[text] === true) {
-        return new Unary(this.story,
-            new MultiplicativeExpression(this.story,
-                new ArithmeticExpression(this.story,
-                    new Comparison(this.story, this.parent, text, this.expression))));
-    } else {
-        return this.parent.return(this.expression, scanner)
-            .next(type, space, text, scanner);
-    }
-};
-
-function Comparison(story, parent, op, left) {
-    this.story = story;
-    this.parent = parent;
-    this.op = op;
-    this.left = left;
-    Object.seal(this);
-}
-
-Comparison.prototype.return = function _return(right, scanner) {
-    return new MaybeMultiplicative(this.story,
-        new ArithmeticExpression(this.story,
-            new ComparisonExpression(this.story, this.parent)),
-        [this.op, this.left, right]
-    );
+PartialExpression.prototype.return = function _return(right, scanner) {
+    return this.parent.maybeAnother(this.parent.parent).return([this.op, this.left, right]);
 };

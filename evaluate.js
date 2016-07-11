@@ -57,10 +57,10 @@ var binary = {
     '%': function (x, y) {
         return x % y;
     },
-    'v': function (x, y) {
+    'or': function (x, y) {
         return x || y ? 1 : 0;
     },
-    '^': function (x, y) {
+    'and': function (x, y) {
         return x && y ? 1 : 0;
     },
     '>=': function (x, y) {
