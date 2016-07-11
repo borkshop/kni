@@ -56,11 +56,11 @@ Engine.prototype.print = function print(text) {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$text = function text() {
+Engine.prototype.$text = function $text() {
     return this.print(this.instruction.text);
 };
 
-Engine.prototype.$print = function print() {
+Engine.prototype.$print = function $print() {
     return this.print('' + evaluate(this.top, this.randomer, this.instruction.expression));
 };
 
@@ -121,12 +121,12 @@ Engine.prototype.$subroutine = function $subroutine() {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$option = function option() {
+Engine.prototype.$option = function $option() {
     this.options.push(this.instruction);
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$set = function set() {
+Engine.prototype.$set = function $set() {
     var value = evaluate(this.top, this.randomer, this.instruction.expression);
     // istanbul ignore if
     if (this.debug) {
@@ -136,7 +136,7 @@ Engine.prototype.$set = function set() {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$mov = function mov() {
+Engine.prototype.$mov = function $mov() {
     var value = evaluate(this.top, this.randomer, this.instruction.source);
     var name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
     // istanbul ignore if
@@ -147,7 +147,7 @@ Engine.prototype.$mov = function mov() {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$jump = function jump() {
+Engine.prototype.$jump = function $jump() {
     var j = this.instruction;
     if (evaluate(this.top, this.randomer, j.condition)) {
         return this.goto(this.instruction.branch);
@@ -156,7 +156,7 @@ Engine.prototype.$jump = function jump() {
     }
 };
 
-Engine.prototype.$switch = function _switch() {
+Engine.prototype.$switch = function $switch() {
     var branches = this.instruction.branches;
     var value;
     if (this.instruction.mode === 'rand') {
@@ -180,7 +180,7 @@ Engine.prototype.$switch = function _switch() {
     return this.goto(next);
 };
 
-Engine.prototype.$prompt = function prompt() {
+Engine.prototype.$prompt = function $prompt() {
     this.prompt();
     return false;
 };
