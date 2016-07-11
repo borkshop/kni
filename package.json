@@ -38,6 +38,8 @@
     "readline.js",
     "scanner.js",
     "story.js",
+    "variable.js",
+    "verify.js",
     "wrapper.js"
   ],
   "scripts": {
