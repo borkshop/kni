@@ -73,13 +73,7 @@ var inversions = {
 
 expression.invert = invert;
 function invert(expression) {
-    if (expression[0] === '!') {
-        return expression[1];
-    } else if (inversions[expression[0]]) {
-        return [inversions[expression[0]], expression[1], expression[2]];
-    } else {
-        return ['!', expression];
-    }
+    return [inversions[expression[0]], expression[1], expression[2]];
 }
 
 function Open(story, parent) {
@@ -143,7 +137,8 @@ function Unary(story, parent) {
 
 Unary.prototype.next = function next(type, space, text, scanner) {
     if (unary[text] === true) {
-        return new Value(this.story, new UnaryOperator(this.story, this.parent, text));
+        return new Unary(this.story,
+            new UnaryOperator(this.story, this.parent, text));
     } else {
         return new Value(this.story, this.parent)
             .next(type, space, text, scanner);

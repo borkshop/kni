@@ -21,6 +21,14 @@
 {?1 and 1|20 } /
 {?0 or 1|21 } /
 {$!1|22} == 22 /
+{$1 and 1} should be 1 /
+{?1 and 1|1|0} should be 1 /
+{$1 and 1|0|1|2} should be 1 /
+{$0 or 1} should be 1 /
+{$0 or 1 and 0} should be 0 /
+{$!(0 or 1 and 0)} should be 1 /
+{$!!(0 or !0 and 0)} should be 0 /
+{?!(1 == 1)|1|0} should be 0 /
 {$~6} in 0-5 /
 {$#0} is hash of 0 and should not be 0 /
 {$0#0} is hilbert of (0, 0), midway through i32 domain /

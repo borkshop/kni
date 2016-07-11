@@ -79,7 +79,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
             return new Option(text, this.story, this.path, this, []);
         } else if (text === '-') {
             return new Knot(this.story, this.path, new Indent(this.story, this), this.ends, []);
-        } else if (text === '>') {
+        } else { // if (text === '>') {
             var node = this.story.create(this.path, 'prompt');
             // tie off ends to the prompt.
             tie(this.ends, this.path);
