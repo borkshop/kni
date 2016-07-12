@@ -2,7 +2,7 @@
 
 // Transforms a stream of text into a sequence of 'lines', tracking each line's
 // level of indentation.
-// Trims lines and collapses internal white space.
+// Trims lines.
 // Stips comments.
 //
 // The scanner feeds into an outline lexer.
