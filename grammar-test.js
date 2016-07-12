@@ -2903,3 +2903,16 @@ test([
         "next": null
     }
 });
+
+test([
+    '{$20\n',
+    '- 10}\n',
+], {
+    "start": {
+        "type": "print",
+        "expression": ["-", ["val", 20], ["val", 10]],
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+});
