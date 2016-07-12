@@ -39,10 +39,10 @@ function testVar(text, expected) {
 testVar('x', ['get', 'x']);
 testVar('x.y', ['get', 'x.y']);
 testVar('x.1', ['get', 'x.1']);
-testVar('$x', ['var', ['', ''], ['x']]);
-testVar('$x.', ['var', ['', '.'], ['x']]);
-testVar('$x.y', ['var', ['', '.y'], ['x']]);
-testVar('$x.$y', ['var', ['', '.', ''], ['x', 'y']]);
-testVar('$x.$y.$z', ['var', ['', '.', '.', ''], ['x', 'y', 'z']]);
-testVar('x.$y', ['var', ['x.', ''], ['y']]);
+testVar('{x}', ['var', ['', ''], [['get', 'x']]]);
+testVar('{x}.', ['var', ['', '.'], [['get', 'x']]]);
+testVar('{x}.y', ['var', ['', '.y'], [['get', 'x']]]);
+testVar('{x}.{y}', ['var', ['', '.', ''], [['get', 'x'], ['get', 'y']]]);
+testVar('{x}.{y}.{z}', ['var', ['', '.', '.', ''], [['get', 'x'], ['get', 'y'], ['get', 'z']]]);
+testVar('x.{y}', ['var', ['x.', ''], [['get', 'y']]]);
 testVar('x x', ['get', 'x']);

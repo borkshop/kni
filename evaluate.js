@@ -35,7 +35,7 @@ function nominate(scope, randomer, args) {
     var variables = args[2];
     var name = '';
     for (var i = 0; i < variables.length; i++) {
-        name += literals[i] + (+scope.get(variables[i]));
+        name += literals[i] + evaluate(scope, randomer, variables[i]);
     }
     name += literals[i];
     return name;

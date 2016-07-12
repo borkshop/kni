@@ -2872,34 +2872,34 @@ test([
 });
 
 test([
-    '{=source.$x.$y target.$w.$z}\n'
+    '{=source.{x}.{y} target.{w}.{z}}\n'
 ], {
     "start": {
         "type": "mov",
-        "target": ["var", ["target.", ".", ""], ["w", "z"]],
-        "source": ["var", ["source.", ".", ""], ["x", "y"]],
+        "target": ["var", ["target.", ".", ""], [["get", "w"], ["get", "z"]]],
+        "source": ["var", ["source.", ".", ""], [["get", "x"], ["get", "y"]]],
         "next": null
     }
 });
 
 test([
-    '{+1 $x.$y}\n'
+    '{+1 {x}.{y}}\n'
 ], {
     "start": {
         "type": "mov",
-        "target": ["var", ["", ".", ""], ["x", "y"]],
-        "source": ["+", ["var", ["", ".", ""], ["x", "y"]], ["val", 1]],
+        "target": ["var", ["", ".", ""], [["get", "x"], ["get", "y"]]],
+        "source": ["+", ["var", ["", ".", ""], [["get", "x"], ["get", "y"]]], ["val", 1]],
         "next": null
     }
 });
 
 test([
-    '{+$x.$y}\n'
+    '{+{x}.{y}}\n'
 ], {
     "start": {
         "type": "mov",
-        "target": ["var", ["", ".", ""], ["x", "y"]],
-        "source": ["+", ["var", ["", ".", ""], ["x", "y"]], ["val", 1]],
+        "target": ["var", ["", ".", ""], [["get", "x"], ["get", "y"]]],
+        "source": ["+", ["var", ["", ".", ""], [["get", "x"], ["get", "y"]]], ["val", 1]],
         "next": null
     }
 });

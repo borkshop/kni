@@ -1,7 +1,5 @@
 'use strict';
 
-var Variable = require('./variable');
-
 module.exports = expression;
 
 var unary = {
@@ -59,7 +57,7 @@ function expression(story, parent) {
 
 expression.variable = variable;
 function variable(story, parent) {
-    return new Variable.GetStaticVariable(story, parent, [], [], '', true);
+    return new GetStaticVariable(story, parent, [], [], '', true);
 }
 
 var inversions = {
@@ -117,11 +115,11 @@ Value.prototype.next = function next(type, space, text, scanner) {
         return this.parent.return(['val', +text], scanner);
     } else if (text === '(') {
         return expression(this.story, new Open(this.story, this.parent));
-    } else if (text === '$') {
-        return new Variable.GetDynamicVariable(this.story, this.parent, [''], []);
+    } else if (text === '{') {
+        return expression(this.story, new GetDynamicVariable(this.story, this.parent, [''], []));
     // istanbul ignore else
     } else if (type === 'alphanum') {
-        return new Variable.GetStaticVariable(this.story, this.parent, [], [], text, false);
+        return new GetStaticVariable(this.story, this.parent, [], [], text, false);
     } else {
         this.story.error('Expected expression, got ' + type + '/' + text + ' at ' + scanner.position());
         return this.parent.return(['val', 0]).next(type, space, text, scanner);
@@ -205,4 +203,86 @@ function PartialExpression(story, parent, op, left) {
 
 PartialExpression.prototype.return = function _return(right, scanner) {
     return this.parent.maybeAnother(this.parent.parent).return([this.op, this.left, right]);
+};
+
+function GetDynamicVariable(story, parent, literals, expressions) {
+    this.story = story;
+    this.parent = parent;
+    this.literals = literals;
+    this.expressions = expressions;
+    Object.seal(this);
+}
+
+GetDynamicVariable.prototype.return = function _return(expression, scanner) {
+    return new Expect('token', '}', this.story,
+        new GetStaticVariable(this.story,
+            this.parent,
+            this.literals,
+            this.expressions.concat([expression]),
+            ''
+        )
+    );
+};
+
+function GetStaticVariable(story, parent, literals, expressions, literal, fresh) {
+    this.type = 'static-variable';
+    this.story = story;
+    this.parent = parent;
+    this.literals = literals;
+    this.expressions = expressions;
+    this.literal = literal;
+    this.fresh = fresh;
+    Object.seal(this);
+}
+
+GetStaticVariable.prototype.next = function next(type, space, text, scanner) {
+    if (space === '' || this.fresh) {
+        this.fresh = false;
+        if (text === '{') {
+            return expression(this.story, new GetDynamicVariable(
+                this.story,
+                this.parent,
+                this.literals.concat([this.literal]),
+                this.expressions
+            ));
+        } else if (text === '.') {
+            this.literal += text;
+            return this;
+        } else if (type === 'alphanum' || type === 'number') {
+            this.literal += text;
+            return this;
+        }
+    }
+
+    var state;
+    if (this.literals.length === 0 && this.expressions.length === 0) {
+        // istanbul ignore if
+        if (this.literal === '') {
+            this.story.error('Expected variable but got ' + type + '/' + text + ' at ' + scanner.position());
+            state = this.parent.return([], scanner);
+        } else {
+            state = this.parent.return(['get', this.literal], scanner);
+        }
+    } else {
+        state = this.parent.return(['var', this.literals.concat([this.literal]), this.expressions], scanner);
+    }
+    return state.next(type, space, text, scanner);
+};
+
+function Expect(type, text, story, parent) {
+    this.type = 'expect';
+    this.expect = type;
+    this.text = text;
+    this.story = story;
+    this.parent = parent;
+}
+
+Expect.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore else
+    if (type === this.expect && text === this.text) {
+        return this.parent;
+    } else {
+        this.story.error('Expected ' + this.expect + ' ' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
+        return this.parent;
+    }
 };

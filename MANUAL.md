@@ -514,3 +514,16 @@ accidental symmetry over any axis.  For example `{#x+y}` creates symmetry
 along a diagonal. `{#x*y}` produces symmetry across multiple axes about the
 origin.  The Hilbert operator presumes a space with 4 billion unique
 coordinates in a square of height and width 64k centered about the origin.
+
+## Variables
+
+Inkblot variable names can consist of words and dots.
+Additionally, Inkblot supports interpolating expressions within variable names,
+using braces.
+
+```
+{=10 x}
+{=20 y}
+{=1 point.{x}.{y}}
+{$point.{x}.{y}}
+```
