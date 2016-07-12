@@ -20,7 +20,7 @@ var L2 = ['->', '<-', '==', '!=', '>=', '<='];
 var num = /\d/;
 var space = /\s/;
 // alphanumerics including non-english
-var alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\w\d_]/;
+var alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\d_]/;
 
 function InlineLexer(generator) {
     this.generator = generator;
