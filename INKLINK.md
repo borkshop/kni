@@ -91,6 +91,7 @@ Inkblot diverges rapidly from its roots in inspiration from Inkle’s Ink.
 
   - The default is the same ``{a|b|c}``, choosing "a", then "b", then "c" every
     time thereafter, always incrementing a variable with the same name as the
+    underlying instruction label.
 
   - Cycles are marked with ``{%a|b|c}`` instead of ``{&a|b|c}``.
 
@@ -115,9 +116,9 @@ Inkblot diverges rapidly from its roots in inspiration from Inkle’s Ink.
     By omitting the then and else clauses, a condition can apply, skipping
     to the end of the current thread.
 
-- Inkblot does not use `~` prefixed lines for mutation and logic.
-  Instead, there are blocks that modify state like ``{+gold}`` and ``{=10
-  hearts}`` that can be applied inline with narrative.
+- Inkblot does not yet use `~` bulleted lines for mutation and logic.  Instead,
+  there are blocks that modify state like ``{+gold}`` and ``{=10 hearts}`` that
+  can be applied inline with narrative.
 
 - Inkblot’s algebraic expressions vary in many small ways, like `!` instead of
   `not`.
