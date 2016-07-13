@@ -17,11 +17,12 @@ function main() {
     test('examples/fish.ink', 'tests/fish.2');
     test('examples/german.ink', 'tests/german.1');
     test('examples/hilbert.ink', 'tests/hilbert.1');
+    test('examples/hilo.ink', 'tests/hilo.1');
     test('examples/liftoff.ink', 'tests/liftoff.1');
+    test('examples/list.ink', 'tests/list.1');
     test('examples/paint.ink', 'tests/paint.1');
     test('examples/plane.ink', 'tests/plane.1');
     test('examples/tree.ink', 'tests/tree.1');
-    test('examples/hilo.ink', 'tests/hilo.1');
 
     test('tests/conjunctions.ink', 'tests/conjunctions.1');
     test('tests/indirect.ink', 'tests/indirect.1');
