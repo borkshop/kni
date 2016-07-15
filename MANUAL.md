@@ -206,14 +206,31 @@ Roses are red /
 Violets are blue
 ```
 
-## Divider
+## Paragraph
 
-A horizontal rule of dashes, more than one, indicates that the narrative
-should have a break between paragraphs.
+A double solidus indicates that the narrative should have a break between
+paragraphs.
+
+```
+And they lived merrily for ever after. //
+The end.
+```
+
+This renders as:
 
 ```
 And they lived merrily for ever after.
----
+
+The end.
+```
+
+The explicit marker is useful for distinguishing cases where
+the text might not be necessarily separated by a paragraph.
+
+```
+And they lived mellowly for ever after. //
++ Try again!? ->start
++ No, just finish.
 The end.
 ```
 
@@ -504,7 +521,7 @@ mean value of 6, where 6 is the most likely variable, with diminishing
 probability toward 0 and 12. The D&D expression `2d6` is equivalent to
 `1~6 + 1~6 + 2` owing to the vagaries of math.
 
-I haven't implemented simplified notation for die rolls, favoring the ~
+I haven’t implemented simplified notation for die rolls, favoring the ~
 operator initially because it composes better mathematically.
 
 binary `#` produces the equivalent point on a Hilbert Curve for a coordinate X, Y.
@@ -527,3 +544,14 @@ using braces.
 {=1 point.{x}.{y}}
 {$point.{x}.{y}}
 ```
+
+## Typographic Helpers
+
+Inkblot scripts are UTF-8, but when you have to make do with ASCII, Inkblot
+supports some operators that assist making common typographical niceties.
+
+- ``{"`` and ``"}`` can stand for “curly quotes”.
+- ``{'`` and ``'}`` can stand for the equivalent single ‘curly quotes’.
+- ``--`` is good for an en-dash, suitable for use in number ranges like 1–10.
+- ``---`` is good for em-dash—suitable for parenthetical phrases.
+
