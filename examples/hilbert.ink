@@ -2,12 +2,10 @@ This example generates a field of values, every one adjacent to a neighboring
 letter of the alphabet. The example employs a Hilbert curve to fill a
 multi-dimensional space with a continuous, undulating line. Hilbert curves
 ensure that every point is traversable from another and that ranges of a
-Hilbert curve close over a contiguous region.
----
+Hilbert curve close over a contiguous region. //
 
 Most of this example involves iterating over the (x, y) coordinate plane about
-the origin. The Hilbert curve is produced by the "#" operator.
----
+the origin. The Hilbert curve is produced by the "#" operator. //
 
 {=10 s} # size: height and width
 {=0 y}

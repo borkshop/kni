@@ -74,6 +74,12 @@ Engine.prototype.$paragraph = function $paragraph() {
     return this.goto(this.instruction.next);
 };
 
+Engine.prototype.$rule = function $rule() {
+    // TODO
+    this.render.paragraph();
+    return this.goto(this.instruction.next);
+};
+
 Engine.prototype.$startJoin = function $startJoin() {
     this.render.startJoin(
         this.instruction.lift,

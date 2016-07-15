@@ -1,5 +1,4 @@
-{~Choose|Pick} a number from 1 to 100.
----
+{~Choose|Pick} a number from 1 to 100. //
 
 {=1 lo}
 {=100 hi}

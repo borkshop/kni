@@ -2276,8 +2276,7 @@ test([
 });
 
 test([
-    'And they lived happily ever after.\n',
-    '----\n',
+    'And they lived happily ever after. //\n',
     'The end.\n'
 ], {
     "start": {
@@ -2915,4 +2914,13 @@ test([
         "drop": "",
         "next": null
     },
+});
+
+test([
+    '----\n'
+], {
+    "start": {
+        "type": "rule",
+        "next": null
+    }
 });

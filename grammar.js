@@ -55,7 +55,7 @@ function Knot(story, path, parent, ends, jumps) {
 }
 
 Knot.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'symbol'|| type === 'alphanum' || type === 'number' || type === 'literal') {
+    if (type === 'symbol'|| type === 'alphanum' || type === 'number' || type === 'literal' || text === '--' || text === '---') {
         return new Text(this.story, this.path, space, text, this, this.ends);
     }  else if (type === 'token') {
         if (text === '{') {
@@ -72,6 +72,13 @@ Knot.prototype.next = function next(type, space, text, scanner) {
             var node = this.story.create(this.path, 'break');
             tie(this.ends, this.path);
             return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
+        } else if (text === '//') {
+            var node = this.story.create(this.path, 'paragraph');
+            tie(this.ends, this.path);
+            return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
+        } else if (text === '{"' || text === '{\'' || text === '"}' || text === '\'}') {
+            return new Text(this.story, this.path, space, '', this, this.ends)
+                .next(type, '', text, scanner);
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
@@ -87,7 +94,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
             return new Knot(this.story, Path.next(this.path), new Indent(this.story, this), this.jumps, []);
         }
     } else if (type === 'dash') {
-        var node = this.story.create(this.path, 'paragraph');
+        var node = this.story.create(this.path, 'rule');
         tie(this.ends, this.path);
         return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
     } else if (type === 'break') {
@@ -131,14 +138,33 @@ Text.prototype.next = function next(type, space, text, scanner) {
     if (type === 'alphanum' || type === 'number' || type === 'symbol' || type === 'literal') {
         this.text += space + text;
         return this;
-    } else {
-        tie(this.ends, this.path);
-        var node = this.story.create(this.path, 'text', this.text);
-        node.lift = this.lift;
-        node.drop = space;
-        return this.parent.return(Path.next(this.path), [node], [], scanner)
-            .next(type, space, text, scanner);
+    } else if (type === 'token') {
+        if (text === '{"') {
+            this.text += space + '“';
+            return this;
+        } else if (text === '"}') {
+            this.text += space + '”';
+            return this;
+        } else if (text === '{\'') {
+            this.text += space + '‘';
+            return this;
+        } else if (text === '\'}') {
+            this.text += space + '’';
+            return this;
+        }
+    } else if (text === '--') {
+        this.text += space + '–'; // en-dash
+        return this;
+    } else if (text === '---') {
+        this.text += space + '—'; // em-dash
+        return this;
     }
+    tie(this.ends, this.path);
+    var node = this.story.create(this.path, 'text', this.text);
+    node.lift = this.lift;
+    node.drop = space;
+    return this.parent.return(Path.next(this.path), [node], [], scanner)
+        .next(type, space, text, scanner);
 };
 
 function Pretext(lift, text, drop) {

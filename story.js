@@ -243,7 +243,7 @@ Mov.prototype.equals = function _equals(that) {
 };
 
 constructors.break = Break;
-function Break(variable) {
+function Break() {
     this.type = 'break';
     this.next = null;
     Object.seal(this);
@@ -259,7 +259,7 @@ Break.prototype.equals = function equals(that) {
 };
 
 constructors.paragraph = Paragraph;
-function Paragraph(variable) {
+function Paragraph() {
     this.type = 'paragraph';
     this.next = null;
     Object.seal(this);
@@ -270,6 +270,22 @@ Paragraph.prototype.describe = function describe() {
     return '';
 };
 Paragraph.prototype.equals = function equals(that) {
+    return this.type === that.type &&
+        this.next === that.next;
+};
+
+constructors.rule = Rule;
+function Rule() {
+    this.type = 'rule';
+    this.next = null;
+    Object.seal(this);
+}
+Rule.prototype.tie = tie;
+// istanbul ignore next
+Rule.prototype.describe = function describe() {
+    return '';
+};
+Rule.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.next === that.next;
 };

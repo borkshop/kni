@@ -8,7 +8,7 @@ There are {, and |
 - {>0 rat} rats{,}
 - {>0 cat} cats{,}
 - {>0 bat} bats{,}
-}. ---
+}. //
 
 {-rat}
 {-cat}
