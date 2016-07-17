@@ -8,13 +8,13 @@ intended for text adventures or interactive fiction.
 
 - [Differences from Ink][INKLINK]
 - [The Ink Tutorial][TUTORIAL] that inspired Inkblot.
-- [Reference Manual][MANUAL]
+- [Language Reference Manual][MANUAL]
 - [How to hack Inkblot][HACKINK]
 
 [INKLINK]: INKLINK.md
 [TUTORIAL]: https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md
 [MANUAL]: MANUAL.md
-[HACKINK]: HACKINKG.md
+[HACKINK]: HACKINK.md
 
 Inkblots consist of descriptive text and options.
 Inkblot runtime engines trace the dialog, entering at the top of the file and
@@ -58,8 +58,12 @@ Inkblot scripts can be loaded and bound with scenes in a web page.
 
 - The [archery][] prototype illustrates a shop and gambling game.
 
+  [![An Archery Shop](https://github.com/kriskowal/inkblot/raw/master/examples/archery.png)][archery]
+
 - The [journey][] prototype illustrates a survival game over a
   procedurally-generated infinite road.
+
+  [![A Journey through Ælfland](https://github.com/kriskowal/inkblot/raw/master/examples/journey.png)][journey]
 
 - The [airship][] prototype illustrates a narrative that includes
   a simulation of the control and behavior of a steampunk airship.
