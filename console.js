@@ -9,40 +9,42 @@ function Console(writer) {
     this.writer = writer;
     this.wrapper = new Wrapper(writer);
     this.excerpt = new Excerpt();
+    this.options = [];
+    this.cursor = this.excerpt;
 }
 
 Console.prototype.write = function write(lift, text, drop) {
-    this.excerpt.digest(lift, text, drop);
+    this.cursor.digest(lift, text, drop);
 };
 
 Console.prototype.break = function _break() {
-    this.excerpt.break();
+    this.cursor.break();
 };
 
 Console.prototype.paragraph = function paragraph() {
-    this.excerpt.paragraph();
+    this.cursor.paragraph();
 };
 
 Console.prototype.startJoin = function startJoin(lift, delimiter, conjunction) {
-    this.excerpt.startJoin(lift, delimiter, conjunction);
+    this.cursor.startJoin(lift, delimiter, conjunction);
 };
 
 Console.prototype.delimit = function delimit(delimiter) {
-    this.excerpt.delimit(delimiter);
+    this.cursor.delimit(delimiter);
 };
 
 Console.prototype.stopJoin = function stopJoin() {
-    this.excerpt.stopJoin();
+    this.cursor.stopJoin();
 };
 
-Console.prototype.option = function option(number, label) {
-    var lead = (number + '.   ').slice(0, 3) + ' ';
-    this.wrapper.word(lead);
-    this.wrapper.flush = true;
-    this.wrapper.push('    ', '   ');
-    this.wrapper.words(label);
-    this.wrapper.pop();
-    this.wrapper.break();
+Console.prototype.startOption = function startOption() {
+    var option = new Excerpt();
+    this.cursor = option;
+    this.options.push(option);
+};
+
+Console.prototype.stopOption = function stopOption() {
+    this.cursor = this.excerpt;
 };
 
 Console.prototype.flush = function flush() {
@@ -55,8 +57,19 @@ Console.prototype.pardon = function pardon() {
 
 Console.prototype.display = function display() {
     this.excerpt.write(this.wrapper);
+    for (var i = 0; i < this.options.length; i++) {
+        var number = i + 1;
+        var lead = (number + '.   ').slice(0, 3) + ' ';
+        this.wrapper.word(lead);
+        this.wrapper.flush = true;
+        this.wrapper.push('    ', '   ');
+        this.options[i].write(this.wrapper);
+        this.wrapper.pop();
+    }
 };
 
 Console.prototype.clear = function clear() {
     this.excerpt = new Excerpt();
+    this.options = [];
+    this.cursor = this.excerpt;
 };

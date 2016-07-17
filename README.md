@@ -13,13 +13,13 @@ The dialog accumulates options and presents a prompt for the interlocutor to
 chose the direction of the narrative.
 
 ```
-Hello, "World!"
+Hello, {"World!"}
 
 @loop
-+ You s[S]ay, "Hello". /
++ [You s[S]ay, {"Hello."} ]
   You are too kind, hello
   again to you too. ->loop
-+ You s[S]ay, "Farewell."
++ [You s[S]ay, {"Farewell."} ]
 >
 
 The End.

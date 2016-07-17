@@ -11,6 +11,8 @@ function main() {
     test('examples/archery.ink', 'tests/quit.1');
     test('examples/ascii.ink', 'tests/ascii.1');
     test('examples/bottles.ink', 'tests/bottles.1');
+    test('examples/coin.ink', 'tests/coin.1');
+    test('examples/coin.ink', 'tests/coin.2');
     test('examples/distribution.ink', 'tests/distribution.1');
     test('examples/door.ink', 'tests/door.1');
     test('examples/door.ink', 'tests/door.2');
@@ -21,10 +23,12 @@ function main() {
     test('examples/hilo.ink', 'tests/hilo.1');
     test('examples/liftoff.ink', 'tests/liftoff.1');
     test('examples/list.ink', 'tests/list.1');
+    test('examples/option-styles.ink', 'tests/option-styles.1');
     test('examples/paint.ink', 'tests/paint.1');
     test('examples/plane.ink', 'tests/plane.1');
     test('examples/tree.ink', 'tests/tree.1');
 
+    test('tests/brief.ink', 'tests/brief.1');
     test('tests/conjunctions.ink', 'tests/conjunctions.1');
     test('tests/indirect.ink', 'tests/indirect.1');
     test('tests/literals.ink', 'tests/literals.1');

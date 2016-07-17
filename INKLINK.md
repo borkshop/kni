@@ -48,45 +48,6 @@ Inkblot diverges rapidly from its roots in inspiration from Inkle’s Ink.
   conditions directly on options. That probably accounts for how it gets
   by with implicitly prompting at the end of an option list.
 
-- Ink favors first person options.
-
-  ```ink
-  *   Hello [back!] right back to you!
-  ```
-
-  Which can be expressed with inverted backets in Inkblot.
-
-  ```inkblot
-  * Hello ]back![ right back to you!
-  ```
-
-  But Inkblot favors second person.
-
-  ```inkblot
-  * You s[S]ay, “Hello back!” /
-    They say, hello right back to you.
-  ```
-
-  So in Ink, a dialog like the following,
-
-  ```ink
-  *   “I am somewhat tired[.”],” I repeated.
-      “Really,” he responded. “How deleterious.”
-  ```
-
-  Needs two perhaps odd changes.
-  First, the brackets need to be inverted.
-  Then you have to add the solidus indicating
-  the end of the portion that appears in the label.
-  With Inkle’s Ink, the closing bracket is sufficient
-  since everything that follows only appears in the
-  reply and can’t be wrapped to the next line.
-
-  ```inkblot
-  *   “I am somewhat tired].”[,” I repeated. /
-      “Really,” he responded. “How deleterious.”
-  ```
-
 - Inkblot’s {variable|text} is similar but not the same as Inkle’s Ink.
 
   - The default is the same ``{a|b|c}``, choosing "a", then "b", then "c" every
@@ -128,6 +89,15 @@ Inkblot diverges rapidly from its roots in inspiration from Inkle’s Ink.
 
 Inkblot is missing many things available to Ink.
 
+- Inkblot does not yets support default options.
+
+  ```ink
+  * [You can make this choice once. ]
+  * [] Fall through to this if no other options are collected
+    before the prompt.
+  >
+  ```
+
 - Inkblot does not have enumerations or other typed variable declarations.
   In only supports 32 bit integers.
 
@@ -153,6 +123,30 @@ Yet Inkblot has some features that Ink leaves out.
 Ink’s smallness is a virtue for keeping the language easy to pick up for
 non-programmers, whereas I’ve made Inkblot selfishly as a hybrid writer and
 coder.
+
+- Inkblot supports second person options using a special case of Ink’s bracket
+  notation.
+
+  ```
+  # Ink style option
+  + Hello [back!] right back to you!
+
+  # Abbreviated Ink style option
+  + [North. ] You head north.
+
+  # Second person variant illustrating inner bracket.
+  # [A    [Q] QA          ]
+  + [You b[B]uy an arrow. ]
+
+  # Second person with alternating question-specific threads, and a trailing
+  # answer that continues from the question with alternate punctuation.
+  # [A    [Q] QA          [Q]] A
+  + [You s[S]hoot an arrow[.]], scoring a {~hit|miss}!
+
+  # [Q     ] A
+  + [Quit. ] <-
+  >
+  ```
 
 - Inkblot can collect options through nested conditional threads.
 

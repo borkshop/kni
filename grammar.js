@@ -14,7 +14,7 @@ function start(story) {
 }
 
 function Stop(story) {
-    this.type = 'stop';
+    this.type = 'end';
     this.story = story;
     Object.seal(this);
 }
@@ -67,7 +67,8 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '<-') {
             // Implicitly tie ends to null by dropping them.
             // Continue carrying jumps to the next encountered prompt.
-            return new Knot(this.story, this.path, this.parent, [], this.jumps);
+            // Advance the path so that option segments don't appear empty.
+            return new Knot(this.story, Path.next(this.path), this.parent, [], this.jumps);
         } else if (text === '/') {
             var node = this.story.create(this.path, 'break');
             tie(this.ends, this.path);
@@ -82,8 +83,7 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
-            tie(this.ends, this.path);
-            return new Option(text, this.story, this.path, this, []);
+            return option(this.story, this.path, this, this.ends, this.jumps, text);
         } else if (text === '-') {
             return new Knot(this.story, this.path, new Indent(this.story, this), this.ends, []);
         } else { // if (text === '>') {
@@ -132,6 +132,7 @@ function Text(story, path, lift, text, parent, ends) {
     this.text = text;
     this.parent = parent;
     this.ends = ends;
+    Object.seal(this);
 }
 
 Text.prototype.next = function next(type, space, text, scanner) {
@@ -167,166 +168,282 @@ Text.prototype.next = function next(type, space, text, scanner) {
         .next(type, space, text, scanner);
 };
 
-function Pretext(lift, text, drop) {
-    this.lift = lift || '';;
-    this.text = text || '';
-    this.drop = drop || '';
+function option(story, path, parent, ends, jumps, leader) {
+
+    var variable = Path.toName(path);
+    var next = path;
+
+    var option = new Option(story, path, parent, [], jumps, leader);
+    tie(ends, path);
+
+    // TODO postpone until after other conditions and consequences are assessed
+    if (leader === '*') {
+        var jump = story.create(next, 'jump', ['!=', ['get', variable], ['val', 0]]);
+        var jumpBranch = new Branch(jump);
+        option.ends.push(jumpBranch);
+        next = Path.firstChild(next);
+        tie([jump], next);
+    }
+
+    option.node = story.create(next, 'option', null);
+
+    if (leader === '*') {
+        next = Path.next(next);
+        var inc = story.create(next, 'set', variable);
+        inc.expression = ['+', ['get', variable], ['val', 1]];
+        option.inc = next;
+        next = Path.next(next);
+    } else {
+        next = Path.firstChild(next);
+    }
+
+    option.next = next;
+    // TODO OptionStart waits for conditions and consequents, then...
+    return option.knot(new OptionSegment(story, next, option, [], option, 'qa', AfterInitialQA));
 }
 
-function Option(leader, story, path, parent, ends) {
-    this.type = 'option';
-    this.leader = leader;
+function Option(story, path, parent, ends, jumps, leader) {
     this.story = story;
     this.path = path;
-    this.name = Path.toName(path);
     this.parent = parent;
     this.ends = ends; // to tie off to the next option
-    this.jumps = []; // to tie off to the next node after the next prompt
-    this.question = new Pretext();
-    this.answer = new Pretext();
-    this.common = new Pretext();
-    this.position = 0;
-    this.direction = 1;
+    this.jumps = jumps; // to tie off to the next node after the next prompt
+    this.node = null;
+    this.leader = leader;
+    this.order = 0;
+    this.variable = null;
+    this.inc = null;
+    this.next = null;
+    this.mode = '';
+    this.branch = null;
     Object.seal(this);
 }
 
-//    You then s   [S]      ay Hello, World!
-//    0   1    1    2 3     4  5      5
-//    Answer  Question Common
-//
-//    "Hello, World ]!"        [," you reply.
-//    0       1     -2      -3 4   5   5
-//    Common         Question  Answer
-Option.prototype.next = function next(type, space, text, scanner) {
-    if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 0) {
-        this.answer.lift = space;
-        this.answer.text = text;
-        this.position = 1;
-        return this;
-    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 1) {
-        this.answer.text += space + text;
-        return this;
-    } else if (type === 'token' && text === '[' && (this.position === 0 || this.position === 1)) {
-        this.position = 2;
-        return this;
-    } else if (type === 'token' && text === ']' && (this.position === 0 || this.position === 1)) {
-        this.direction = -1;
-        this.position = -2;
-        return this;
-    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 2 * this.direction) {
-        this.answer.drop = space;
-        this.question.lift = space;
-        this.question.text = text;
-        this.position = 3 * this.direction;
-        return this;
-    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 3 * this.direction) {
-        this.question.text += space + text;
-        return this;
-    } else if (type === 'token' && text === ']' && (this.position === 2 || this.position === 3)) {
-        this.question.drop = space;
-        this.position = 4;
-        return this;
-    } else if (type === 'token' && text === '[' && (this.position === -2 || this.position === -3)) {
-        this.question.drop = space;
-        this.position = 4;
-        return this;
-    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 4) {
-        this.question.drop = space;
-        this.common.lift = space;
-        this.common.text = text;
-        this.position = 5;
-        return this;
-    } else if ((type === 'symbol' || type === 'alphanum' || type === 'number') && this.position === 5) {
-        this.common.text += space + text;
-        return this;
-    } else if (this.position === 0 || this.position === 1) {
-        this.answer.drop = space;
-        // If we get here, it means we only populated the answer, and didn't
-        // see any bracket notation.
-        // In this case, the "answer" we collected is actually the "common",
-        // meaning it serves for both the question and answer for the option.
-        return this.create(null, null, this.answer, this.direction, type, space, text, scanner);
-    // istanbul ignore next
-    } else if (this.position === 2 || this.position === 3) {
-        this.story.error('Expected matching ], got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, this.jumps);
-    } else {
-        this.common.drop = space;
-        return this.create(this.answer, this.question, this.common, this.direction, type, space, text, scanner);
-    }
-};
-
-Option.prototype.create = function create(answer, question, common, direction, type, space, text, scanner) {
-    var variable = Path.toName(this.path);
-    var path = this.path;
-
-    if (this.leader === '*') {
-        var jnz = this.story.create(path, 'jump', ['!=', ['get', variable], ['val', 0]]);
-        var jnzBranch = new Branch(jnz);
-        this.ends.push(jnzBranch);
-        path = Path.firstChild(path);
-        tie([jnz], path);
-    }
-
-    var option;
-    if (question) {
-        if (this.direction > 0) {
-            option = this.story.create(path, 'option', question.text + question.drop + common.text);
-        } else {
-            option = this.story.create(path, 'option', answer.text + answer.drop + question.text);
-        }
-    } else {
-        option = this.story.create(path, 'option', common.text);
-    }
-    this.ends.push(option);
-
-    if (this.leader === '*') {
-        path = Path.next(path);
-    } else {
-        path = Path.firstChild(path);
-    }
-
-    var prev = new Branch(option);
-    var next;
-
-    if (this.leader === '*') {
-        next = this.story.create(path, 'set', variable);
-        next.expression = ['+', ['get', variable], ['val', 1]];
-        tie([prev], path);
-        path = Path.next(path);
-        prev = next;
-    }
-
-    if (answer && answer.text) {
-        next = this.story.create(path, 'text', answer.text);
-        next.lift = answer.lift;
-        next.drop = answer.drop;
-        tie([prev], path);
-        path = Path.next(path);
-        prev = next;
-    }
-
-    if (question && common.text) {
-        next = this.story.create(path, 'text', common.text);
-        next.lift = common.lift;
-        next.drop = common.drop;
-        tie([prev], path);
-        path = Path.next(path);
-        prev = next;
-    }
-
-    var state = new Knot(this.story, path, new Indent(this.story, this), [prev], []);
-
-    if (text !== '/') {
-        state = state.next(type, space, text, scanner);
-    }
-
-    return state;
-};
-
 Option.prototype.return = function _return(path, ends, jumps, scanner) {
-    return this.parent.return(Path.next(this.path), this.ends, this.jumps.concat(ends, jumps));
+    // Create a jump from the end of the answer.
+    if (this.mode !== 'a') {
+        // If the answer is reused in the question, create a dedicated jump and
+        // add it to the end of the answer.
+        var jump = this.story.create(path, 'goto', null);
+        this.node.answer.push(Path.toName(path));
+        path = Path.next(path);
+        ends = [jump];
+    }
+
+    // TODO thread conditions and consequents
+    if (this.leader === '*') {
+        this.node.answer.unshift(Path.toName(this.inc));
+    }
+
+    return this.parent.return(
+        Path.next(this.path),
+        this.ends.concat([this.node]),
+        this.jumps.concat(ends, jumps)
+        // TODO thread scanner
+    );
 };
+
+Option.prototype.knot = function knot(parent) {
+    // Creat a dummy node, to replace if necessary, for arcs that begin with a
+    // goto/divert arrow that otherwise would have loose ends to forward.
+    var placeholder = this.story.create(this.next, 'goto', null);
+    return new Knot(this.story, this.next, parent, [placeholder], []);
+};
+
+Option.prototype.push = function push(path, mode) {
+    var start = Path.toName(this.next);
+    var end = Path.toName(path);
+    if (start !== end) {
+        if (mode === 'q' || mode === 'qa') {
+            this.node.question.push(start);
+        }
+        if (mode === 'a' || mode === 'qa') {
+            this.node.answer.push(start);
+        }
+        this.next = path;
+        this.mode = mode;
+    }
+};
+
+// An option segment captures the end of an arc, and if the path has advanced,
+// adds that arc to the option's questions and/or answer depending on the
+// "mode" ("q", "a", or "qa") and proceeds to the following state.
+function OptionSegment(story, path, parent, ends, option, mode, Next) {
+    this.type = 'option-segment';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.option = option;
+    this.mode = mode;
+    this.Next = Next;
+    Object.seal(this);
+}
+
+OptionSegment.prototype.return = function _return(path, ends, jumps) {
+    this.option.push(path, this.mode);
+    return new this.Next(this.story, path, this.parent, ends, this.option);
+};
+
+// Every option begins with a (potentially empty) segment before the first open
+// backet that will contribute both to the question and the answer.
+// This state exists only to mandate that every option has a pair of brackets.
+function AfterInitialQA(story, path, parent, ends, option) {
+    this.type = 'after-first-qa';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.option = option;
+    Object.seal(this);
+}
+
+AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore else
+    if (type === 'token' && text === '[') {
+        return this.option.knot(new AfterQorA(this.story, this.path, this, this.ends, this.option));
+    } else {
+        this.story.error('Expected brackets in option at ' + scanner.position());
+        return new AfterFinalA(this.story, this.path, this.parent, this.ends, this.option);
+    }
+};
+
+// The thread returns to this level after capturing the bracketed terms, after
+// which anything and everything to the end of the block contributes to the
+// answer.
+AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
+    return this.option.knot(
+        new OptionSegment(this.story, path, this.parent, ends, this.option, 'a', AfterFinalA));
+};
+
+// After capturing the first arc within brackets, which may either contribute
+// to the question or the answer, we decide which based on whether there is a
+// following bracket.
+function DecideQorA(story, path, parent, ends, option) {
+    this.type = 'q-or-a';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.option = option;
+    Object.seal(this);
+}
+
+DecideQorA.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'token' && text === '[') { // A
+        this.option.push(this.path, 'a');
+        return this.option.knot(
+            new OptionSegment(this.story, this.path, this, this.ends, this.option, 'q', ExpectFinalBracket));
+    // istanbul ignore else
+    } else if (type === 'token' && text === ']') { // Q
+        this.option.push(this.path, 'q');
+        return this.parent.return(this.path, this.ends, [], scanner);
+    } else {
+        this.story.error('Expected a bracket, either [ or ], at ' + scanner.position());
+        return this.parent.return(this.path, this.ends, [], scanner);
+    }
+};
+
+// If the brackets contain a sequence of question segment like [A [Q] QA [Q]
+// QA...], then after each [question], we return here for continuing QA arcs.
+DecideQorA.prototype.return = function _return(path, ends, jumps, scanner) {
+    return this.option.knot(
+        new OptionSegment(this.story, path, this.parent, ends, this.option, 'qa', AfterQA));
+};
+
+// After a Question/Answer segment, there can always be another [Q] segment
+// ad nauseam. Here we check whether this is the end of the bracketed
+// expression or continue after a [Question].
+function AfterQA(story, path, parent, ends, option) {
+    this.type = 'after-qa';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.option = option;
+    Object.seal(this);
+}
+
+AfterQA.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'token' && text === '[') {
+        return this.option.knot(
+            new OptionSegment(this.story, this.path, this, this.ends, this.option, 'q', ExpectFinalBracket));
+    // istanbul ignore else
+    } else  if (type === 'token' && text === ']') {
+        return this.parent.return(this.path, this.ends, [], scanner);
+    } else {
+        this.story.error('Expected either [ or ] bracket at ' + scanner.position());
+        return this.parent.return(this.path, this.ends, [], scanner);
+    }
+};
+
+AfterQA.prototype.return = function _return(path, ends, jumps, scanner) {
+    return this.option.knot(
+        new OptionSegment(this.story, this.path, this.parent, ends, this.option, 'qa', ExpectFinalBracket));
+};
+
+// The bracketed terms may either take the form [Q] or [A, ([Q] QA)*].
+// This captures the first arc without committing to either Q or A until we
+// know whether it is followed by a bracketed term.
+function AfterQorA(story, path, parent, ends, option) {
+    this.type = 'after-q-or-a';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.option = option;
+    Object.seal(this);
+}
+
+// Just capture the path and proceed.
+AfterQorA.prototype.return = function _return(path, ends, jumps, scanner) {
+    return new DecideQorA(this.story, path, this.parent, ends, this.option);
+};
+
+// After a [Q] or [A [Q] QA...] block, there must be a closing bracket and we
+// return to the parent arc of the option.
+function ExpectFinalBracket(story, path, parent, ends, option) {
+    this.type = 'after-q-or-a';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.option = option;
+    Object.seal(this);
+}
+
+ExpectFinalBracket.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore else
+    if (type === 'token' && text === ']') {
+        return this.parent.return(this.path, this.ends, [], scanner);
+    } else {
+        this.story.error('Expected close bracket in option at ' + scanner.position());
+        return this.parent.return(this.path, this.ends, [], scanner);
+    }
+};
+
+// After the closing bracket in an option], everything that remains is the last
+// node of the answer. After that segment has been submitted, we expect the
+// block to end.
+function AfterFinalA(story, path, parent, ends, option) {
+    this.type = 'after-final-a';
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.option = option;
+    Object.seal(this);
+}
+
+AfterFinalA.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore if
+    if (type !== 'stop') {
+        this.story.error('Expected end of block at end of option at ' + scanner.position());
+    }
+    return this.parent.return(this.path, this.ends, [], scanner);
+};
+
+// This concludes the portion dedicated to parsing options
 
 function Branch(node) {
     this.type = 'branch';

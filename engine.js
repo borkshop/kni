@@ -117,7 +117,7 @@ Engine.prototype.$call = function $call() {
     // capturing locals. As such the parser will need to retain a reference to
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
-    this.top = new Frame(this.storage, routine.locals || [], this.instruction.next, this.label);
+    this.top = new Frame(this.top, this.storage, routine.locals || [], this.instruction.next, this.label);
     this.stack.push(this.top);
     return this.goto(this.instruction.branch);
 };
@@ -129,8 +129,10 @@ Engine.prototype.$subroutine = function $subroutine() {
 };
 
 Engine.prototype.$option = function $option() {
-    this.options.push(this.instruction);
-    return this.goto(this.instruction.next);
+    var option = this.instruction;
+    this.options.push(option);
+    this.render.startOption();
+    return this.gothrough(option.question, this.instruction.next, true);
 };
 
 Engine.prototype.$set = function $set() {
@@ -195,6 +197,9 @@ Engine.prototype.$prompt = function $prompt() {
 Engine.prototype.goto = function _goto(name) {
     while (name === null && this.stack.length > 1) {
         var top = this.stack.pop();
+        if (top.stopOption) {
+            this.render.stopOption();
+        }
         this.top = this.stack[this.stack.length - 1];
         name = top.next;
     }
@@ -227,9 +232,10 @@ Engine.prototype.answer = function answer(text) {
     var n = +text;
     if (n >= 1 && n <= this.options.length) {
         this.render.clear();
-        var at = this.options[n - 1].branch;
-        this.storage.set('@', at);
-        if (this.goto(at)) {
+        // There is no known case where gothrough would immediately exit for
+        // lack of further instructions, so
+        // istanbul ignore else
+        if (this.gothrough(this.options[n - 1].answer, null, false)) {
             this.flush();
             this.continue();
         }
@@ -239,16 +245,28 @@ Engine.prototype.answer = function answer(text) {
     }
 };
 
+Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
+    var prev = this.label;
+    for (var i = sequence.length -1; i >= 0; i--) {
+        // Note that we pass the top frame as both the parent scope and the
+        // caller scope so that the entire sequence has the same variable
+        // visibility.
+        this.top = new Frame(this.top, this.top, [], next, prev, stopOption);
+        this.stack.push(this.top);
+        prev = next;
+        next = sequence[i];
+        stopOption = false;
+    }
+    return this.goto(next);
+};
+
 Engine.prototype.display = function display() {
     this.render.display();
 };
 
 Engine.prototype.prompt = function prompt() {
     this.display();
-    for (var i = 0; i < this.options.length; i++) {
-        var option = this.options[i];
-        this.render.option(i + 1, option.label);
-    }
+    // this.continue();
     this.dialog.question();
 };
 
@@ -286,15 +304,17 @@ Global.prototype.at = function at() {
     return '';
 };
 
-function Frame(caller, locals, next, branch) {
+function Frame(parent, caller, locals, next, branch, stopOption) {
     this.locals = locals;
     this.scope = Object.create(null);
     for (var i = 0; i < locals.length; i++) {
         this.scope[locals[i]] = 0;
     }
+    this.parent = parent;
     this.caller = caller;
     this.next = next;
     this.branch = branch;
+    this.stopOption = stopOption;
 }
 
 Frame.prototype.get = function get(name) {
@@ -315,6 +335,7 @@ Frame.prototype.set = function set(name, value) {
 
 // istanbul ignore next
 Frame.prototype.log = function log() {
+    this.parent.log();
     console.log('--- ' + this.branch + ' -> ' + this.next);
     for (var i = 0; i < this.locals.length; i++) {
         var name = this.locals[i];

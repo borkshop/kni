@@ -227,506 +227,74 @@ test([
 });
 
 test([
-    '+ Apples\n',
+    '+ [Apples]\n',
 ], {
     "start": {
         "type": "option",
-        "label": "Apples",
-        "branch": null,
+        "question": ["start.0.1"],
+        "answer": ["start.0.2"],
         "next": null
-    }
-});
-
-test([
-    '+ Apples\n',
-    '+ Oranges\n',
-    '>\n',
-    'Fruit!\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Apples",
-        "branch": "start.3",
-        "next": "start.1"
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Oranges",
-        "branch": "start.3",
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "prompt"
-    },
-    "start.3": {
-        "type": "text",
-        "text": "Fruit!",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '+ Apples\n',
-    '  + Honeycrisps\n',
-    '  >\n',
-    '>\n',
-    'Fruit!\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Apples",
-        "branch": "start.0.1",
-        "next": "start.1"
     },
     "start.0.1": {
-        "type": "option",
-        "label": "Honeycrisps",
-        "branch": "start.2",
-        "next": "start.0.2"
+        "type": "text",
+        "text": "Apples",
+        "lift": "",
+        "drop": "",
+        "next": null
     },
     "start.0.2": {
-        "type": "prompt"
-    },
-    "start.1": {
-        "type": "prompt"
-    },
-    "start.2": {
-        "type": "text",
-        "text": "Fruit!",
-        "lift": "",
-        "drop": " ",
+        "type": "goto",
         "next": null
     }
 });
 
 test([
-    '+ Apples\n',
-    '  + Honeycrisps\n',
-    '  >\n',
-    '+ Oranges\n',
+    '+ [Apples]\n',
+    '+ [Oranges]\n',
     '>\n',
     'Fruit!\n'
 ], {
     "start": {
         "type": "option",
-        "label": "Apples",
-        "branch": "start.0.1",
+        "question": [
+            "start.0.1"
+        ],
+        "answer": [
+            "start.0.2"
+        ],
         "next": "start.1"
     },
     "start.0.1": {
-        "type": "option",
-        "label": "Honeycrisps",
-        "branch": "start.3",
-        "next": "start.0.2"
+        "type": "text",
+        "text": "Apples",
+        "lift": "",
+        "drop": "",
+        "next": null
     },
     "start.0.2": {
-        "type": "prompt"
+        "type": "goto",
+        "next": "start.3"
     },
     "start.1": {
         "type": "option",
-        "label": "Oranges",
-        "branch": "start.3",
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "prompt"
-    },
-    "start.3": {
-        "type": "text",
-        "text": "Fruit!",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '+ Apples\n',
-    '  + Honeycrisps\n',
-    '+ Oranges\n',
-], {
-    "start": {
-        "type": "option",
-        "label": "Apples",
-        "branch": "start.0.1",
-        "next": "start.1"
-    },
-    "start.0.1": {
-        "type": "option",
-        "label": "Honeycrisps",
-        "branch": null,
-        "next": null
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Oranges",
-        "branch": null,
-        "next": null
-    }
-});
-
-test([
-    'Alpha\n',
-    '+ Bravo\n',
-    '\n',
-    '  Charlie\n',
-    '+ Delta\n',
-    '\n',
-    '  Echo\n',
-    '\n',
-    'Foxtrot\n'
-], {
-    "start": {
-        "type": "text",
-        "text": "Alpha",
-        "lift": "",
-        "drop": " ",
-        "next": "start.1"
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Bravo",
-        "branch": "start.1.1",
+        "question": [
+            "start.1.1"
+        ],
+        "answer": [
+            "start.1.2"
+        ],
         "next": "start.2"
     },
     "start.1.1": {
         "type": "text",
-        "text": "Charlie",
+        "text": "Oranges",
         "lift": "",
-        "drop": " ",
+        "drop": "",
         "next": null
     },
-    "start.2": {
-        "type": "option",
-        "label": "Delta",
-        "branch": "start.2.1",
+    "start.1.2": {
+        "type": "goto",
         "next": "start.3"
-    },
-    "start.2.1": {
-        "type": "text",
-        "text": "Echo",
-        "lift": "",
-        "drop": " ",
-        "next": null,
-    },
-    "start.3": {
-        "type": "text",
-        "text": "Foxtrot",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    'Alpha\n',
-    '+ Bravo\n',
-    '\n',
-    '  Charlie\n',
-    '+ Delta\n',
-    '\n',
-    '  Echo\n',
-    '\n',
-    '>\n',
-    'Foxtrot\n'
-], {
-    "start": {
-        "type": "text",
-        "text": "Alpha",
-        "lift": "",
-        "drop": " ",
-        "next": "start.1"
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Bravo",
-        "branch": "start.1.1",
-        "next": "start.2"
-    },
-    "start.1.1": {
-        "type": "text",
-        "text": "Charlie",
-        "lift": "",
-        "drop": " ",
-        "next": "start.4"
-    },
-    "start.2": {
-        "type": "option",
-        "label": "Delta",
-        "branch": "start.2.1",
-        "next": "start.3"
-    },
-    "start.2.1": {
-        "type": "text",
-        "text": "Echo",
-        "lift": "",
-        "drop": " ",
-        "next": "start.4",
-    },
-    "start.3": {
-        "type": "prompt"
-    },
-    "start.4": {
-        "type": "text",
-        "text": "Foxtrot",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    'Alpha\n',
-    '+ Bravo\n',
-    '+ Charlie\n',
-    'Delta\n'
-], {
-    "start": {
-        "type": "text",
-        "text": "Alpha",
-        "lift": "",
-        "drop": " ",
-        "next": "start.1"
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Bravo",
-        "branch": null,
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "option",
-        "label": "Charlie",
-        "branch": null,
-        "next": "start.3"
-    },
-    "start.3": {
-        "type": "text",
-        "text": "Delta",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-
-test([
-    'Alpha\n',
-    '+ Bravo\n',
-    '+ Charlie\n',
-    '>\n',
-    'Delta\n'
-], {
-    "start": {
-        "type": "text",
-        "text": "Alpha",
-        "lift": "",
-        "drop": " ",
-        "next": "start.1"
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Bravo",
-        "branch": "start.4",
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "option",
-        "label": "Charlie",
-        "branch": "start.4",
-        "next": "start.3"
-    },
-    "start.3": {
-        "type": "prompt"
-    },
-    "start.4": {
-        "type": "text",
-        "text": "Delta",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '+ Apples\n',
-    '  + Honeycrisps\n',
-    '  + Braeburns\n',
-    '+ Oranges\n',
-], {
-    "start": {
-        "type": "option",
-        "label": "Apples",
-        "branch": "start.0.1",
-        "next": "start.1"
-    },
-    "start.0.1": {
-        "type": "option",
-        "label": "Honeycrisps",
-        "branch": null,
-        "next": "start.0.2"
-    },
-    "start.0.2": {
-        "type": "option",
-        "label": "Braeburns",
-        "branch": null,
-        "next": null
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Oranges",
-        "branch": null,
-        "next": null
-    }
-});
-
-test([
-    '+ Apples\n',
-    '  + Honeycrisps\n',
-    '    + Braeburns\n',
-    '    + Galas\n',
-    '  + Fujis\n',
-    '+ Oranges\n',
-], {
-    "start": {
-        "type": "option",
-        "label": "Apples",
-        "branch": "start.0.1",
-        "next": "start.1"
-    },
-    "start.0.1": {
-        "type": "option",
-        "label": "Honeycrisps",
-        "branch": "start.0.1.1",
-        "next": "start.0.2"
-    },
-    "start.0.1.1": {
-        "type": "option",
-        "label": "Braeburns",
-        "branch": null,
-        "next": "start.0.1.2"
-    },
-    "start.0.1.2": {
-        "type": "option",
-        "label": "Galas",
-        "branch": null,
-        "next": null
-    },
-    "start.0.2": {
-        "type": "option",
-        "label": "Fujis",
-        "branch": null,
-        "next": null
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Oranges",
-        "branch": null,
-        "next": null
-    }
-});
-
-test([
-    '+ Apples\n',
-    '  + Honeycrisps\n',
-    '    + Braeburns\n',
-    '    + Galas\n',
-    '    >\n',
-    '  + Fujis\n',
-    '+ Oranges\n',
-], {
-    "start": {
-        "type": "option",
-        "label": "Apples",
-        "branch": "start.0.1",
-        "next": "start.1"
-    },
-    "start.0.1": {
-        "type": "option",
-        "label": "Honeycrisps",
-        "branch": "start.0.1.1",
-        "next": "start.0.2"
-    },
-    "start.0.1.1": {
-        "type": "option",
-        "label": "Braeburns",
-        "branch": null,
-        "next": "start.0.1.2"
-    },
-    "start.0.1.2": {
-        "type": "option",
-        "label": "Galas",
-        "branch": null,
-        "next": "start.0.1.3"
-    },
-    "start.0.1.3": {
-        "type": "prompt"
-    },
-    "start.0.2": {
-        "type": "option",
-        "label": "Fujis",
-        "branch": null,
-        "next": null
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Oranges",
-        "branch": null,
-        "next": null
-    }
-});
-
-test([
-    '+ Apples\n',
-    '  + Honeycrisps\n',
-    '    + Braeburns\n',
-    '    + Galas\n',
-    '    >\n',
-    '  + Fujis\n',
-    '+ Oranges\n',
-    '>\n',
-    'Fruit!\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Apples",
-        "branch": "start.0.1",
-        "next": "start.1"
-    },
-    "start.0.1": {
-        "type": "option",
-        "label": "Honeycrisps",
-        "branch": "start.0.1.1",
-        "next": "start.0.2"
-    },
-    "start.0.1.1": {
-        "type": "option",
-        "label": "Braeburns",
-        "branch": "start.3",
-        "next": "start.0.1.2"
-    },
-    "start.0.1.2": {
-        "type": "option",
-        "label": "Galas",
-        "branch": "start.3",
-        "next": "start.0.1.3"
-    },
-    "start.0.1.3": {
-        "type": "prompt"
-    },
-    "start.0.2": {
-        "type": "option",
-        "label": "Fujis",
-        "branch": "start.3",
-        "next": "start.3"
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Oranges",
-        "branch": "start.3",
-        "next": "start.2"
     },
     "start.2": {
         "type": "prompt"
@@ -741,58 +309,114 @@ test([
 });
 
 test([
-    '+ Apples\n',
-    '  + Honeycrisps\n',
-    '    + Braeburns\n',
-    '    + Galas\n',
-    '    >\n',
-    '  + Fujis\n',
+    '+ [Apples]\n',
+    '  + [Honeycrisps]\n',
     '  >\n',
-    '+ Oranges\n',
     '>\n',
     'Fruit!\n'
 ], {
     "start": {
         "type": "option",
-        "label": "Apples",
-        "branch": "start.0.1",
+        "question": ["start.0.1"],
+        "answer": ["start.0.2"],
         "next": "start.1"
     },
     "start.0.1": {
-        "type": "option",
-        "label": "Honeycrisps",
-        "branch": "start.0.1.1",
-        "next": "start.0.2"
-    },
-    "start.0.1.1": {
-        "type": "option",
-        "label": "Braeburns",
-        "branch": "start.3",
-        "next": "start.0.1.2"
-    },
-    "start.0.1.2": {
-        "type": "option",
-        "label": "Galas",
-        "branch": "start.3",
-        "next": "start.0.1.3"
-    },
-    "start.0.1.3": {
-        "type": "prompt"
+        "type": "text",
+        "text": "Apples",
+        "lift": "",
+        "drop": "",
+        "next": null
     },
     "start.0.2": {
         "type": "option",
-        "label": "Fujis",
-        "branch": "start.3",
+        "question": ["start.0.2.1"],
+        "answer": ["start.0.2.2"],
         "next": "start.0.3"
+    },
+    "start.0.2.1": {
+        "type": "text",
+        "text": "Honeycrisps",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.2.2": {
+        "type": "goto",
+        "next": "start.2"
+    },
+    "start.0.3": {
+        "type": "prompt"
+    },
+    "start.1": {
+        "type": "prompt"
+    },
+    "start.2": {
+        "type": "text",
+        "text": "Fruit!",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    '+ [Apples]\n',
+    '  + [Honeycrisps]\n',
+    '  >\n',
+    '+ [Oranges]\n',
+    '>\n',
+    'Fruit!\n'
+], {
+    "start": {
+        "type": "option",
+        "question": ["start.0.1"],
+        "answer": ["start.0.2"],
+        "next": "start.1"
+    },
+    "start.0.1": {
+        "type": "text",
+        "text": "Apples",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.2": {
+        "type": "option",
+        "question": ["start.0.2.1"],
+        "answer": ["start.0.2.2"],
+        "next": "start.0.3"
+    },
+    "start.0.2.1": {
+        "type": "text",
+        "text": "Honeycrisps",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.2.2": {
+        "type": "goto",
+        "next": "start.3"
     },
     "start.0.3": {
         "type": "prompt"
     },
     "start.1": {
         "type": "option",
-        "label": "Oranges",
-        "branch": "start.3",
+        "question": ["start.1.1"],
+        "answer": ["start.1.2"],
         "next": "start.2"
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "Oranges",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.1.2": {
+        "type": "goto",
+        "next": "start.3"
     },
     "start.2": {
         "type": "prompt"
@@ -800,6 +424,73 @@ test([
     "start.3": {
         "type": "text",
         "text": "Fruit!",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    }
+});
+
+test([
+    'Alpha\n',
+    '+ [Bravo]\n',
+    '\n',
+    '  Charlie\n',
+    '+ [Delta]\n',
+    '\n',
+    '  Echo\n',
+    '\n',
+    'Foxtrot\n'
+], {
+    "start": {
+        "type": "text",
+        "text": "Alpha",
+        "lift": "",
+        "drop": " ",
+        "next": "start.1"
+    },
+    "start.1": {
+        "type": "option",
+        "question": ["start.1.1"],
+        "answer": ["start.1.2"],
+        "next": "start.2"
+    },
+    "start.1.1": {
+        "type": "text",
+        "text": "Bravo",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.1.2": {
+        "type": "text",
+        "text": "Charlie",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    },
+    "start.2": {
+        "type": "option",
+        "question": ["start.2.1"],
+        "answer": ["start.2.2"],
+        "next": "start.3"
+    },
+    "start.2.1": {
+        "type": "text",
+        "text": "Delta",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.2.2": {
+        "type": "text",
+        "text": "Echo",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    },
+    "start.3": {
+        "type": "text",
+        "text": "Foxtrot",
         "lift": "",
         "drop": " ",
         "next": null
@@ -914,157 +605,39 @@ test([
 });
 
 test([
-    '+ You s[S]ay, "Hello, World!"\n'
+    '+ "Hello, World[!"]," you say.\n',
+    'Good bye!\n'
 ], {
     "start": {
         "type": "option",
-        "label": "Say, \"Hello, World!\"",
-        "branch": "start.0.1",
-        "next": null
-    },
-    "start.0.1": {
-        "type": "text",
-        "text": "You s",
-        "lift": "",
-        "drop": "",
-        "next": "start.0.2"
-    },
-    "start.0.2": {
-        "type": "text",
-        "text": "ay, \"Hello, World!\"",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '+ You s[S]ay, "Hello, World!"\n',
-    '>\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Say, \"Hello, World!\"",
-        "branch": "start.0.1",
+        "question": ["start.0.1", "start.0.2"],
+        "answer": ["start.0.1", "start.0.3"],
         "next": "start.1"
-    },
-    "start.0.1": {
-        "type": "text",
-        "text": "You s",
-        "lift": "",
-        "drop": "",
-        "next": "start.0.2"
-    },
-    "start.0.2": {
-        "type": "text",
-        "text": "ay, \"Hello, World!\"",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    },
-    "start.1": {
-        "type": "prompt"
-    }
-});
-
-test([
-    '+ You s[S]ay, "Hello, World!" /\n',
-    '  They reply, "Good bye!"\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Say, \"Hello, World!\"",
-        "branch": "start.0.1",
-        "next": null
-    },
-    "start.0.1": {
-        "type": "text",
-        "text": "You s",
-        "lift": "",
-        "drop": "",
-        "next": "start.0.2"
-    },
-    "start.0.2": {
-        "type": "text",
-        "text": "ay, \"Hello, World!\"",
-        "lift": "",
-        "drop": " ",
-        "next": "start.0.3"
-    },
-    "start.0.3": {
-        "type": "text",
-        "text": "They reply, \"Good bye!\"",
-        "lift": " ",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '+ You s[S]ay, "Hello, World!"\n',
-    '+ You s[S]ay, "Good bye."\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Say, \"Hello, World!\"",
-        "branch": "start.0.1",
-        "next": "start.1"
-    },
-    "start.0.1": {
-        "type": "text",
-        "text": "You s",
-        "lift": "",
-        "drop": "",
-        "next": "start.0.2",
-    },
-    "start.0.2": {
-        "type": "text",
-        "text": "ay, \"Hello, World!\"",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Say, \"Good bye.\"",
-        "branch": "start.1.1",
-        "next": null
-    },
-    "start.1.1": {
-        "type": "text",
-        "text": "You s",
-        "lift": "",
-        "drop": "",
-        "next": "start.1.2"
-    },
-    "start.1.2": {
-        "type": "text",
-        "text": "ay, \"Good bye.\"",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '+ "Hello, World]!"[," you reply.\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "\"Hello, World!\"",
-        "branch": "start.0.1",
-        "next": null
     },
     "start.0.1": {
         "type": "text",
         "text": "\"Hello, World",
         "lift": "",
         "drop": "",
-        "next": "start.0.2"
+        "next": null
     },
     "start.0.2": {
         "type": "text",
-        "text": ",\" you reply.",
+        "text": "!\"",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.3": {
+        "type": "text",
+        "text": ",\" you say.",
+        "lift": "",
+        "drop": " ",
+        "next": null
+    },
+    "start.1": {
+        "type": "text",
+        "text": "Good bye!",
         "lift": "",
         "drop": " ",
         "next": null
@@ -1072,147 +645,43 @@ test([
 });
 
 test([
-    '+ Alpha\n',
-    '\n',
-    '+ Omega\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Alpha",
-        "next": "start.1",
-        "branch": null,
-    },
-    "start.1": {
-        "type": "option",
-        "label": "Omega",
-        "next": null,
-        "branch": null,
-    }
-});
-
-test([
-    '+ Alpha\n',
+    '+ [You s[S]ay, "Hello, World!"]\n',
+    '  "Hello, indeed!"\n',
     '>\n',
-    '+ Omega\n'
+    'Good bye!\n'
 ], {
     "start": {
         "type": "option",
-        "label": "Alpha",
-        "next": "start.1",
-        "branch": "start.2",
-    },
-    "start.1": {
-        "type": "prompt"
-    },
-    "start.2": {
-        "type": "option",
-        "label": "Omega",
-        "next": null,
-        "branch": null,
-    }
-});
-
-test([
-    '+ Alpha\n',
-    '  - Omega\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Alpha",
-        "next": null,
-        "branch": "start.0.1",
+        "question": ["start.0.2", "start.0.3"],
+        "answer": ["start.0.1", "start.0.3", "start.0.4"],
+        "next": "start.1"
     },
     "start.0.1": {
         "type": "text",
-        "text": "Omega",
+        "text": "You s",
         "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '+ [Alpha]\n',
-    '  Omega\n'
-], {
-    "start": {
-        "type": "option",
-        "label": "Alpha Omega",
-        "branch": "start.0.1",
+        "drop": "",
         "next": null
     },
-    "start.0.1": {
+    "start.0.2": {
         "type": "text",
-        "text": "Omega",
+        "text": "S",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.3": {
+        "type": "text",
+        "text": "ay, \"Hello, World!\"",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.4": {
+        "type": "text",
+        "text": "\"Hello, indeed!\"",
         "lift": " ",
         "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '+ [Alpha]\n',
-], {
-    "start": {
-        "type": "option",
-        "label": "Alpha",
-        "branch": null,
-        "next": null
-    }
-});
-
-test([
-    '* [Choice]\n',
-    'Fin\n'
-], {
-    "start": {
-        "type": "jump",
-        "condition": ["!=", ["get", "start"], ["val", 0]],
-        "branch": "start.1",
-        "next": "start.0.1"
-    },
-    "start.0.1": {
-        "type": "option",
-        "label": "Choice",
-        "next": "start.1",
-        "branch": "start.0.2",
-    },
-    "start.0.2": {
-        "type": "set",
-        "variable": "start",
-        "expression": ["+", ["get", "start"], ["val", 1]],
-        "next": null
-    },
-    "start.1": {
-        "type": "text",
-        "text": "Fin",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '* [Choice]\n',
-    '>\n',
-    'Fin\n'
-], {
-    "start": {
-        "type": "jump",
-        "condition": ["!=", ["get", "start"], ["val", 0]],
-        "branch": "start.1",
-        "next": "start.0.1"
-    },
-    "start.0.1": {
-        "type": "option",
-        "label": "Choice",
-        "next": "start.1",
-        "branch": "start.0.2",
-    },
-    "start.0.2": {
-        "type": "set",
-        "variable": "start",
-        "expression": ["+", ["get", "start"], ["val", 1]],
         "next": "start.2"
     },
     "start.1": {
@@ -1220,7 +689,7 @@ test([
     },
     "start.2": {
         "type": "text",
-        "text": "Fin",
+        "text": "Good bye!",
         "lift": "",
         "drop": " ",
         "next": null
@@ -1228,58 +697,7 @@ test([
 });
 
 test([
-    '* [One Fish]\n',
-    '* [Two Fish]\n',
-    'Fin\n'
-], {
-    "start": {
-        "type": "jump",
-        "condition": ["!=", ["get", "start"], ["val", 0]],
-        "branch": "start.1",
-        "next": "start.0.1"
-    },
-    "start.0.1": {
-        "type": "option",
-        "label": "One Fish",
-        "next": "start.1",
-        "branch": "start.0.2",
-    },
-    "start.0.2": {
-        "type": "set",
-        "variable": "start",
-        "expression": ["+", ["get", "start"], ["val", 1]],
-        "next": null
-    },
-    "start.1": {
-        "type": "jump",
-        "condition": ["!=", ["get", "start.1"], ["val", 0]],
-        "branch": "start.2",
-        "next": "start.1.1"
-    },
-    "start.1.1": {
-        "type": "option",
-        "label": "Two Fish",
-        "next": "start.2",
-        "branch": "start.1.2",
-    },
-    "start.1.2": {
-        "type": "set",
-        "variable": "start.1",
-        "expression": ["+", ["get", "start.1"], ["val", 1]],
-        "next": null
-    },
-    "start.2": {
-        "type": "text",
-        "text": "Fin",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '* [One Fish]\n',
-    '* [Two Fish]\n',
+    '* [Choice]\n',
     '>\n',
     'Fin\n'
 ], {
@@ -1291,38 +709,31 @@ test([
     },
     "start.0.1": {
         "type": "option",
-        "label": "One Fish",
+        "question": ["start.0.3"],
+        "answer": ["start.0.2", "start.0.4"],
         "next": "start.1",
-        "branch": "start.0.2",
     },
     "start.0.2": {
         "type": "set",
         "variable": "start",
         "expression": ["+", ["get", "start"], ["val", 1]],
-        "next": "start.3"
+        "next": null
+    },
+    "start.0.3": {
+        "type": "text",
+        "text": "Choice",
+        "lift": "",
+        "drop": "",
+        "next": null
+    },
+    "start.0.4": {
+        "type": "goto",
+        "next": "start.2"
     },
     "start.1": {
-        "type": "jump",
-        "condition": ["!=", ["get", "start.1"], ["val", 0]],
-        "branch": "start.2",
-        "next": "start.1.1"
-    },
-    "start.1.1": {
-        "type": "option",
-        "label": "Two Fish",
-        "next": "start.2",
-        "branch": "start.1.2",
-    },
-    "start.1.2": {
-        "type": "set",
-        "variable": "start.1",
-        "expression": ["+", ["get", "start.1"], ["val", 1]],
-        "next": "start.3"
-    },
-    "start.2": {
         "type": "prompt"
     },
-    "start.3": {
+    "start.2": {
         "type": "text",
         "text": "Fin",
         "lift": "",
@@ -2418,7 +1829,9 @@ test([
         "drop": " ",
         "next": null
     },
-    "start.1": {
+    "start.2": {
+        // The path skips start.1 to inform the option segment that there is an
+        // explicit return arrow between Good bye and the Stranded text.
         "type": "text",
         "text": "Stranded text.",
         "lift": " ",
