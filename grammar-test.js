@@ -1830,7 +1830,7 @@ test([
         "next": null
     },
     "start.2": {
-        // The path skips start.1 to inform the option segment that there is an
+        // The path skips start.1 to inform the option thread that there is an
         // explicit return arrow between Good bye and the Stranded text.
         "type": "text",
         "text": "Stranded text.",

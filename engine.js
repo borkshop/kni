@@ -194,24 +194,24 @@ Engine.prototype.$prompt = function $prompt() {
     return false;
 };
 
-Engine.prototype.goto = function _goto(name) {
-    while (name === null && this.stack.length > 1) {
+Engine.prototype.goto = function _goto(label) {
+    while (label === null && this.stack.length > 1) {
         var top = this.stack.pop();
         if (top.stopOption) {
             this.render.stopOption();
         }
         this.top = this.stack[this.stack.length - 1];
-        name = top.next;
+        label = top.next;
     }
-    if (name == null) {
+    if (label == null) {
         return this.end();
     }
-    var next = this.story[name];
+    var next = this.story[label];
     // istanbul ignore if
     if (!next) {
-        throw new Error('Story missing knot for name: ' + name);
+        throw new Error('Story missing instruction for label: ' + label);
     }
-    this.label = name;
+    this.label = label;
     this.instruction = next;
     return true;
 };

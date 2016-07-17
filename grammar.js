@@ -10,7 +10,7 @@ function start(story) {
     var path = Path.start();
     var stop = new Stop(story);
     var start = story.create(path, 'goto', null);
-    return new Knot(story, Path.zerothChild(path), stop, [start], []);
+    return new Thread(story, Path.zerothChild(path), stop, [start], []);
 }
 
 function Stop(story) {
@@ -44,8 +44,8 @@ End.prototype.next = function next(type, space, text, scanner) {
 
 // ends are tied to the next instruction
 // jumps are tied off after the next encountered prompt
-function Knot(story, path, parent, ends, jumps) {
-    this.type = 'knot';
+function Thread(story, path, parent, ends, jumps) {
+    this.type = 'thread';
     this.path = path;
     this.parent = parent;
     this.ends = ends;
@@ -54,7 +54,7 @@ function Knot(story, path, parent, ends, jumps) {
     Object.seal(this);
 }
 
-Knot.prototype.next = function next(type, space, text, scanner) {
+Thread.prototype.next = function next(type, space, text, scanner) {
     if (type === 'symbol'|| type === 'alphanum' || type === 'number' || type === 'literal' || text === '--' || text === '---') {
         return new Text(this.story, this.path, space, text, this, this.ends);
     }  else if (type === 'token') {
@@ -67,16 +67,16 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '<-') {
             // Implicitly tie ends to null by dropping them.
             // Continue carrying jumps to the next encountered prompt.
-            // Advance the path so that option segments don't appear empty.
-            return new Knot(this.story, Path.next(this.path), this.parent, [], this.jumps);
+            // Advance the path so that option thread don't appear empty.
+            return new Thread(this.story, Path.next(this.path), this.parent, [], this.jumps);
         } else if (text === '/') {
             var node = this.story.create(this.path, 'break');
             tie(this.ends, this.path);
-            return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
+            return new Thread(this.story, Path.next(this.path), this.parent, [node], this.jumps);
         } else if (text === '//') {
             var node = this.story.create(this.path, 'paragraph');
             tie(this.ends, this.path);
-            return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
+            return new Thread(this.story, Path.next(this.path), this.parent, [node], this.jumps);
         } else if (text === '{"' || text === '{\'' || text === '"}' || text === '\'}') {
             return new Text(this.story, this.path, space, '', this, this.ends)
                 .next(type, '', text, scanner);
@@ -85,18 +85,18 @@ Knot.prototype.next = function next(type, space, text, scanner) {
         if (text === '+' || text === '*') {
             return option(this.story, this.path, this, this.ends, this.jumps, text);
         } else if (text === '-') {
-            return new Knot(this.story, this.path, new Indent(this.story, this), this.ends, []);
+            return new Thread(this.story, this.path, new Indent(this.story, this), this.ends, []);
         } else { // if (text === '>') {
             var node = this.story.create(this.path, 'prompt');
             // tie off ends to the prompt.
             tie(this.ends, this.path);
             // promote jumps to ends, tying them off after the prompt.
-            return new Knot(this.story, Path.next(this.path), new Indent(this.story, this), this.jumps, []);
+            return new Thread(this.story, Path.next(this.path), new Indent(this.story, this), this.jumps, []);
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'rule');
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), this.parent, [node], this.jumps);
+        return new Thread(this.story, Path.next(this.path), this.parent, [node], this.jumps);
     } else if (type === 'break') {
         return this;
     }
@@ -107,11 +107,11 @@ Knot.prototype.next = function next(type, space, text, scanner) {
     return new Text(this.story, this.path, space, text, this, this.ends);
 };
 
-Knot.prototype.return = function _return(path, ends, jumps, scanner) {
+Thread.prototype.return = function _return(path, ends, jumps, scanner) {
     // All rules above (in next) guarantee that this.ends has been passed to
     // any rule that might use them. If the rule fails to use them, they must
     // return them. However, jumps are never passed to any rule that returns.
-    return new Knot(this.story, path, this.parent, ends, this.jumps.concat(jumps));
+    return new Thread(this.story, path, this.parent, ends, this.jumps.concat(jumps));
 };
 
 function Indent(story, parent) {
@@ -199,7 +199,7 @@ function option(story, path, parent, ends, jumps, leader) {
 
     option.next = next;
     // TODO OptionStart waits for conditions and consequents, then...
-    return option.knot(new OptionSegment(story, next, option, [], option, 'qa', AfterInitialQA));
+    return option.thread(new OptionThread(story, next, option, [], option, 'qa', AfterInitialQA));
 }
 
 function Option(story, path, parent, ends, jumps, leader) {
@@ -243,11 +243,11 @@ Option.prototype.return = function _return(path, ends, jumps, scanner) {
     );
 };
 
-Option.prototype.knot = function knot(parent) {
+Option.prototype.thread = function thread(parent) {
     // Creat a dummy node, to replace if necessary, for arcs that begin with a
     // goto/divert arrow that otherwise would have loose ends to forward.
     var placeholder = this.story.create(this.next, 'goto', null);
-    return new Knot(this.story, this.next, parent, [placeholder], []);
+    return new Thread(this.story, this.next, parent, [placeholder], []);
 };
 
 Option.prototype.push = function push(path, mode) {
@@ -265,11 +265,11 @@ Option.prototype.push = function push(path, mode) {
     }
 };
 
-// An option segment captures the end of an arc, and if the path has advanced,
+// An option thread captures the end of an arc, and if the path has advanced,
 // adds that arc to the option's questions and/or answer depending on the
 // "mode" ("q", "a", or "qa") and proceeds to the following state.
-function OptionSegment(story, path, parent, ends, option, mode, Next) {
-    this.type = 'option-segment';
+function OptionThread(story, path, parent, ends, option, mode, Next) {
+    this.type = 'option-thread';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -280,12 +280,12 @@ function OptionSegment(story, path, parent, ends, option, mode, Next) {
     Object.seal(this);
 }
 
-OptionSegment.prototype.return = function _return(path, ends, jumps) {
+OptionThread.prototype.return = function _return(path, ends, jumps) {
     this.option.push(path, this.mode);
     return new this.Next(this.story, path, this.parent, ends, this.option);
 };
 
-// Every option begins with a (potentially empty) segment before the first open
+// Every option begins with a (potentially empty) thread before the first open
 // backet that will contribute both to the question and the answer.
 // This state exists only to mandate that every option has a pair of brackets.
 function AfterInitialQA(story, path, parent, ends, option) {
@@ -301,7 +301,7 @@ function AfterInitialQA(story, path, parent, ends, option) {
 AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
     if (type === 'token' && text === '[') {
-        return this.option.knot(new AfterQorA(this.story, this.path, this, this.ends, this.option));
+        return this.option.thread(new AfterQorA(this.story, this.path, this, this.ends, this.option));
     } else {
         this.story.error('Expected brackets in option at ' + scanner.position());
         return new AfterFinalA(this.story, this.path, this.parent, this.ends, this.option);
@@ -312,8 +312,8 @@ AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
 // which anything and everything to the end of the block contributes to the
 // answer.
 AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
-    return this.option.knot(
-        new OptionSegment(this.story, path, this.parent, ends, this.option, 'a', AfterFinalA));
+    return this.option.thread(
+        new OptionThread(this.story, path, this.parent, ends, this.option, 'a', AfterFinalA));
 };
 
 // After capturing the first arc within brackets, which may either contribute
@@ -332,8 +332,8 @@ function DecideQorA(story, path, parent, ends, option) {
 DecideQorA.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token' && text === '[') { // A
         this.option.push(this.path, 'a');
-        return this.option.knot(
-            new OptionSegment(this.story, this.path, this, this.ends, this.option, 'q', ExpectFinalBracket));
+        return this.option.thread(
+            new OptionThread(this.story, this.path, this, this.ends, this.option, 'q', ExpectFinalBracket));
     // istanbul ignore else
     } else if (type === 'token' && text === ']') { // Q
         this.option.push(this.path, 'q');
@@ -344,14 +344,14 @@ DecideQorA.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-// If the brackets contain a sequence of question segment like [A [Q] QA [Q]
+// If the brackets contain a sequence of question thread like [A [Q] QA [Q]
 // QA...], then after each [question], we return here for continuing QA arcs.
 DecideQorA.prototype.return = function _return(path, ends, jumps, scanner) {
-    return this.option.knot(
-        new OptionSegment(this.story, path, this.parent, ends, this.option, 'qa', AfterQA));
+    return this.option.thread(
+        new OptionThread(this.story, path, this.parent, ends, this.option, 'qa', AfterQA));
 };
 
-// After a Question/Answer segment, there can always be another [Q] segment
+// After a Question/Answer thread, there can always be another [Q] thread
 // ad nauseam. Here we check whether this is the end of the bracketed
 // expression or continue after a [Question].
 function AfterQA(story, path, parent, ends, option) {
@@ -366,8 +366,8 @@ function AfterQA(story, path, parent, ends, option) {
 
 AfterQA.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token' && text === '[') {
-        return this.option.knot(
-            new OptionSegment(this.story, this.path, this, this.ends, this.option, 'q', ExpectFinalBracket));
+        return this.option.thread(
+            new OptionThread(this.story, this.path, this, this.ends, this.option, 'q', ExpectFinalBracket));
     // istanbul ignore else
     } else  if (type === 'token' && text === ']') {
         return this.parent.return(this.path, this.ends, [], scanner);
@@ -378,8 +378,8 @@ AfterQA.prototype.next = function next(type, space, text, scanner) {
 };
 
 AfterQA.prototype.return = function _return(path, ends, jumps, scanner) {
-    return this.option.knot(
-        new OptionSegment(this.story, this.path, this.parent, ends, this.option, 'qa', ExpectFinalBracket));
+    return this.option.thread(
+        new OptionThread(this.story, this.path, this.parent, ends, this.option, 'qa', ExpectFinalBracket));
 };
 
 // The bracketed terms may either take the form [Q] or [A, ([Q] QA)*].
@@ -423,7 +423,7 @@ ExpectFinalBracket.prototype.next = function next(type, space, text, scanner) {
 };
 
 // After the closing bracket in an option], everything that remains is the last
-// node of the answer. After that segment has been submitted, we expect the
+// node of the answer. After that thread has been submitted, we expect the
 // block to end.
 function AfterFinalA(story, path, parent, ends, option) {
     this.type = 'after-final-a';
@@ -478,7 +478,7 @@ ExpectLabel.prototype.return = function _return(expression, scanner) {
         return new MaybeSubroutine(this.story, this.path, this.parent, this.ends, expression[1]);
     } else {
         this.story.error('Expected label after =, got ' + JSON.stringify(expression) + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, []);
+        return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -500,7 +500,7 @@ MaybeSubroutine.prototype.next = function next(type, space, text, scanner) {
         var label = this.story.create(path, 'goto', null);
         tie(this.ends, path);
         // ends also forwarded so they can be tied off if the goto is replaced.
-        return new Knot(this.story, path, this.parent, this.ends.concat([label]), [])
+        return new Thread(this.story, path, this.parent, this.ends.concat([label]), [])
             .next(type, space, text, scanner);
     }
 };
@@ -530,7 +530,7 @@ Subroutine.prototype.next = function next(type, space, text, scanner) {
         // The subroutine exists only for reference in calls.
         var sub = this.story.create(path, 'subroutine', this.locals);
 
-        return new Knot(this.story, Path.next(path), this, [label, sub], []);
+        return new Thread(this.story, Path.next(path), this, [label, sub], []);
     // istanbul ignore else
     } else if (type === 'alphanum') {
         // TODO handle expression.variable
@@ -538,7 +538,7 @@ Subroutine.prototype.next = function next(type, space, text, scanner) {
         return this;
     } else {
         this.story.error('Expected variable name or close paren, got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this, [], []);
+        return new Thread(this.story, this.path, this, [], []);
     }
 };
 
@@ -563,7 +563,7 @@ Goto.prototype.return = function _return(expression, scanner) {
         return this.parent.return(Path.next(this.path), [], [], scanner);
     } else {
         this.story.error('Expected label after goto arrow, got expression ' + JSON.stringify(expression) + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, []);
+        return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -583,10 +583,10 @@ Call.prototype.return = function _return(expression, scanner) {
         var node = this.story.create(this.path, 'call', label);
         var branch = new Branch(node);
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.firstChild(this.path), new EndCall(this.story, this.path, node, this.parent, label), [branch], []);
+        return new Thread(this.story, Path.firstChild(this.path), new EndCall(this.story, this.path, node, this.parent, label), [branch], []);
     } else {
         this.story.error('Expected label after call arrow, got expression ' + JSON.stringify(expression) + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, []);
+        return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -692,7 +692,7 @@ Conjunction.prototype.next = function next(type, space, text, scanner) {
         return this.parent.return(Path.next(this.path), [delimit], [], scanner);
     } else {
         this.story.error('Expected conjunction text or delimiter in {,} block, got: ' + type + '/' + text + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, []);
+        return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -719,10 +719,10 @@ ContinueConjunction.prototype.next = function next(type, space, text, scanner) {
         start.drop = space;
         // TODO thread text lift drop of conjunction
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), this, [start], []);
+        return new Thread(this.story, Path.next(this.path), this, [start], []);
     } else {
         this.story.error('Expected conjunction text or pipe |, got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, []);
+        return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -780,10 +780,10 @@ MaybeConditional.prototype.next = function next(type, space, text, scanner) {
         var node = this.story.create(this.path, 'jump', this.condition);
         var branch = new Branch(node);
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), new Rejoin(this.parent, node), [branch], []);
+        return new Thread(this.story, Path.next(this.path), new Rejoin(this.parent, node), [branch], []);
     } else {
         this.story.error('Expected | or } after condition, got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, []);
+        return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -857,7 +857,7 @@ function setVariable(story, path, parent, ends, op, source, target, scanner) {
         return new Expect('token', '}', story, Path.next(path), parent, [node], []);
     } else {
         this.story.error('Expected a variable to set, got expression ' + JSON.stringify(source) + ' ' + op + ' ' + JSON.stringify(target) + ' at ' + scanner.position());
-        return new Knot(story, path, parent, ends, []);
+        return new Thread(story, path, parent, ends, []);
     }
 }
 
@@ -894,10 +894,10 @@ Variable.prototype.next = function next(type, space, text, scanner) {
     } else if (text === '}') {
         var node = this.story.create(this.path, 'print', this.expression);
         tie(this.ends, this.path);
-        return new Knot(this.story, Path.next(this.path), this.parent, [node], []);
+        return new Thread(this.story, Path.next(this.path), this.parent, [node], []);
     } else {
         this.story.error('Expected | or } after expression in {$} block, got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, []);
+        return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
@@ -960,7 +960,7 @@ Case.prototype.case = function _case() {
     var path = Path.zerothChild(this.path);
     var node = this.story.create(path, 'goto', null);
     this.branches.push(Path.toName(path));
-    return new Knot(this.story, path, this, [node], []);
+    return new Thread(this.story, path, this, [node], []);
 };
 
 Case.prototype.return = function _return(path, ends, jumps, scanner) {
@@ -984,7 +984,7 @@ Expect.prototype.next = function next(type, space, text, scanner) {
         return this.parent.return(this.path, this.ends, this.jumps, scanner);
     } else {
         this.story.error('Expected ' + this.expect + ' ' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Knot(this.story, this.path, this.parent, this.ends, this.jumps);
+        return new Thread(this.story, this.path, this.parent, this.ends, this.jumps);
     }
 };
 
