@@ -1,4 +1,4 @@
-usage: inkblot [-jJ] [-s label] script.ink
+usage: inkblot <script.ink>
 
 script:            <script> :input        Script file name
 start:             [-s <start>]           Start script at this label

@@ -1,7 +1,7 @@
 {
   "name": "inkblot",
   "description": [
-    "inkblot [-jJ] [-s label] script.ink"
+    "inkblot <script.ink>"
   ],
   "usage": [
     "<script> :input        Script file name",
