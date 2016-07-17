@@ -11,14 +11,14 @@ You are {$x} west and {$y} north.
 {=((east==here+1)v(east==here-1)) east.open}
 
 - {?west.open}
-  + You g[G]o west. {+x}
+  + [You g[G]o west.] {+x}
 - {?east.open}
-  + You g[G]o east. {-x}
+  + [You g[G]o east.] {-x}
 - {?north.open}
-  + You g[G]o north. {+y}
+  + [You g[G]o north.] {+y}
 - {?south.open}
-  + You g[G]o south. {-y}
-+ Escape <-
+  + [You g[G]o south.] {-y}
++ [Escape.] <-
 >
 
 -> start

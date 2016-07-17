@@ -13,6 +13,7 @@ function Wrapper(target, width) {
     this.flush = false;
 }
 
+// istanbul ignore next
 Wrapper.prototype.words = function words(words) {
     var array = words.split(' ');
     for (var i = 0; i < array.length; i++) {

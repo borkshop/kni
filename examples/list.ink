@@ -11,13 +11,12 @@
 {+i} ->shapes
 
 @options
-+ Add a square
++ [Add a square. ]
   {=1 shapes.{shapes.length}} {+shapes.length}
-+ Add a circle
++ [Add a circle. ]
   {=2 shapes.{shapes.length}} {+shapes.length}
 - {?shapes.length}
-  + Pop a shape
-    {-shapes.length}
+  + [Pop a shape. ] {-shapes.length}
 >
 
 ->list

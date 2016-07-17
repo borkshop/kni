@@ -1,6 +1,6 @@
 instrumentation:
     # include-all-sources: true
-    excludes: []
+    excludes: ["describe.js"]
 check:
     global:
         statements: 100

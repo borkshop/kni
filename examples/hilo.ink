@@ -9,20 +9,16 @@
 {? hi == lo | -> end}
 
 Is the number less than {$mid}? {+q}
-+ Yes /
-  {=mid-1 hi}
-+ No /
-  {=mid lo}
++ [Yes] {=mid-1 hi}
++ [No]  {=mid   lo}
 >
 
 {=(hi+lo)/2 mid}
 {? hi == lo | -> end}
 
 Is the number greater than {$mid}? {+q}
-+ Yes /
-  {=mid+1 lo}
-+ No /
-  {=mid hi}
++ [Yes] {=mid+1 lo}
++ [No]  {=mid   hi}
 >
 
 ->try
