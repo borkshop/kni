@@ -160,7 +160,7 @@ function test(inkscript, typescript) {
 
 function describeStory(states) {
     var keys = Object.keys(states);
-    var cells = [];
+    var cells = [['AT', 'DO', 'USING', 'GO']];
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var node = states[key];
@@ -170,7 +170,12 @@ function describeStory(states) {
         } else {
             next = keys[i + 1];
         }
-        cells.push([key, node.type, describe(node), describeNext(node.next, next)]);
+        cells.push([
+            stripe(i, key),
+            stripe(i, node.type),
+            stripe(i, describe(node)),
+            stripe(i, describeNext(node.next, next))
+        ]);
     }
     console.log(table(cells, {
         border: getBorderCharacters('void'),
@@ -180,6 +185,14 @@ function describeStory(states) {
         },
         drawHorizontalLine: no
     }));
+}
+
+function stripe(index, text) {
+    if (index % 2 === 1) {
+        return text;
+    } else {
+        return '\x1b[90m' + text + '\x1b[0m';
+    }
 }
 
 function describeNext(jump, next) {
