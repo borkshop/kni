@@ -18,3 +18,7 @@ LocalStorage.prototype.set = function set(name, value) {
 LocalStorage.prototype.clear = function clear() {
     this.storage.clear();
 };
+
+LocalStorage.prototype.at = function at() {
+    return '';
+};

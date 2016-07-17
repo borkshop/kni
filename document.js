@@ -12,6 +12,7 @@ function Document(element, redraw) {
     this.carry = '';
     this.cursor = null;
     this.next = null;
+    this.optionIndex = 0;
     this.options = null;
     this.p = false;
     this.br = false;
@@ -47,18 +48,22 @@ Document.prototype.paragraph = function paragraph() {
     this.p = true;
 };
 
-Document.prototype.option = function option(number, label) {
+Document.prototype.startOption = function startOption() {
+    this.optionIndex++;
     var document = this.element.ownerDocument;
     var tr = document.createElement("tr");
     this.options.appendChild(tr);
     var th = document.createElement("th");
     tr.appendChild(th);
-    th.innerText = number + '.';
+    th.innerText = this.optionIndex + '.';
     var td = document.createElement("td");
-    td.innerText = label;
-    td.number = number;
+    this.cursor = td;
+    td.number = this.optionIndex;
     td.onclick = this.onclick;
     tr.appendChild(td);
+};
+
+Document.prototype.stopOption = function stopOption() {
 };
 
 Document.prototype.flush = function flush() {
@@ -114,6 +119,7 @@ Document.prototype.clear = function clear() {
     this.br = false;
     this.p = true;
     this.carry = '';
+    this.optionIndex = 0;
 };
 
 Document.prototype.handleEvent = function handleEvent(event) {
