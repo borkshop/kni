@@ -42,12 +42,6 @@ function Text(text) {
     Object.seal(this);
 }
 Text.prototype.tie = tie;
-// istanbul ignore next
-Text.prototype.describe = function describe() {
-    return (this.lift ? '' : '-') +
-        this.text.slice(0, 30) +
-        (this.drop ? '' : '-');
-};
 Text.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.text === that.text &&
@@ -66,10 +60,6 @@ function Print(expression) {
     Object.seal(this);
 }
 Print.prototype.tie = tie;
-// istanbul ignore next
-Print.prototype.describe = function describe() {
-    return S(this.expression);
-};
 Print.prototype.equals = function _equals(that) {
     return this.type === that.type &&
         equals(this.expression, that.expression) &&
@@ -81,22 +71,16 @@ Print.prototype.equals = function _equals(that) {
 constructors.option = Option;
 function Option(label) {
     this.type = 'option';
-    this.label = label;
-    this.keywords = [];
-    this.branch = null;
+    this.question = [];
+    this.answer = [];
     this.next = null;
     Object.seal(this);
 }
 Option.prototype.tie = tie;
-// istanbul ignore next
-Option.prototype.describe = function describe() {
-    return this.label + ' ' + A(this.branch);
-};
-Option.prototype.equals = function equals(that) {
+Option.prototype.equals = function _equals(that) {
     return this.type === that.type &&
-        this.label === that.label &&
-        // Don't care about keywords for the nonce
-        this.branch == that.branch &&
+        equals(this.question, that.question) &&
+        equals(this.answer, that.answer) &&
         this.next === that.next;
 };
 
@@ -107,10 +91,6 @@ function Goto(next) {
     Object.seal(this);
 }
 Goto.prototype.tie = tie;
-// istanbul ignore next
-Goto.prototype.describe = function describe() {
-    return this.next;
-};
 Goto.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.next === that.next;
@@ -125,10 +105,6 @@ function Call(label) {
     Object.seal(this);
 }
 Call.prototype.tie = tie;
-// istanbul ignore next
-Call.prototype.describe = function describe() {
-    return this.label + ' ' + this.branch + '() -> ' + this.next;
-};
 Call.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.label === that.label &&
@@ -144,10 +120,6 @@ function Subroutine(locals) {
     Object.seal(this);
 };
 Subroutine.prototype.tie = tie;
-// istanbul ignore next
-Subroutine.prototype.describe = function describe() {
-    return '(' + this.locals.join(', ') + ')';
-};
 Subroutine.prototype.equals = function _equals(that) {
     return this.type === that.type &&
         equals(this.locals, that.locals) &&
@@ -163,10 +135,6 @@ function Jump(condition) {
     Object.seal(this);
 }
 Jump.prototype.tie = tie;
-// istanbul ignore next
-Jump.prototype.describe = function describe() {
-    return this.branch + ' if ' + S(this.condition);
-};
 Jump.prototype.equals = function _equals(that) {
     return this.type === that.type &&
         equals(this.condition, that.condition) &&
@@ -185,14 +153,6 @@ function Switch(expression) {
     Object.seal(this);
 }
 Switch.prototype.tie = tie;
-// istanbul ignore next
-Switch.prototype.describe = function describe() {
-    if (this.variable) {
-        return this.mode + ' (' + this.variable + '+' +  this.value + ') ' + S(this.expression);
-    } else {
-        return this.mode + ' ' + S(this.expression);
-    }
-};
 Switch.prototype.equals = function _equals(that) {
     return this.type === that.type &&
         equals(this.expression, that.expression) &&
@@ -211,10 +171,6 @@ function Set(variable) {
     Object.seal(this);
 }
 Set.prototype.tie = tie;
-// istanbul ignore next
-Set.prototype.describe = function describe() {
-    return this.variable + ' ' + S(this.expression);
-};
 Set.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.variable === that.variable &&
@@ -231,10 +187,6 @@ function Mov(variable) {
     Object.seal(this);
 }
 Mov.prototype.tie = tie;
-// istanbul ignore next
-Mov.prototype.describe = function describe() {
-    return S(this.source) + ' -> ' + S(this.expression);
-};
 Mov.prototype.equals = function _equals(that) {
     return this.type === that.type &&
         equals(this.source, that.source) &&
@@ -249,10 +201,6 @@ function Break() {
     Object.seal(this);
 }
 Break.prototype.tie = tie;
-// istanbul ignore next
-Break.prototype.describe = function describe() {
-    return '';
-};
 Break.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.next === that.next;
@@ -265,10 +213,6 @@ function Paragraph() {
     Object.seal(this);
 }
 Paragraph.prototype.tie = tie;
-// istanbul ignore next
-Paragraph.prototype.describe = function describe() {
-    return '';
-};
 Paragraph.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.next === that.next;
@@ -281,10 +225,6 @@ function Rule() {
     Object.seal(this);
 }
 Rule.prototype.tie = tie;
-// istanbul ignore next
-Rule.prototype.describe = function describe() {
-    return '';
-};
 Rule.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.next === that.next;
@@ -301,10 +241,6 @@ function StartJoin(variable) {
     Object.seal(this);
 }
 StartJoin.prototype.tie = tie;
-// istanbul ignore next
-StartJoin.prototype.describe = function describe() {
-    return '';
-};
 StartJoin.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.next === that.next;
@@ -317,10 +253,6 @@ function StopJoin(variable) {
     Object.seal(this);
 }
 StopJoin.prototype.tie = tie;
-// istanbul ignore next
-StopJoin.prototype.describe = function describe() {
-    return '';
-};
 StopJoin.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.next === that.next;
@@ -334,10 +266,6 @@ function Delimit(variable) {
     Object.seal(this);
 }
 Delimit.prototype.tie = tie;
-// istanbul ignore next
-Delimit.prototype.describe = function describe() {
-    return ',';
-};
 Delimit.prototype.equals = function equals(that) {
     return this.type === that.type &&
         this.delimiter === that.delimiter &&
@@ -350,32 +278,10 @@ function Prompt(variable) {
     Object.seal(this);
 }
 Prompt.prototype.tie = tie;
-// istanbul ignore next
-Prompt.prototype.describe = function describe() {
-    return '';
-};
 Prompt.prototype.equals = function equals(that) {
     return this.type === that.type;
 };
 
 function tie(end) {
     this.next = end;
-}
-
-// istanbul ignore next
-function S(args) {
-    if (args[0] === 'val' || args[0] === 'get') {
-        return args[1];
-    } else {
-        return '(' + args[0] + ' ' + args.slice(1).map(S).join(' ') + ')';
-    }
-}
-
-// istanbul ignore next
-function A(label) {
-    if (label == null) {
-        return '<-';
-    } else {
-        return '-> ' + label;
-    }
 }

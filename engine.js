@@ -2,6 +2,7 @@
 
 var Story = require('./story');
 var evaluate = require('./evaluate');
+var describe = require('./describe');
 
 module.exports = Engine;
 
@@ -41,7 +42,7 @@ Engine.prototype.continue = function _continue() {
     do {
         // istanbul ignore if
         if (this.debug) {
-            console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.type + ' ' + this.instruction.describe());
+            console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.type + ' ' + describe(this.instruction));
         }
         // istanbul ignore if
         if (!this['$' + this.instruction.type]) {

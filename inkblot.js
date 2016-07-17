@@ -18,6 +18,7 @@ var usage = require('./inkblot.json');
 var xorshift = require('xorshift');
 var table = require('table').default;
 var getBorderCharacters = require('table').getBorderCharacters;
+var describe = require('./describe');
 
 function main() {
     var config = exec(usage);
@@ -81,7 +82,7 @@ function main() {
         }
 
         if (config.describe) {
-            describe(states);
+            describeStory(states);
             interactive = false;
 
         } else if (config.toJson) {
@@ -157,13 +158,19 @@ function test(inkscript, typescript) {
     }
 }
 
-function describe(states) {
+function describeStory(states) {
     var keys = Object.keys(states);
     var cells = [];
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var node = states[key];
-        cells.push([key, node.type, node.describe(), node.next]);
+        var next;
+        if (i === keys.length - 1) {
+            next = null;
+        } else {
+            next = keys[i + 1];
+        }
+        cells.push([key, node.type, describe(node), describeNext(node.next, next)]);
     }
     console.log(table(cells, {
         border: getBorderCharacters('void'),
@@ -173,6 +180,18 @@ function describe(states) {
         },
         drawHorizontalLine: no
     }));
+}
+
+function describeNext(jump, next) {
+    if (jump === undefined) {
+        return '';
+    } else if (jump === next) {
+        return '';
+    } else if (jump === null) {
+        return '<-';
+    } else {
+        return '-> ' + jump;
+    }
 }
 
 function no() {
