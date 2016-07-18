@@ -38,6 +38,7 @@ function main() {
     test('tests/rule.ink', 'tests/rule.1');
     test('tests/steady.ink', 'tests/steady.1');
     test('tests/switch-list.ink', 'tests/switch-list.1');
+    test('tests/program.ink', 'tests/program.1');
 }
 
 function test(inkscript, transcript) {

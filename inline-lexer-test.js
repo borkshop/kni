@@ -148,6 +148,22 @@ test([
 ]);
 
 test([
+    '0'
+], [
+    'NUMBER', '0',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
+    '10'
+], [
+    'NUMBER', '10',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
     'hello10'
 ], [
     'hello10',

@@ -9,16 +9,14 @@ function describe(node) {
 var types = {};
 
 types.text = function text(node) {
-    return (node.lift ? '' : '-') +
-        node.text.slice(0, 30) +
-        (node.drop ? '' : '-');
+    return node.text;
 };
 
-types.print = function print(node) {
+types.echo = function echo(node) {
     return S(node.expression);
 };
 
-types.option = function option(node) {
+types.opt = function opt(node) {
     return '(Q ' + node.question.join(' ') + ') (A ' + node.answer.join(' ') + ')';
 };
 
@@ -30,8 +28,8 @@ types.call = function call(node) {
     return node.label + ' ' + node.branch + '() -> ' + node.next;
 };
 
-types.subroutine = function subroutine(node) {
-    return '(' + node.locals.join(', ') + ')';
+types.args = function args(node) {
+    return '(' + node.locals.join(' ') + ')';
 };
 
 types.jump = function jump(node) {
@@ -40,9 +38,10 @@ types.jump = function jump(node) {
 
 types.switch = function _switch(node) {
     if (node.variable) {
-        return node.mode + ' (' + node.variable + '+' +  node.value + ') ' + S(node.expression);
+        return '(' + node.variable + '+' +  node.value + ') ' + S(node.expression) +
+            ' ' + node.branches.join(' ') + ')';
     } else {
-        return node.mode + ' ' + S(node.expression);
+        return S(node.expression) + ' (' + node.branches.join(' ') + ')';
     }
 };
 
@@ -51,14 +50,14 @@ types.set = function set(node) {
 };
 
 types.mov = function mov(node) {
-    return S(node.source) + ' -> ' + S(node.expression);
+    return S(node.source) + ' -> ' + S(node.target);
 };
 
-types.break = function _break(node) {
+types.br = function br(node) {
     return '';
 };
 
-types.paragraph = function paragraph(node) {
+types.par = function par(node) {
     return '';
 };
 
@@ -78,14 +77,26 @@ types.delimit = function delimit(node) {
     return '';
 };
 
-types.prompt = function prompt(node) {
+types.ask = function ask(node) {
     return '';
 };
 
 function S(args) {
     if (args[0] === 'val' || args[0] === 'get') {
         return args[1];
+    } else if (args[0] === 'var') {
+        return '(' + args[0] + ' ' + V(args[1], args[2]) + ')';
     } else {
         return '(' + args[0] + ' ' + args.slice(1).map(S).join(' ') + ')';
     }
+}
+
+function V(source, target) {
+    var r = '';
+    for (var i = 0; i < target.length; i++) {
+        r += source[i];
+        r += '{' + S(target[i]) + '}';
+    }
+    r += source[i];
+    return r;
 }

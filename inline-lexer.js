@@ -100,6 +100,9 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             this.generator.next('dash', this.space, text.slice(i, j), scanner);
             i = j - 1;
         } else if (this.type !== 'alphanum' && numeric) {
+            if (this.type != 'number') {
+                this.flush(scanner);
+            }
             this.accumulator += c;
             this.type = 'number';
         } else if (alphanum) {
@@ -126,8 +129,12 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
         } else if (L1.indexOf(c) >= 0) {
             this.flush(scanner);
             this.generator.next('token', this.space, c, scanner);
-        } else if (this.type === 'number' && numeric) {
+        } else if (this.type !== 'alphanum' && numeric) {
+            if (this.type !== 'number') {
+                this.flush(scanner);
+            }
             this.accumulator += c;
+            this.type = 'number';
         } else if (!alphanum) {
             this.flush(scanner);
             this.generator.next(this.type, this.space, c, scanner);

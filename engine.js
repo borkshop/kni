@@ -61,16 +61,16 @@ Engine.prototype.$text = function $text() {
     return this.print(this.instruction.text);
 };
 
-Engine.prototype.$print = function $print() {
+Engine.prototype.$echo = function $echo() {
     return this.print('' + evaluate(this.top, this.randomer, this.instruction.expression));
 };
 
-Engine.prototype.$break = function $break() {
+Engine.prototype.$br = function $br() {
     this.render.break();
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$paragraph = function $paragraph() {
+Engine.prototype.$par = function $par() {
     this.render.paragraph();
     return this.goto(this.instruction.next);
 };
@@ -122,13 +122,13 @@ Engine.prototype.$call = function $call() {
     return this.goto(this.instruction.branch);
 };
 
-Engine.prototype.$subroutine = function $subroutine() {
+Engine.prototype.$args = function $args() {
     // Subroutines exist as targets for labels as well as for reference to
     // locals in calls.
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$option = function $option() {
+Engine.prototype.$opt = function $opt() {
     var option = this.instruction;
     this.options.push(option);
     this.render.startOption();
@@ -189,7 +189,7 @@ Engine.prototype.$switch = function $switch() {
     return this.goto(next);
 };
 
-Engine.prototype.$prompt = function $prompt() {
+Engine.prototype.$ask = function $ask() {
     this.prompt();
     return false;
 };

@@ -8,6 +8,7 @@
 // The scanner feeds into an outline lexer.
 
 var tabWidth = 4;
+var leaders = '-+*!>';
 var debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
 
 module.exports = Scanner;
@@ -51,13 +52,12 @@ Scanner.prototype.next = function next(text) {
         } else if (c === ' ') {
             this.columnNo++;
         } else if (
-            this.leading &&
-            (c === '-' || c === '+' || c === '*') &&
+            this.leading && leaders.indexOf(c) >= 0 &&
             (d === ' ' || d === '\t')
         ) {
             this.leader += c;
             this.columnNo++;
-        } else if (this.leading && c === '>' && d === '\n') {
+        } else if (this.leading && leaders.indexOf(c) >= 0 && d === '\n') {
             this.leader += c;
             this.indentStart = i;
             this.indent = this.columnNo + 2;

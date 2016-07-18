@@ -50,17 +50,17 @@ Text.prototype.equals = function equals(that) {
         this.next === that.next;
 };
 
-constructors.print = Print;
-function Print(expression) {
-    this.type = 'print';
+constructors.echo = Echo;
+function Echo(expression) {
+    this.type = 'echo';
     this.expression = expression;
     this.lift = '';
     this.drop = '';
     this.next = null;
     Object.seal(this);
 }
-Print.prototype.tie = tie;
-Print.prototype.equals = function _equals(that) {
+Echo.prototype.tie = tie;
+Echo.prototype.equals = function _equals(that) {
     return this.type === that.type &&
         equals(this.expression, that.expression) &&
         this.lift === that.lift &&
@@ -70,7 +70,7 @@ Print.prototype.equals = function _equals(that) {
 
 constructors.option = Option;
 function Option(label) {
-    this.type = 'option';
+    this.type = 'opt';
     this.question = [];
     this.answer = [];
     this.next = null;
@@ -112,15 +112,15 @@ Call.prototype.equals = function equals(that) {
         this.next === that.next;
 };
 
-constructors.subroutine = Subroutine;
-function Subroutine(locals) {
-    this.type = 'subroutine';
+constructors.args = Args;
+function Args(locals) {
+    this.type = 'args';
     this.locals = locals;
     this.next = null;
     Object.seal(this);
 };
-Subroutine.prototype.tie = tie;
-Subroutine.prototype.equals = function _equals(that) {
+Args.prototype.tie = tie;
+Args.prototype.equals = function _equals(that) {
     return this.type === that.type &&
         equals(this.locals, that.locals) &&
         this.next === that.next;
@@ -196,7 +196,7 @@ Mov.prototype.equals = function _equals(that) {
 
 constructors.break = Break;
 function Break() {
-    this.type = 'break';
+    this.type = 'br';
     this.next = null;
     Object.seal(this);
 }
@@ -208,7 +208,7 @@ Break.prototype.equals = function equals(that) {
 
 constructors.paragraph = Paragraph;
 function Paragraph() {
-    this.type = 'paragraph';
+    this.type = 'par';
     this.next = null;
     Object.seal(this);
 }
@@ -274,7 +274,7 @@ Delimit.prototype.equals = function equals(that) {
 
 constructors.prompt = Prompt;
 function Prompt(variable) {
-    this.type = 'prompt';
+    this.type = 'ask';
     Object.seal(this);
 }
 Prompt.prototype.tie = tie;

@@ -86,12 +86,14 @@ Thread.prototype.next = function next(type, space, text, scanner) {
             return option(this.story, this.path, this, this.ends, this.jumps, text);
         } else if (text === '-') {
             return new Thread(this.story, this.path, new Indent(this.story, this), this.ends, []);
-        } else { // if (text === '>') {
+        } else if (text === '>') {
             var node = this.story.create(this.path, 'prompt');
             // tie off ends to the prompt.
             tie(this.ends, this.path);
             // promote jumps to ends, tying them off after the prompt.
             return new Thread(this.story, Path.next(this.path), new Indent(this.story, this), this.jumps, []);
+        } else { // if text === '!') {
+            return new Program(this.story, this.path, new Indent(this.story, this), this.jumps, []);
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'rule');
@@ -475,15 +477,15 @@ function ExpectLabel(story, path, parent, ends) {
 ExpectLabel.prototype.return = function _return(expression, scanner) {
     // istanbul ignore else
     if (expression[0] === 'get') {
-        return new MaybeSubroutine(this.story, this.path, this.parent, this.ends, expression[1]);
+        return new MaybeProcedure(this.story, this.path, this.parent, this.ends, expression[1]);
     } else {
         this.story.error('Expected label after =, got ' + JSON.stringify(expression) + ' at ' + scanner.position());
         return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
-function MaybeSubroutine(story, path, parent, ends, label) {
-    this.type = 'maybe-subroutine';
+function MaybeProcedure(story, path, parent, ends, label) {
+    this.type = 'maybe-procedure';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -491,9 +493,9 @@ function MaybeSubroutine(story, path, parent, ends, label) {
     this.label = label;
 }
 
-MaybeSubroutine.prototype.next = function next(type, space, text, scanner) {
+MaybeProcedure.prototype.next = function next(type, space, text, scanner) {
     if (type === 'symbol' && text === '(') {
-        return new Subroutine(this.story, this.path, this, this.label);
+        return new Procedure(this.story, this.path, this, this.label);
     } else {
         var path = [this.label, 0];
         // place-holder goto thunk
@@ -505,13 +507,13 @@ MaybeSubroutine.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-MaybeSubroutine.prototype.return = function _return(path, ends, jumps, scanner) {
-    // After a subroutine, connect prior ends.
+MaybeProcedure.prototype.return = function _return(path, ends, jumps, scanner) {
+    // After a procedure, connect prior ends.
     return this.parent.return(path, this.ends.concat(ends), jumps, scanner);
 };
 
-function Subroutine(story, path, parent, label) {
-    this.type = 'subroutine';
+function Procedure(story, path, parent, label) {
+    this.type = 'procedure';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -519,16 +521,16 @@ function Subroutine(story, path, parent, label) {
     this.locals = [];
 }
 
-Subroutine.prototype.next = function next(type, space, text, scanner) {
+Procedure.prototype.next = function next(type, space, text, scanner) {
     if (type === 'symbol' && text === ')') {
         var path = [this.label, 0];
         var label = this.story.create(path, 'goto', null);
 
-        // Leave the loose ends from before the subroutine declaration for
-        // after the subroutine declaration is complete.
+        // Leave the loose ends from before the procedure declaration for
+        // after the procedure declaration is complete.
 
-        // The subroutine exists only for reference in calls.
-        var sub = this.story.create(path, 'subroutine', this.locals);
+        // The procedure exists only for reference in calls.
+        var sub = this.story.create(path, 'args', this.locals);
 
         return new Thread(this.story, Path.next(path), this, [label, sub], []);
     // istanbul ignore else
@@ -542,9 +544,9 @@ Subroutine.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-Subroutine.prototype.return = function _return(path, ends, jumps, scanner) {
-    // Let loose ends of subroutine dangle to null.
-    // Pick up the threads left before the subroutine declaration.
+Procedure.prototype.return = function _return(path, ends, jumps, scanner) {
+    // Let loose ends of procedure dangle to null.
+    // Pick up the threads left before the procedure declaration.
     return this.parent.return(Path.next(this.path), [], [], scanner);
 };
 
@@ -798,7 +800,6 @@ function Set(story, path, parent, ends, op) {
 
 Set.prototype.return = function _return(expression) {
     return new MaybeSetVariable(this.story, this.path, this.parent, this.ends, this.op, expression);
-    // return expression.variable(this.story, new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, source));
 };
 
 function MaybeSetVariable(story, path, parent, ends, op, expression) {
@@ -892,7 +893,7 @@ Variable.prototype.next = function next(type, space, text, scanner) {
             .case();
     // istanbul ignore else
     } else if (text === '}') {
-        var node = this.story.create(this.path, 'print', this.expression);
+        var node = this.story.create(this.path, 'echo', this.expression);
         tie(this.ends, this.path);
         return new Thread(this.story, Path.next(this.path), this.parent, [node], []);
     } else {
@@ -967,6 +968,105 @@ Case.prototype.return = function _return(path, ends, jumps, scanner) {
     return new Case(this.story, Path.next(this.path), this.parent, this.ends.concat(ends, jumps), this.branches, this.min);
 };
 
+function Program(story, path, parent, ends, jumps) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.jumps = jumps;
+    Object.seal(this);
+}
+
+Program.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'stop') {
+        return this.parent.return(this.path, this.ends, this.jumps, scanner)
+            .next(type, space, text, scanner);
+    } else if (type === 'break') {
+        return this;
+    // istanbul ignore if
+    } else if (type === 'error') {
+        // Break out of recursive error loops
+        return this.parent.return(this.path, this.ends, this.jumps, scanner);
+    } else {
+        return expression.variable(this.story, new Assignment(this.story, this.path, this, this.ends, this.jumps))
+            .next(type, space, text, scanner);
+    }
+};
+
+Program.prototype.return = function _return(path, ends, jumps) {
+    return new Program(this.story, path, this.parent, ends, jumps);
+};
+
+function Assignment(story, path, parent, ends, jumps) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.jumps = jumps;
+    Object.seal(this);
+}
+
+Assignment.prototype.return = function _return(expression, scanner) {
+    // istanbul ignore else
+    if (expression[0] === 'get' || expression[0] === 'var') {
+        return new ExpectOperator(this.story, this.path, this.parent, this.ends, this.jumps, expression);
+    } else {
+        this.story.error('Expected variable to assign, got: ' + JSON.stringify(expression) + ' at ' + scanner.position());
+        return this.parent.return(this.path, this.ends, this.jumps)
+            .next('error', '', '', scanner);
+    }
+};
+
+function ExpectOperator(story, path, parent, ends, jumps, left) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.jumps = jumps;
+    this.left = left;
+    Object.seal(this);
+}
+
+ExpectOperator.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore else
+    if (text === '=') {
+        return expression(this.story, new ExpectExpression(this.story, this.path, this.parent, this.ends, this.jumps, this.left, text));
+    } else {
+        this.story.error('Expected = operator, got ' + type + '/' + text + ' at ' + scanner.position());
+        return this.parent.return(this.path, this.ends, this.jumps);
+    }
+};
+
+function ExpectExpression(story, path, parent, ends, jumps, left, operator) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.jumps = jumps;
+    this.left = left;
+    this.operator = operator;
+}
+
+ExpectExpression.prototype.return = function _return(right, scanner) {
+    var node;
+    if (this.left[0] === 'get') {
+        tie(this.ends, this.path);
+        node = this.story.create(this.path, 'set', null);
+        node.variable = this.left[1];
+        node.expression = right;
+    // istanbul ignore else
+    } else if (this.left[0] === 'var') {
+        tie(this.ends, this.path);
+        node = this.story.create(this.path, 'mov', null);
+        node.target = this.left;
+        node.source = right;
+    } else {
+        this.story.error('Expected bindable expression, got: ' + JSON.stringify(expression) + ' at ' + scanner.position());
+        return this.parent.return(Path.next(this.path), this.ends, this.jumps, scanner);
+    }
+    return this.parent.return(Path.next(this.path), [node], this.jumps, scanner);
+};
+
 function Expect(type, text, story, path, parent, ends, jumps) {
     this.type = 'expect';
     this.expect = type;
@@ -983,7 +1083,7 @@ Expect.prototype.next = function next(type, space, text, scanner) {
     if (type === this.expect && text === this.text) {
         return this.parent.return(this.path, this.ends, this.jumps, scanner);
     } else {
-        this.story.error('Expected ' + this.expect + ' ' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
+        this.story.error('Expected ' + this.expect + '/' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
         return new Thread(this.story, this.path, this.parent, this.ends, this.jumps);
     }
 };

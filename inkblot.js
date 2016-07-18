@@ -160,7 +160,7 @@ function test(inkscript, typescript) {
 
 function describeStory(states) {
     var keys = Object.keys(states);
-    var cells = [['AT', 'DO', 'USING', 'GO']];
+    var cells = [['AT', 'DO', '-', 'USING', '-', 'GO']];
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var node = states[key];
@@ -172,8 +172,10 @@ function describeStory(states) {
         }
         cells.push([
             stripe(i, key),
-            stripe(i, node.type),
+            stripe(i, node.mode || node.type),
+            stripe(i, node.lift ? '-' : ' '),
             stripe(i, describe(node)),
+            stripe(i, node.drop ? '-' : ' '),
             stripe(i, describeNext(node.next, next))
         ]);
     }
@@ -182,6 +184,12 @@ function describeStory(states) {
         columnDefault: {
             paddingLeft: 0,
             paddingRight: 2
+        },
+        columns: {
+            3: {
+                width: 40,
+                wrapWord: true
+            }
         },
         drawHorizontalLine: no
     }));

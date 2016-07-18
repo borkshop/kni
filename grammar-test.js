@@ -230,7 +230,7 @@ test([
     '+ [Apples]\n',
 ], {
     "start": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.0.1"],
         "answer": ["start.0.2"],
         "next": null
@@ -255,7 +255,7 @@ test([
     'Fruit!\n'
 ], {
     "start": {
-        "type": "option",
+        "type": "opt",
         "question": [
             "start.0.1"
         ],
@@ -276,7 +276,7 @@ test([
         "next": "start.3"
     },
     "start.1": {
-        "type": "option",
+        "type": "opt",
         "question": [
             "start.1.1"
         ],
@@ -297,7 +297,7 @@ test([
         "next": "start.3"
     },
     "start.2": {
-        "type": "prompt"
+        "type": "ask"
     },
     "start.3": {
         "type": "text",
@@ -316,7 +316,7 @@ test([
     'Fruit!\n'
 ], {
     "start": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.0.1"],
         "answer": ["start.0.2"],
         "next": "start.1"
@@ -329,7 +329,7 @@ test([
         "next": null
     },
     "start.0.2": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.0.2.1"],
         "answer": ["start.0.2.2"],
         "next": "start.0.3"
@@ -346,10 +346,10 @@ test([
         "next": "start.2"
     },
     "start.0.3": {
-        "type": "prompt"
+        "type": "ask"
     },
     "start.1": {
-        "type": "prompt"
+        "type": "ask"
     },
     "start.2": {
         "type": "text",
@@ -369,7 +369,7 @@ test([
     'Fruit!\n'
 ], {
     "start": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.0.1"],
         "answer": ["start.0.2"],
         "next": "start.1"
@@ -382,7 +382,7 @@ test([
         "next": null
     },
     "start.0.2": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.0.2.1"],
         "answer": ["start.0.2.2"],
         "next": "start.0.3"
@@ -399,10 +399,10 @@ test([
         "next": "start.3"
     },
     "start.0.3": {
-        "type": "prompt"
+        "type": "ask"
     },
     "start.1": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.1.1"],
         "answer": ["start.1.2"],
         "next": "start.2"
@@ -419,7 +419,7 @@ test([
         "next": "start.3"
     },
     "start.2": {
-        "type": "prompt"
+        "type": "ask"
     },
     "start.3": {
         "type": "text",
@@ -449,7 +449,7 @@ test([
         "next": "start.1"
     },
     "start.1": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.1.1"],
         "answer": ["start.1.2"],
         "next": "start.2"
@@ -469,7 +469,7 @@ test([
         "next": null
     },
     "start.2": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.2.1"],
         "answer": ["start.2.2"],
         "next": "start.3"
@@ -609,7 +609,7 @@ test([
     'Good bye!\n'
 ], {
     "start": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.0.1", "start.0.2"],
         "answer": ["start.0.1", "start.0.3"],
         "next": "start.1"
@@ -651,7 +651,7 @@ test([
     'Good bye!\n'
 ], {
     "start": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.0.2", "start.0.3"],
         "answer": ["start.0.1", "start.0.3", "start.0.4"],
         "next": "start.1"
@@ -685,7 +685,7 @@ test([
         "next": "start.2"
     },
     "start.1": {
-        "type": "prompt"
+        "type": "ask"
     },
     "start.2": {
         "type": "text",
@@ -708,7 +708,7 @@ test([
         "next": "start.0.1"
     },
     "start.0.1": {
-        "type": "option",
+        "type": "opt",
         "question": ["start.0.3"],
         "answer": ["start.0.2", "start.0.4"],
         "next": "start.1",
@@ -731,7 +731,7 @@ test([
         "next": "start.2"
     },
     "start.1": {
-        "type": "prompt"
+        "type": "ask"
     },
     "start.2": {
         "type": "text",
@@ -1251,7 +1251,7 @@ test([
     '{$start.1}\n'
 ], {
     "start": {
-        "type": "print",
+        "type": "echo",
         "expression": ["get", "start.1"],
         "lift": "",
         "drop": "",
@@ -1288,7 +1288,7 @@ test([
         "next": null
     },
     "start.0.3": {
-        "type": "print",
+        "type": "echo",
         "expression": ["get", "arrow"],
         "lift": "",
         "drop": "",
@@ -1317,7 +1317,7 @@ test([
         "mode": "walk"
     },
     "start.0.1": {
-        "type": "print",
+        "type": "echo",
         "expression": ["get", "arrow"],
         "lift": "",
         "drop": "",
@@ -1485,7 +1485,7 @@ test([
         "next": "start.2"
     },
     "start.1.2": {
-        "type": "print",
+        "type": "echo",
         "expression": ["get", "gold"],
         "lift": "",
         "drop": "",
@@ -1674,7 +1674,7 @@ test([
         "next": "start.1"
     },
     "start.1": {
-        "type": "break",
+        "type": "br",
         "next": "start.2"
     },
     "start.2": {
@@ -1698,7 +1698,7 @@ test([
         "next": "start.1"
     },
     "start.1": {
-        "type": "paragraph",
+        "type": "par",
         "next": "start.2"
     },
     "start.2": {
@@ -1848,7 +1848,7 @@ test([
         "next": null
     },
     "hello": {
-        "type": "subroutine",
+        "type": "args",
         "locals": [],
         "next": "hello.1"
     },
@@ -1870,7 +1870,7 @@ test([
         "next": "start.1"
     },
     "hello": {
-        "type": "subroutine",
+        "type": "args",
         "locals": [
             "name"
         ],
@@ -1884,7 +1884,7 @@ test([
         "next": "hello.2"
     },
     "hello.2": {
-        "type": "print",
+        "type": "echo",
         "expression": ["get", "name"],
         "lift": "",
         "drop": "",
@@ -2016,7 +2016,7 @@ test([
     '{$a + b}\n'
 ], {
     "start": {
-        "type": "print",
+        "type": "echo",
         "expression": ["+", ["get", "a"], ["get", "b"]],
         "lift": "",
         "drop": "",
@@ -2145,7 +2145,7 @@ test([
     '{$x < 10}\n'
 ], {
     "start": {
-        "type": "print",
+        "type": "echo",
         "expression": ["<", ["get", "x"], ["val", 10]],
         "lift": "",
         "drop": "",
@@ -2157,7 +2157,7 @@ test([
     '{$1 and 0}\n'
 ], {
     "start": {
-        "type": "print",
+        "type": "echo",
         "expression": [
             "and",
             ["val", 1],
@@ -2173,7 +2173,7 @@ test([
     '{$1 and 2 or 3}\n'
 ], {
     "start": {
-        "type": "print",
+        "type": "echo",
         "expression": [
             "or",
             ["and", ["val", 1], ["val", 2]],
@@ -2189,7 +2189,7 @@ test([
     '{$x < 10 and y > 20}\n'
 ], {
     "start": {
-        "type": "print",
+        "type": "echo",
         "expression": [
             "and",
             ["<", ["get", "x"], ["val", 10]],
@@ -2205,7 +2205,7 @@ test([
     '{$2~6 + 1}\n'
 ], {
     "start": {
-        "type": "print",
+        "type": "echo",
         "expression": ["+", ["~", ["val", 2], ["val", 6]], ["val", 1]],
         "lift": "",
         "drop": "",
@@ -2321,7 +2321,7 @@ test([
     '- 10}\n',
 ], {
     "start": {
-        "type": "print",
+        "type": "echo",
         "expression": ["-", ["val", 20], ["val", 10]],
         "lift": "",
         "drop": "",
