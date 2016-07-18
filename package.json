@@ -22,6 +22,7 @@
   },
   "files": [
     "console.js",
+    "describe.js",
     "document.js",
     "engine.js",
     "evaluate.js",
