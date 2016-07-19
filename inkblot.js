@@ -208,7 +208,7 @@ function describeNext(jump, next) {
         return '';
     } else if (jump === next) {
         return '';
-    } else if (jump === null) {
+    } else if (jump == null) {
         return '<-';
     } else {
         return '-> ' + jump;

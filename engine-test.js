@@ -29,16 +29,17 @@ function main() {
     test('examples/tree.ink', 'tests/tree.1');
 
     test('tests/brief.ink', 'tests/brief.1');
+    test('tests/choices.ink', 'tests/choices.1');
     test('tests/conjunctions.ink', 'tests/conjunctions.1');
     test('tests/indirect.ink', 'tests/indirect.1');
     test('tests/literals.ink', 'tests/literals.1');
     test('tests/math.ink', 'tests/math.1');
     test('tests/procedure.ink', 'tests/procedure.1');
+    test('tests/program.ink', 'tests/program.1');
     test('tests/random.ink', 'tests/random.1');
     test('tests/rule.ink', 'tests/rule.1');
     test('tests/steady.ink', 'tests/steady.1');
     test('tests/switch-list.ink', 'tests/switch-list.1');
-    test('tests/program.ink', 'tests/program.1');
 }
 
 function test(inkscript, transcript) {

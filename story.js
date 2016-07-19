@@ -179,7 +179,7 @@ Set.prototype.equals = function equals(that) {
 };
 
 constructors.mov = Mov;
-function Mov(variable) {
+function Mov() {
     this.type = 'mov';
     this.source = null;
     this.target = null;

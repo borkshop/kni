@@ -31,6 +31,9 @@ function evaluate(scope, randomer, args) {
 
 evaluate.nominate = nominate;
 function nominate(scope, randomer, args) {
+    if (args[0] === 'get') {
+        return args[1];
+    }
     var literals = args[1];
     var variables = args[2];
     var name = '';

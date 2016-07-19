@@ -15,13 +15,14 @@ more gold!” //
 
   - {!gold} {!arrow} -> exit
 
-  - {?gold}
-    + [You b[B]uy 3 arrows for a gold piece. ]
-      {-gold} {+3 arrow} -> shop
-  - {>=4 arrow}
-    + [You s[S]ell 4 arrows for a gold piece. ]
-      {+gold} {-4 arrow} -> shop
-  + [You walk through the door to [Visit] the archery range. ] -> range
+  + {-gold} {+3arrow}
+    [You b[B]uy 3 arrows for a gold piece. ]
+    -> shop
+  + {+gold} {-4arrow}
+    [You s[S]ell 4 arrows for a gold piece. ]
+    -> shop
+  + [You walk through the door to [Visit] the archery range. ]
+    -> range
   + [Leave the store. ] -> exit
   >
 
@@ -29,12 +30,14 @@ more gold!” //
 
   You have {$arrow|no arrows|an arrow|{$arrow} arrows}.
 
-  - {?arrow}
-    + [You s[S]hoot an arrow[.]] {-arrow}
-      {~ and hit the target, winning 1 gold piece!
-      {+gold} {+hit} -> range||}
-      and miss. -> range
-  + [You r[R]eturn to the archery shop. ] -> shop
+  + {-arrow}
+    [You s[S]hoot an arrow[.]]
+    {~ and hit the target, winning 1 gold piece!
+    {+gold} {+hit} -> range||}
+    and miss.
+    -> range
+  + [You r[R]eturn to the archery shop. ]
+    -> shop
   >
 
 - @gold()

@@ -83,7 +83,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
-            return option(this.story, this.path, this, this.ends, this.jumps, text);
+            return new MaybeOption(this.story, this.path, this, this.ends, this.jumps, text);
         } else if (text === '-') {
             return new Thread(this.story, this.path, new Indent(this.story, this), this.ends, []);
         } else if (text === '>') {
@@ -170,41 +170,144 @@ Text.prototype.next = function next(type, space, text, scanner) {
         .next(type, space, text, scanner);
 };
 
-function option(story, path, parent, ends, jumps, leader) {
-
-    var variable = Path.toName(path);
-    var next = path;
-
-    var option = new Option(story, path, parent, [], jumps, leader);
-    tie(ends, path);
-
-    // TODO postpone until after other conditions and consequences are assessed
-    if (leader === '*') {
-        var jump = story.create(next, 'jump', ['!=', ['get', variable], ['val', 0]]);
-        var jumpBranch = new Branch(jump);
-        option.ends.push(jumpBranch);
-        next = Path.firstChild(next);
-        tie([jump], next);
-    }
-
-    option.node = story.create(next, 'option', null);
-
-    if (leader === '*') {
-        next = Path.next(next);
-        var inc = story.create(next, 'set', variable);
-        inc.expression = ['+', ['get', variable], ['val', 1]];
-        option.inc = next;
-        next = Path.next(next);
-    } else {
-        next = Path.firstChild(next);
-    }
-
-    option.next = next;
-    // TODO OptionStart waits for conditions and consequents, then...
-    return option.thread(new OptionThread(story, next, option, [], option, 'qa', AfterInitialQA));
+function MaybeOption(story, path, parent, ends, jumps, leader) {
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.jumps = jumps;
+    this.leader = leader;
+    this.conditions = [];
+    this.consequences = [];
+    this.at = path;
+    this.descended = false;
+    Object.seal(this);
 }
 
-function Option(story, path, parent, ends, jumps, leader) {
+MaybeOption.prototype.next = function next(type, space, text, scanner) {
+    if (type === 'token') {
+        if (text === '{') {
+            return new OptionOperator(this.story,
+                new MiniExpect('token', '}', this.story, this));
+        }
+    }
+    return this.option().next(type, space, text, scanner);
+};
+
+MaybeOption.prototype.return = function _return(operator, expression, modifier) {
+    if (operator === '+' || operator === '-') {
+        modifier = modifier || ['val', 1];
+        this.consequences.push([expression, [operator, expression, modifier]]);
+    }
+    if (operator === '-') {
+        this.conditions.push(['>=', expression, modifier]);
+    }
+    if (operator === '?') {
+        this.conditions.push(expression);
+    }
+    return this;
+};
+
+MaybeOption.prototype.advance = function advance() {
+    if (this.descended) {
+        this.at = Path.next(this.at);
+    } else {
+        this.at = Path.firstChild(this.at);
+        this.descended = true;
+    }
+};
+
+MaybeOption.prototype.option = function option() {
+    var variable = Path.toName(this.path);
+    var ends = [];
+
+    tie(this.ends, this.at);
+
+    if (this.leader === '*') {
+        this.consequences.push([['get', variable], ['+', ['get', variable], ['val', 1]]]);
+        var jump = this.story.create(this.at, 'jump', ['!=', ['get', variable], ['val', 0]]);
+        var jumpBranch = new Branch(jump);
+        ends.push(jumpBranch);
+        this.advance();
+        tie([jump], this.at);
+    }
+
+    for (var i = 0; i < this.conditions.length; i++) {
+        var condition = this.conditions[i];
+        var jump = this.story.create(this.at, 'jump', ['==', condition, ['val', 0]]);
+        var jumpBranch = new Branch(jump);
+        ends.push(jumpBranch);
+        this.advance();
+        tie([jump], this.at);
+    }
+
+    var option = new Option(this.story, this.path, this.parent, ends, this.jumps, this.leader, this.consequences);
+    option.node = this.story.create(this.at, 'option', null);
+    this.advance();
+
+    option.next = this.at;
+    return option.thread(
+        new OptionThread(this.story, this.at, option, [], option, 'qa', AfterInitialQA));
+};
+
+// {+x} {-x} or {(x)}
+function OptionOperator(story, parent) {
+    this.story = story;
+    this.parent = parent;
+    Object.seal(this);
+}
+
+OptionOperator.prototype.next = function next(type, space, text, scanner) {
+    if (text === '+' || text === '-') {
+        return expression(this.story,
+            new OptionArgument(this.story, this.parent, text));
+    } else if (text === '?') {
+        return expression(this.story,
+            new OptionArgument2(this.story, this.parent, '?'));
+    } else if (text === '!') {
+        return expression(this.story,
+            new OptionArgument2(this.story, this.parent, '?'))
+                .next(type, space, text, scanner);
+    // istanbul ignore else
+    } else if (text === '(') {
+        return expression(this.story,
+            new OptionArgument2(this.story, this.parent, '?'))
+                .next(type, space, text, scanner);
+    } else {
+        this.story.error('Expected condition or consequence starting with + - ? ! or (, got ' + type + '/' + text + ' at ' + scanner.position());
+        return this.parent.return([]);
+    }
+};
+
+function OptionArgument(story, parent, operator) {
+    this.story = story;
+    this.parent = parent;
+    this.operator = operator;
+    Object.seal(this);
+}
+
+OptionArgument.prototype.return = function _return(args, scanner) {
+    if (args[0] === 'get' || args[0] === 'var') {
+        return this.parent.return(this.operator, args, this.args);
+    } else {
+        return expression(this.story,
+            new OptionArgument2(this.story, this.parent, this.operator, args));
+    }
+};
+
+function OptionArgument2(story, parent, operator, args) {
+    this.story = story;
+    this.parent = parent;
+    this.operator = operator;
+    this.args = args;
+    Object.seal(this);
+}
+
+OptionArgument2.prototype.return = function _return(args) {
+    return this.parent.return(this.operator, args, this.args);
+};
+
+function Option(story, path, parent, ends, jumps, leader, consequences) {
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -212,9 +315,9 @@ function Option(story, path, parent, ends, jumps, leader) {
     this.jumps = jumps; // to tie off to the next node after the next prompt
     this.node = null;
     this.leader = leader;
+    this.consequences = consequences;
     this.order = 0;
     this.variable = null;
-    this.inc = null;
     this.next = null;
     this.mode = '';
     this.branch = null;
@@ -232,16 +335,11 @@ Option.prototype.return = function _return(path, ends, jumps, scanner) {
         ends = [jump];
     }
 
-    // TODO thread conditions and consequents
-    if (this.leader === '*') {
-        this.node.answer.unshift(Path.toName(this.inc));
-    }
-
     return this.parent.return(
         Path.next(this.path),
         this.ends.concat([this.node]),
-        this.jumps.concat(ends, jumps)
-        // TODO thread scanner
+        this.jumps.concat(ends, jumps),
+        scanner
     );
 };
 
@@ -289,7 +387,6 @@ OptionThread.prototype.return = function _return(path, ends, jumps) {
 
 // Every option begins with a (potentially empty) thread before the first open
 // backet that will contribute both to the question and the answer.
-// This state exists only to mandate that every option has a pair of brackets.
 function AfterInitialQA(story, path, parent, ends, option) {
     this.type = 'after-first-qa';
     this.story = story;
@@ -306,7 +403,7 @@ AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
         return this.option.thread(new AfterQorA(this.story, this.path, this, this.ends, this.option));
     } else {
         this.story.error('Expected brackets in option at ' + scanner.position());
-        return new AfterFinalA(this.story, this.path, this.parent, this.ends, this.option);
+        return this.return(this.path, this.ends, this.jumps);
     }
 };
 
@@ -314,6 +411,24 @@ AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
 // which anything and everything to the end of the block contributes to the
 // answer.
 AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
+    ends = [];
+
+    // Thread consequences, including incrementing the option variable name
+    var consequences = this.option.consequences;
+    if (consequences.length) {
+        this.option.node.answer.push(Path.toName(path));
+    }
+    for (var i = 0; i < consequences.length; i++) {
+        var consequence = consequences[i];
+        var node = this.story.create(path, 'mov');
+        node.source = consequence[1];
+        node.target = consequence[0];
+        tie(ends, path);
+        path = Path.next(path);
+        ends = [node];
+    }
+
+    this.option.next = path;
     return this.option.thread(
         new OptionThread(this.story, path, this.parent, ends, this.option, 'a', AfterFinalA));
 };
@@ -1086,6 +1201,39 @@ Expect.prototype.next = function next(type, space, text, scanner) {
         this.story.error('Expected ' + this.expect + '/' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
         return new Thread(this.story, this.path, this.parent, this.ends, this.jumps);
     }
+};
+
+function MiniExpect(expect, text, story, parent) {
+    this.type = 'mini-expect';
+    this.expect = expect;
+    this.text = text;
+    this.story = story;
+    this.parent = parent;
+    Object.seal(this);
+}
+
+MiniExpect.prototype.return = function _return(path, ends, jumps, scanner) {
+    return new ExpectNext(this.expect, this.text, this.story, path, this.parent, ends, jumps);
+};
+
+function ExpectNext(expect, text, story, path, parent, ends, jumps) {
+    this.type = 'expect-next';
+    this.expect = expect;
+    this.text = text;
+    this.story = story;
+    this.path = path;
+    this.parent = parent;
+    this.ends = ends;
+    this.jumps = jumps;
+    Object.seal(this);
+}
+
+ExpectNext.prototype.next = function next(type, space, text, scanner) {
+    // istanbul ignore if
+    if (type !== this.expect || text !== this.text) {
+        this.story.error('Expected ' + this.expect + '/' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
+    }
+    return this.parent.return(this.path, this.ends, this.jumps, scanner);
 };
 
 function tie(ends, next) {

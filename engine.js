@@ -139,7 +139,7 @@ Engine.prototype.$set = function $set() {
     var value = evaluate(this.top, this.randomer, this.instruction.expression);
     // istanbul ignore if
     if (this.debug) {
-        console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.variable + ' = ' + value);
+        console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.variable + ' == ' + value);
     }
     this.top.set(this.instruction.variable, value);
     return this.goto(this.instruction.next);
@@ -195,7 +195,7 @@ Engine.prototype.$ask = function $ask() {
 };
 
 Engine.prototype.goto = function _goto(label) {
-    while (label === null && this.stack.length > 1) {
+    while (label == null && this.stack.length > 1) {
         var top = this.stack.pop();
         if (top.stopOption) {
             this.render.stopOption();

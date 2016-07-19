@@ -709,21 +709,21 @@ test([
     },
     "start.0.1": {
         "type": "opt",
-        "question": ["start.0.3"],
-        "answer": ["start.0.2", "start.0.4"],
+        "question": ["start.0.2"],
+        "answer": ["start.0.3", "start.0.4"],
         "next": "start.1",
     },
     "start.0.2": {
-        "type": "set",
-        "variable": "start",
-        "expression": ["+", ["get", "start"], ["val", 1]],
-        "next": null
-    },
-    "start.0.3": {
         "type": "text",
         "text": "Choice",
         "lift": "",
         "drop": "",
+        "next": null
+    },
+    "start.0.3": {
+        "type": "mov",
+        "target": ["get", "start"],
+        "source": ["+", ["get", "start"], ["val", 1]],
         "next": null
     },
     "start.0.4": {
