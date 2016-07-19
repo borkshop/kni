@@ -6,8 +6,6 @@ You enter the fletcher'}s shop. The fletcher beckons, {"There are arrows for
 sale and a range out back to try your skill and fortune. For each score hit,
 you win more gold!"} //
 
--> shop
-
 - @shop
 
   You have {(arrow)|no arrows|an arrow|{(arrow)} arrows}
