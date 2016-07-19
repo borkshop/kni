@@ -764,7 +764,10 @@ var switches = {
 
 Block.prototype.next = function next(type, space, text, scanner) {
     if (type === 'symbol' || type === 'alphanum' || type === 'token') {
-        if (jumps[text]) {
+        if (text === '(') {
+            return expression(this.story, new ExpressionSwitch(this.story, this.path, this.parent, this.ends, '$'))
+                .next(type, space, text, scanner);
+        } else if (jumps[text]) {
             return expression(this.story, new Jump(this.story, this.path, this.parent, this.ends, jumps[text], ['val', 0]));
         } else if (comparators[text]) {
             return expression(this.story, new JumpCompare(this.story, this.path, this.parent, this.ends, text));
