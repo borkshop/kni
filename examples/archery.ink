@@ -27,7 +27,7 @@ you win more gold!"} //
 
 - @range
 
-  You have {(arrow)|no arrows|an arrow|{(arrow)} arrows}.
+  You have {-> arrow}.
 
   + {-arrow}
     [You s[S]hoot an arrow[.]]
