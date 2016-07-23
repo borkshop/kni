@@ -8,7 +8,7 @@
 {=(hi+lo)/2 mid}
 {? hi == lo | -> end}
 
-Is the number less than {$mid}? {+q}
+Is the number less than {(mid)}? {+q}
 + [Yes] {=mid-1 hi}
 + [No]  {=mid   lo}
 >
@@ -16,7 +16,7 @@ Is the number less than {$mid}? {+q}
 {=(hi+lo)/2 mid}
 {? hi == lo | -> end}
 
-Is the number greater than {$mid}? {+q}
+Is the number greater than {(mid)}? {+q}
 + [Yes] {=mid+1 lo}
 + [No]  {=mid   hi}
 >
@@ -24,5 +24,5 @@ Is the number greater than {$mid}? {+q}
 ->try
 
 @end
-The number is {$hi}.
-I guessed after asking {$q} question{$q|s||s}.
+The number is {(hi)}.
+I guessed after asking {(q)} question{(q)|s||s}.

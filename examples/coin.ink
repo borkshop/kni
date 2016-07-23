@@ -7,6 +7,6 @@ This is a coin toss.
 You flip the coin. It lands on
 {~{=0 actual}heads|{=1 actual}tails}.
 
-You {$expected|
-{$actual|win|lose}|
-{$actual|lose|win}}.
+You {(expected)|
+{(actual)|win|lose}|
+{(actual)|lose|win}}.

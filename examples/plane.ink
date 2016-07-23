@@ -16,5 +16,5 @@ values that wends around itself in the plane. //
   - @inner
     {#(x-s/2)#(y-s/2)
     |A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z} -
-  {+x} {<=s x|->inner} /
-{+y} {<=s y|->outer}
+  {+x} {(x <= s)||->inner} /
+{+y} {(y <= s)||->outer}

@@ -725,15 +725,6 @@ function Block(story, path, parent, ends) {
     this.ends = ends;
 }
 
-var comparators = {
-    '>': true,
-    '<': true,
-    '>=': true,
-    '<=': true,
-    '==': true,
-    '!=': true
-};
-
 var jumps = {
     '?': '!=', // to 0
     '!': '==' // to 0
@@ -765,8 +756,6 @@ Block.prototype.next = function next(type, space, text, scanner) {
                 .next(type, space, text, scanner);
         } else if (jumps[text]) {
             return expression(this.story, new Jump(this.story, this.path, this.parent, this.ends, jumps[text], ['val', 0]));
-        } else if (comparators[text]) {
-            return expression(this.story, new JumpCompare(this.story, this.path, this.parent, this.ends, text));
         } else if (mutators[text]) {
             return expression(this.story, new Set(this.story, this.path, this.parent, this.ends, text));
         } else if (variables[text]) {
@@ -846,20 +835,6 @@ ContinueConjunction.prototype.return = function _return(path, ends, jumps, scann
     var stop = this.story.create(path, 'stopJoin');
     tie(ends, path);
     return new Expect('token', '}', this.story, Path.next(path), this.parent, [stop], jumps);
-};
-
-function JumpCompare(story, path, parent, ends, condition) {
-    this.type = 'jump';
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.ends = ends;
-    this.condition = condition;
-    Object.seal(this);
-}
-
-JumpCompare.prototype.return = function _return(right) {
-    return expression(this.story, new Jump(this.story, this.path, this.parent, this.ends, this.condition, right));
 };
 
 function Jump(story, path, parent, ends, condition, right) {

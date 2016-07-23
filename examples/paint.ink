@@ -1,6 +1,8 @@
-{=0 red} {=1 green} {=2 blue}
+! red = 0
+  green = 1
+  blue = 2
 
-This room is {${x}.{y}|red|green|blue}.
+This room is {({x}.{y})|red|green|blue}.
 
 @decide
 + [You p[P]aint this room red. ] {=red {x}.{y}} ->decide

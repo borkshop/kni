@@ -6,8 +6,8 @@
 @list
 {=0 i}
 @shapes
-{>=shapes.length i|->options}
-{$shapes.{i}||square|circle}{$shapes.length-i+1|| and |, }
+{(i >= shapes.length)||->options}
+{(shapes.{i})||square|circle}{(shapes.length-i+1)|| and |, }
 {+i} ->shapes
 
 @options

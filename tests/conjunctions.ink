@@ -1,17 +1,17 @@
-{=3cat}
-{=2rat}
-{=1bat}
+! cat = 3
+  rat = 2
+  bat = 1
 
 @loop
 
 There are {, and |
-- {>0 rat} rats{,}
-- {>0 cat} cats{,}
-- {>0 bat} bats{,}
+{(rat > 0)|| rats{,}}
+{(cat > 0)|| cats{,}}
+{(bat > 0)|| bats{,}}
 }. //
 
 {-rat}
 {-cat}
 {-bat}
 
-{?(rat>0) or (cat>0) or (bat>0)|->loop}
+{(rat > 0 or cat > 0 or bat > 0)||->loop}
