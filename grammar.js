@@ -261,6 +261,7 @@ OptionOperator.prototype.next = function next(type, space, text, scanner) {
     if (text === '+' || text === '-') {
         return expression(this.story,
             new OptionArgument(this.story, this.parent, text));
+    // istanbul ignore else
     } else if (text === '(') {
         return expression(this.story,
             new OptionArgument2(this.story, this.parent, '?'))

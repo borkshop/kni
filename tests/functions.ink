@@ -5,3 +5,5 @@ square root of 4 is {(root(4))} /
 cube root of 27 is {(root(27, 3))} /
 -4 modulo 3 is {(-4 % 3)} /
 -1 is {@(sign(-1))|neutral|positive|negative} /
+0 is {@(sign(0))|neutral|positive|negative} /
+1 is {@(sign(1))|neutral|positive|negative} /

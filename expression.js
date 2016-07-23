@@ -184,6 +184,7 @@ function MaybeArgument(story, parent) {
 MaybeArgument.prototype.next = function next(type, space, text, scanner) {
     if (text === ',') {
         return expression(this.story, this.parent);
+    // istanbul ignore else
     } else  if (text === ')') {
         return this.parent.next(type, space, text, scanner);
     } else {
