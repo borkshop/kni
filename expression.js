@@ -13,6 +13,7 @@ var multiplicative = {
     '*': true,
     '/': true,
     '%': true,
+    'rem': true,
     '~': true,
 };
 
@@ -119,10 +120,75 @@ Value.prototype.next = function next(type, space, text, scanner) {
         return expression(this.story, new GetDynamicVariable(this.story, this.parent, [''], []));
     // istanbul ignore else
     } else if (type === 'alphanum') {
-        return new GetStaticVariable(this.story, this.parent, [], [], text, false);
+        return new GetStaticVariable(this.story, new AfterVariable(this.story, this.parent), [], [], text, false);
     } else {
         this.story.error('Expected expression, got ' + type + '/' + text + ' at ' + scanner.position());
         return this.parent.return(['val', 0]).next(type, space, text, scanner);
+    }
+};
+
+function AfterVariable(story, parent) {
+    this.story = story;
+    this.parent = parent;
+    Object.seal(this);
+}
+
+AfterVariable.prototype.return = function _return(expression, scanner) {
+    return new MaybeApply(this.story, this.parent, expression);
+};
+
+function MaybeApply(story, parent, expression) {
+    this.type = 'maybe-apply';
+    this.story = story;
+    this.parent = parent;
+    this.expression = expression;
+    Object.seal(this);
+}
+
+MaybeApply.prototype.next = function next(type, space, text, scanner) {
+    if (space === '' && text === '(') {
+        return new Arguments(this.story, this.parent, this.expression);
+    } else {
+        return this.parent.return(this.expression, scanner)
+            .next(type, space, text, scanner);
+    }
+};
+
+function Arguments(story, parent, expression) {
+    this.type = 'arguments';
+    this.story = story;
+    this.parent = parent;
+    this.args = ['apply', expression];
+}
+
+Arguments.prototype.next = function next(type, space, text, scanner) {
+    if (text === ')') {
+        return this.parent.return(this.args);
+    } else {
+        return expression(this.story, this)
+            .next(type, space, text, scanner);
+    }
+};
+
+Arguments.prototype.return = function _return(expression, scanner) {
+    this.args.push(expression);
+    return new MaybeArgument(this.story, this);
+};
+
+function MaybeArgument(story, parent) {
+    this.story = story;
+    this.parent = parent;
+    Object.seal(this);
+}
+
+MaybeArgument.prototype.next = function next(type, space, text, scanner) {
+    if (text === ',') {
+        return expression(this.story, this.parent);
+    } else  if (text === ')') {
+        return this.parent.next(type, space, text, scanner);
+    } else {
+        this.story.error('Expected , or ) to end argument list, got ' + type + '/' + text + ' at ' + scanner.position());
+        return this.parent;
     }
 };
 
@@ -144,6 +210,7 @@ Unary.prototype.next = function next(type, space, text, scanner) {
 };
 
 function UnaryOperator(story, parent, op) {
+    this.type = 'unary-operator';
     this.story = story;
     this.parent = parent;
     this.op = op;
@@ -154,6 +221,7 @@ UnaryOperator.prototype.return = function _return(expression, scanner) {
 };
 
 function MaybeOperator(story, parent, expression, operators) {
+    this.type = 'maybe-operator';
     this.story = story;
     this.parent = parent;
     this.expression = expression;
@@ -183,6 +251,7 @@ MaybeOperator.prototype.maybeAnother = function maybeAnother(expression) {
 };
 
 function BinaryExpression(story, operators, parent) {
+    this.type = 'binary-expression';
     this.story = story;
     this.parent = parent;
     this.operators = operators;
@@ -194,6 +263,7 @@ BinaryExpression.prototype.return = function _return(expression, scanner) {
 };
 
 function PartialExpression(story, parent, op, left) {
+    this.type = 'partial-expression';
     this.story = story;
     this.parent = parent;
     this.op = op;
@@ -206,6 +276,7 @@ PartialExpression.prototype.return = function _return(right, scanner) {
 };
 
 function GetDynamicVariable(story, parent, literals, expressions) {
+    this.type = 'get-dynamic-variable';
     this.story = story;
     this.parent = parent;
     this.literals = literals;

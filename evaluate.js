@@ -24,6 +24,18 @@ function evaluate(scope, randomer, args) {
     // istanbul ignore else
     } else if (name === 'var') {
         return +scope.get(nominate(scope, randomer, args));
+    } else if (name === 'apply') {
+        var name = args[1][1];
+        var f = functions[name];
+        if (!f) {
+            // TODO thread line number for containing instruction
+            throw new Error('No function named ' + name);
+        }
+        var values = [];
+        for (var i = 2; i < args.length; i++) {
+            values.push(evaluate(scope, randomer, args[i]));
+        }
+        return f.apply(null, values);
     } else {
         throw new Error('Unexpected operator ' + JSON.stringify(args));
     }
@@ -44,6 +56,80 @@ function nominate(scope, randomer, args) {
     return name;
 }
 
+var functions = {
+    abs: Math.abs,
+    acos: Math.acos,
+    asin: Math.asin,
+    atan2: Math.atan2,
+    atan: Math.atan,
+    exp: Math.exp,
+    log: Math.log,
+    max: Math.max,
+    min: Math.min,
+    pow: Math.pow,
+    sin: Math.sin,
+    tan: Math.tan,
+
+    sign: function (x) {
+        if (x < 0) {
+            return -1;
+        }
+        if (x > 0) {
+            return 1;
+        }
+        return 0;
+    },
+
+    mean: function () {
+        var mean = 0;
+        for (var i = 0; i < arguments.length; i++) {
+            mean += arguments[i];
+        }
+        return mean / i;
+    },
+
+    root: function root(x, y) {
+        if (y === 2 || y == null) {
+            return Math.sqrt(x);
+        }
+        return Math.pow(x, 1 / y);
+    },
+
+    distance: function distance(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    },
+
+    manhattan: function distance(x1, y1, x2, y2) {
+        return Math.abs(x2 - x1, 2) + Math.abs(y2 - y1);
+    },
+
+    // TODO parameterize these functions in terms of the expected turns to
+    // go from 25% to 75% of capacity, to adjust the rate. This will maybe
+    // almost make them understandable.
+    //
+    // sigmoid: function (steps, cap) {
+    //     if (steps === -Infinity) {
+    //         return 0;
+    //     } else if (steps === Infinity) {
+    //         return cap;
+    //     } else {
+    //         return cap / (1 + Math.pow(Math.E, -steps));
+    //     }
+    // },
+
+    // diomgis: function (pop, cap) {
+    //     if (pop <= 0) {
+    //         return -Infinity;
+    //     }
+    //     var ratio = cap / pop - 1;
+    //     if (ratio === 0) {
+    //         return Infinity;
+    //     }
+    //     return -Math.log(ratio, Math.E);
+    // },
+
+};
+
 var binary = {
     '+': function (x, y) {
         return x + y;
@@ -58,6 +144,9 @@ var binary = {
         return (x / y) >> 0;
     },
     '%': function (x, y) {
+        return ((x % y) + y) % y;
+    },
+    'rem': function (x, y) {
         return x % y;
     },
     'or': function (x, y) {

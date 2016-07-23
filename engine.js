@@ -175,7 +175,8 @@ Engine.prototype.$switch = function $switch() {
         this.top.set(this.instruction.variable, value + this.instruction.value);
     }
     if (this.instruction.mode === 'loop') {
-        value = value % branches.length;
+        // actual modulo, wraps negatives
+        value = ((value % branches.length) + branches.length) % branches.length;
     } else if (this.instruction.mode === 'hash') {
         value = evaluate.hash(value) % branches.length;
     }
