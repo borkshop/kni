@@ -12,7 +12,7 @@ you win more gold!"} //
   {(arrow)|{(gold)| and | but }| and }
   {-> gold}.
 
-  {(!gold and !arrow)||->exit}
+  {(not gold and not arrow)||->exit}
 
   + {-gold} {+3arrow}
     [You b[B]uy 3 arrows for a gold piece. ]

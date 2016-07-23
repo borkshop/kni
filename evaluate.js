@@ -98,7 +98,7 @@ var binary = {
 
 // istanbul ignore next
 var unary = {
-    '!': function (x) {
+    'not': function (x) {
         return x ? 0 : 1;
     },
     '-': function (x) {

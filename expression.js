@@ -3,7 +3,7 @@
 module.exports = expression;
 
 var unary = {
-    '!': true,
+    'not': true,
     '-': true,
     '~': true,
     '#': true
