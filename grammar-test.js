@@ -1747,7 +1747,7 @@ test([
 });
 
 test([
-    'My favorite color is blue{%.|, no yellow!}'
+    'My favorite color is blue{&.|, no yellow!}'
 ], {
     "start": {
         "type": "text",

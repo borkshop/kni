@@ -753,14 +753,14 @@ var variables = {
 };
 
 var switches = {
-    '%': 'loop',
+    '&': 'loop',
     '~': 'rand'
 };
 
 Block.prototype.next = function next(type, space, text, scanner) {
     if (type === 'symbol' || type === 'alphanum' || type === 'token') {
         if (text === '(') {
-            return expression(this.story, new ExpressionSwitch(this.story, this.path, this.parent, this.ends, '$'))
+            return expression(this.story, new ExpressionSwitch(this.story, this.path, this.parent, this.ends, 'walk'))
                 .next(type, space, text, scanner);
         } else if (jumps[text]) {
             return expression(this.story, new Jump(this.story, this.path, this.parent, this.ends, jumps[text], ['val', 0]));
@@ -774,7 +774,7 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return new Conjunction(this.story, this.path, this.parent, this.ends);
         } else if (switches[text]) {
             return new Switch(this.story, this.path, this.parent, this.ends)
-                .start(null, null, null, switches[text])
+                .start(null, Path.toName(this.path), null, switches[text])
                 .case();
         } else if (text === '->') {
             return expression.variable(this.story, new Call(this.story, this.path, this.parent, this.ends));

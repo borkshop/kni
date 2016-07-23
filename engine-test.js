@@ -34,6 +34,7 @@ function main() {
     test('tests/functions.ink', 'tests/functions.1');
     test('tests/indirect.ink', 'tests/indirect.1');
     test('tests/literals.ink', 'tests/literals.1');
+    test('tests/loop.ink', 'tests/loop.1');
     test('tests/math.ink', 'tests/math.1');
     test('tests/procedure.ink', 'tests/procedure.1');
     test('tests/program.ink', 'tests/program.1');
