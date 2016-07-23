@@ -261,21 +261,16 @@ OptionOperator.prototype.next = function next(type, space, text, scanner) {
     if (text === '+' || text === '-') {
         return expression(this.story,
             new OptionArgument(this.story, this.parent, text));
-    } else if (text === '?') {
-        return expression(this.story,
-            new OptionArgument2(this.story, this.parent, '?'));
-    } else if (text === '!') {
-        return expression(this.story,
-            new OptionArgument2(this.story, this.parent, '?'))
-                .next(type, space, text, scanner);
-    // istanbul ignore else
     } else if (text === '(') {
         return expression(this.story,
             new OptionArgument2(this.story, this.parent, '?'))
                 .next(type, space, text, scanner);
     } else {
-        this.story.error('Expected condition or consequence starting with + - ? ! or (, got ' + type + '/' + text + ' at ' + scanner.position());
-        return this.parent.return([]);
+        // TODO consider ending option operator sequence and replaying prior tokens
+        this.story.error('Expected +, -, or (expression) for option condition, got ' + type + '/' + text + ' at ' + scanner.position());
+        return expression(this.story,
+            new OptionArgument2(this.story, this.parent, '?'))
+                .next(type, space, text, scanner);
     }
 };
 
