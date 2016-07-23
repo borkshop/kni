@@ -727,7 +727,6 @@ function Block(story, path, parent, ends) {
 
 var jumps = {
     '?': '!=', // to 0
-    '!': '==' // to 0
 };
 
 var mutators = {

@@ -1075,50 +1075,6 @@ test([
 });
 
 test([
-    '{!hi} Hello'
-], {
-    "start": {
-        "type": "jump",
-        "condition": ["==", ["get", "hi"], ["val", 0]],
-        "branch": "start.1",
-        "next": null
-    },
-    "start.1": {
-        "type": "text",
-        "text": "Hello",
-        "lift": " ",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
-    '- {!hi} Hello\n',
-    'Bye\n',
-], {
-    "start": {
-        "type": "jump",
-        "condition": ["==", ["get", "hi"], ["val", 0]],
-        "branch": "start.1",
-        "next": "start.2"
-    },
-    "start.1": {
-        "type": "text",
-        "text": "Hello",
-        "lift": " ",
-        "drop": " ",
-        "next": "start.2"
-    },
-    "start.2": {
-        "type": "text",
-        "text": "Bye",
-        "lift": "",
-        "drop": " ",
-        "next": null
-    }
-});
-
-test([
     '{-10 gil} {+1 arrow}'
 ], {
     "start": {
@@ -1896,36 +1852,6 @@ test([
         "next": null
     }
 });
-
-test([
-    '{!x|true|false}\n'
-], {
-    "start": {
-        "type": "switch",
-        "expression": ["!=", ["get", "x"], [ "val", 0]],
-        "value": 0,
-        "mode": "walk",
-        "branches": [
-            "start.0.1",
-            "start.0.2"
-        ]
-    },
-    "start.0.1": {
-        "type": "text",
-        "text": "true",
-        "lift": "",
-        "drop": "",
-        "next": null
-    },
-    "start.0.2": {
-        "type": "text",
-        "text": "false",
-        "lift": "",
-        "drop": "",
-        "next": null
-    }
-});
-
 
 test([
     '{$x < 10}\n'
