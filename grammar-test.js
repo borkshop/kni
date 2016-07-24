@@ -572,6 +572,20 @@ test([
 });
 
 test([
+    '->hi(a, b)\n',
+], {
+    "start": {
+        "type": "apply",
+        "branch": "hi",
+        "args": [
+            ["get", "a"],
+            ["get", "b"]
+        ],
+        "next": null
+    }
+});
+
+test([
     '->hi\n',
     '@hi\n'
 ], {
@@ -1662,13 +1676,9 @@ test([
 });
 
 test([
-    '- @hello(name) Hello, {$name}.\n',
+    '- @hello(name) Hello, {(name)}.\n',
     'Good bye'
 ], {
-    "start": {
-        "type": "goto",
-        "next": "start.1"
-    },
     "hello": {
         "type": "args",
         "locals": [
@@ -1697,29 +1707,12 @@ test([
         "drop": " ",
         "next": null
     },
-    "start.1": {
+    "start": {
         "type": "text",
         "text": "Good bye",
         "lift": "",
         "drop": " ",
         "next": null
-    }
-});
-
-test([
-    '{->hello {=10 world}}'
-], {
-    "start": {
-        "type": "call",
-        "label": "hello",
-        "branch": "start.0.1",
-        "next": null
-    },
-    "start.0.1": {
-        "type": "set",
-        "variable": "world",
-        "expression": ["val", 10],
-        "next": "hello"
     }
 });
 

@@ -24,6 +24,10 @@ types.goto = function goto(node) {
     return '';
 };
 
+types.apply = function apply(node) {
+    return node.branch + '(' + node.args.map(S).join(' ') + ')';
+};
+
 types.call = function call(node) {
     return node.label + ' ' + node.branch + '() -> ' + node.next;
 };

@@ -8,9 +8,9 @@ you win more gold!"} //
 
 - @shop
 
-  You have {-> arrow}
+  You have ->arrow()
   {(arrow)|{(gold)| and | but }| and }
-  {-> gold}.
+  ->gold().
 
   {(not gold and not arrow)||->exit}
 
@@ -27,7 +27,7 @@ you win more gold!"} //
 
 - @range
 
-  You have {-> arrow}.
+  You have ->arrow().
 
   + {-arrow}
     [You s[S]hoot an arrow[.]]
@@ -46,5 +46,5 @@ you win more gold!"} //
   {(gold)|no gold|a gold piece|{(gold)} gold}
 
 - @exit
-  You depart the store through the back door with {->gold}.
+  You depart the store through the back door with ->gold().
   {(score)||All told, you scored {(score)} hit{(score)|s||s}.}

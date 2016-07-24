@@ -96,19 +96,19 @@ Goto.prototype.equals = function equals(that) {
         this.next === that.next;
 };
 
-constructors.call = Call;
-function Call(label) {
-    this.type = 'call';
-    this.label = label;
-    this.branch = null;
+constructors.apply = Apply;
+function Apply(branch) {
+    this.type = 'apply';
+    this.branch = branch;
+    this.args = null;
     this.next = null;
     Object.seal(this);
 }
-Call.prototype.tie = tie;
-Call.prototype.equals = function equals(that) {
+Apply.prototype.tie = tie;
+Apply.prototype.equals = function _equals(that) {
     return this.type === that.type &&
-        this.label === that.label &&
         this.branch === that.branch &&
+        equals(this.args, that.args) &&
         this.next === that.next;
 };
 

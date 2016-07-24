@@ -85,11 +85,19 @@ Engine.prototype.$goto = function $goto() {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$call = function $call() {
-    var routine = this.story[this.instruction.label];
+Engine.prototype.$apply = function $apply() {
+    var procedure = this.story[this.instruction.branch];
     // istanbul ignore if
-    if (!routine) {
-        throw new Error('no such routine ' + this.instruction.label);
+    if (!procedure) {
+        throw new Error('no such procedure ' + this.instruction.branch);
+    }
+    // istanbul ignore if
+    if (procedure.type !== 'args') {
+        throw new Error('can\'t call non-procedure ' + this.instruction.branch);
+    }
+    // istanbul ignore if
+    if (procedure.locals.length !== this.instruction.args.length) {
+        throw new Error('argument length mismatch for ' + this.instruction.branch);
     }
     // TODO replace this.storage with closure scope if scoped procedures become
     // viable. This will require that the engine create references to closures
@@ -97,14 +105,19 @@ Engine.prototype.$call = function $call() {
     // capturing locals. As such the parser will need to retain a reference to
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
-    this.top = new Frame(this.top, this.storage, routine.locals || [], this.instruction.next, this.label);
+    this.top = new Frame(this.top, this.storage, procedure.locals, this.instruction.next, this.label);
     this.stack.push(this.top);
+    for (var i = 0; i < this.instruction.args.length; i++) {
+        var arg = this.instruction.args[i];
+        var value = evaluate(this.top.caller, this.randomer, arg);
+        this.top.set(procedure.locals[i], value);
+    }
     return this.goto(this.instruction.branch);
 };
 
 Engine.prototype.$args = function $args() {
-    // Subroutines exist as targets for labels as well as for reference to
-    // locals in calls.
+    // Procedure argument instructions exist as targets for labels as well as
+    // for reference to locals in calls.
     return this.goto(this.instruction.next);
 };
 

@@ -260,13 +260,13 @@ The following song begins with a `refrain`, to which we repeatedly return until
 the song exhausts itself or the interlocutor.
 
 ```
-{=99 bottles}
+! bottle = 99
 @refrain
-{$bottles||1 bottle|{$bottles} bottles} of beer on the wall. /
-{$bottles||1 bottle|{$bottles} bottles} of beer. /
-You take one down and pass it around. {-1 bottles} /
-{$bottles|No more bottles|1 bottle|{$bottles} bottles} of beer on the wall. /
-{$bottles||->refrain}
+{(bottle)||1 bottle|{(bottle)} bottles} of beer on the wall. /
+{(bottle)||1 bottle|{(bottle)} bottles} of beer. /
+You take one down and pass it around. {-bottle} /
+{(bottle)|No more bottles|1 bottle|{(bottle)} bottles} of beer on the wall. //
+{(bottle)||->refrain}
 ```
 
 ## Calling a procedure
@@ -279,21 +279,16 @@ The procedure implicitly returns at the end of the thread.
 
 ```
 - @greet(time)
-  {$time|Hello|Good bye}, World!
+  {(time)|Hello|Good bye}, World!
 
-{->greet {=0 time}}
-{->greet {=1 time}}
+->greet(0)
+->greet(1)
 ```
 
-A forward arrow within a block signifies calling a procedure and returning
-instead of going to a label.
-The thread remaining inside the block executes inside the scope of the
-procedure, so you can use this space to convey parameters.
-
-At present, it is best to assume that you can only write values to the local
-scope.
-I expect that in a future version, values will be read exclusively from the
-caller scope and written only into the callee scope.
+A label followed by parenthesized and comma separated argument expressions
+signifies a call and return, instead of just going to a label.
+These arguments are evaluated in the caller scope, then applied to parameters
+in the callee scope.
 
 ## Returning or exiting
 

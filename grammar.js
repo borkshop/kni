@@ -61,9 +61,9 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         if (text === '{') {
             return new Block(this.story, this.path, this, this.ends);
         } else if (text === '@') {
-            return expression.variable(this.story, new ExpectLabel(this.story, this.path, this, this.ends));
+            return expression.label(this.story, new Label(this.story, this.path, this, this.ends));
         } else if (text === '->') {
-            return expression.variable(this.story, new Goto(this.story, this.path, this, this.ends));
+            return expression.label(this.story, new Goto(this.story, this.path, this, this.ends));
         } else if (text === '<-') {
             // Implicitly tie ends to null by dropping them.
             // Continue carrying jumps to the next encountered prompt.
@@ -567,91 +567,64 @@ Rejoin.prototype.return = function _return(path, ends, jumps, scanner) {
     return this.parent.return(path, ends.concat([this.branch]), jumps, scanner);
 };
 
-function ExpectLabel(story, path, parent, ends) {
+function Label(story, path, parent, ends) {
     this.type = 'label';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
+    Object.seal(this);
 }
 
-ExpectLabel.prototype.return = function _return(expression, scanner) {
-    // istanbul ignore else
+Label.prototype.return = function _return(expression, scanner) {
     if (expression[0] === 'get') {
-        return new MaybeProcedure(this.story, this.path, this.parent, this.ends, expression[1]);
+        var label = expression[1];
+        var path = [label, 0];
+        // place-holder goto thunk
+        var node = this.story.create(path, 'goto', null);
+        tie(this.ends, path);
+        // ends also forwarded so they can be tied off if the goto is replaced.
+        return this.parent.return(path, this.ends.concat([node]), [], scanner);
+    // istanbul ignore else
+    } else if (expression[0] === 'apply') {
+        var label = expression[1][1];
+        var path = [label, 0];
+        var node = this.story.create(path, 'args', null);
+        var params = [];
+        for (var i = 2; i < expression.length; i++) {
+            var arg = expression[i];
+            // istanbul ignore else
+            if (arg[0] === 'get') {
+                params.push(arg[1]);
+            } else {
+                this.story.error('Expected parameter name, not expression ' + JSON.stringify(arg) + ' at ' + scanner.position());
+            }
+        }
+        node.locals = params;
+        return new Thread(this.story, Path.next(path),
+            new ConcludeProcedure(this.story, this.path, this.parent, this.ends),
+            [node], []);
     } else {
-        this.story.error('Expected label after =, got ' + JSON.stringify(expression) + ' at ' + scanner.position());
+        this.story.error('Expected label after @, got ' + JSON.stringify(expression) + ' at ' + scanner.position());
         return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };
 
-function MaybeProcedure(story, path, parent, ends, label) {
-    this.type = 'maybe-procedure';
+function ConcludeProcedure(story, path, parent, ends) {
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    this.label = label;
-}
-
-MaybeProcedure.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'symbol' && text === '(') {
-        return new Procedure(this.story, this.path, this, this.label);
-    } else {
-        var path = [this.label, 0];
-        // place-holder goto thunk
-        var label = this.story.create(path, 'goto', null);
-        tie(this.ends, path);
-        // ends also forwarded so they can be tied off if the goto is replaced.
-        return new Thread(this.story, path, this.parent, this.ends.concat([label]), [])
-            .next(type, space, text, scanner);
-    }
+    Object.seal(this);
 };
 
-MaybeProcedure.prototype.return = function _return(path, ends, jumps, scanner) {
+ConcludeProcedure.prototype.return = function _return(path, ends, jumps, scanner) {
     // After a procedure, connect prior ends.
-    return this.parent.return(path, this.ends.concat(ends), jumps, scanner);
+    // Leave loose end of procedure dangling.
+    return this.parent.return(this.path, this.ends, [], scanner);
 };
 
-function Procedure(story, path, parent, label) {
-    this.type = 'procedure';
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.label = label;
-    this.locals = [];
-}
-
-Procedure.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'symbol' && text === ')') {
-        var path = [this.label, 0];
-        var label = this.story.create(path, 'goto', null);
-
-        // Leave the loose ends from before the procedure declaration for
-        // after the procedure declaration is complete.
-
-        // The procedure exists only for reference in calls.
-        var sub = this.story.create(path, 'args', this.locals);
-
-        return new Thread(this.story, Path.next(path), this, [label, sub], []);
-    // istanbul ignore else
-    } else if (type === 'alphanum') {
-        // TODO handle expression.variable
-        this.locals.push(text);
-        return this;
-    } else {
-        this.story.error('Expected variable name or close paren, got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Thread(this.story, this.path, this, [], []);
-    }
-};
-
-Procedure.prototype.return = function _return(path, ends, jumps, scanner) {
-    // Let loose ends of procedure dangle to null.
-    // Pick up the threads left before the procedure declaration.
-    return this.parent.return(Path.next(this.path), [], [], scanner);
-};
-
-function Goto(story, path, parent, ends) {
+function Goto(story, path, parent, ends, jumps) {
     this.type = 'goto';
     this.story = story;
     this.path = path;
@@ -659,52 +632,21 @@ function Goto(story, path, parent, ends) {
     this.ends = ends;
 }
 
-Goto.prototype.return = function _return(expression, scanner) {
+Goto.prototype.return = function _return(args, scanner) {
     // istanbul ignore else
-    if (expression[0] === 'get') {
-        tieName(this.ends, expression[1]);
+    if (args[0] === 'get') {
+        tieName(this.ends, args[1]);
         return this.parent.return(Path.next(this.path), [], [], scanner);
-    } else {
-        this.story.error('Expected label after goto arrow, got expression ' + JSON.stringify(expression) + ' at ' + scanner.position());
-        return new Thread(this.story, this.path, this.parent, this.ends, []);
-    }
-};
-
-function Call(story, path, parent, ends) {
-    this.type = 'call';
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.ends = ends;
-    Object.seal(this);
-}
-
-Call.prototype.return = function _return(expression, scanner) {
-    // istanbul ignore else
-    if (expression[0] === 'get') {
-        var label = expression[1];
-        var node = this.story.create(this.path, 'call', label);
-        var branch = new Branch(node);
+    } else if (args[0] === 'apply') {
+        var label = args[1][1];
+        var node = this.story.create(this.path, 'apply', label);
+        node.args = args.slice(2);
         tie(this.ends, this.path);
-        return new Thread(this.story, Path.firstChild(this.path), new EndCall(this.story, this.path, node, this.parent, label), [branch], []);
+        return this.parent.return(Path.next(this.path), [node], [], scanner);
     } else {
-        this.story.error('Expected label after call arrow, got expression ' + JSON.stringify(expression) + ' at ' + scanner.position());
+        this.story.error('Expected label after goto arrow, got expression ' + JSON.stringify(args) + ' at ' + scanner.position());
         return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
-};
-
-function EndCall(story, path, node, parent, label) {
-    this.story = story;
-    this.path = path;
-    this.node = node;
-    this.parent = parent;
-    this.label = label;
-    Object.seal(this);
-}
-
-EndCall.prototype.return = function _return(path, ends, jumps, scanner) {
-    tieName(ends, this.label);
-    return new Expect('token', '}', this.story, Path.next(this.path), this.parent, [this.node], jumps);
 };
 
 function Block(story, path, parent, ends) {
@@ -753,8 +695,6 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return new Switch(this.story, this.path, this.parent, this.ends)
                 .start(null, Path.toName(this.path), null, switches[text])
                 .case();
-        } else if (text === '->') {
-            return expression.variable(this.story, new Call(this.story, this.path, this.parent, this.ends));
         }
     }
     return new Switch(this.story, this.path, this.parent, this.ends)

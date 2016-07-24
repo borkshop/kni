@@ -61,6 +61,11 @@ function variable(story, parent) {
     return new GetStaticVariable(story, parent, [], [], '', true);
 }
 
+expression.label = label;
+function label(story, parent) {
+    return new GetStaticVariable(story, new AfterVariable(story, parent), [], [], '', true);
+}
+
 var inversions = {
     '==': '!=',
     '!=': '==',
