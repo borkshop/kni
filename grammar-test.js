@@ -1218,7 +1218,7 @@ test([
 });
 
 test([
-    '{$start.1}\n'
+    '{(start.1)}\n'
 ], {
     "start": {
         "type": "echo",
@@ -1230,7 +1230,7 @@ test([
 });
 
 test([
-    '{$arrow|no arrows|an arrow|{$arrow} arrows}\n'
+    '{(arrow)|no arrows|an arrow|{(arrow)} arrows}\n'
 ], {
     "start": {
         "type": "switch",
@@ -1274,7 +1274,7 @@ test([
 });
 
 test([
-    '{$arrow|{$arrow} arrows|some arrows}\n'
+    '{(arrow)|{(arrow)} arrows|some arrows}\n'
 ], {
     "start": {
         "type": "switch",
@@ -1310,7 +1310,7 @@ test([
 });
 
 test([
-    'You see {$door|an open|a closed} door.\n'
+    'You see {(door)|an open|a closed} door.\n'
 ], {
     "start": {
         "type": "text",
@@ -1353,8 +1353,8 @@ test([
 });
 
 test([
-    'You see {$door|an open|a closed} door.\n',
-    'The knob is wrought of {$knob|brass|iron}.\n'
+    'You see {(door)|an open|a closed} door.\n',
+    'The knob is wrought of {(knob)|brass|iron}.\n'
 ], {
     "start": {
         "type": "text",
@@ -1428,7 +1428,7 @@ test([
 });
 
 test([
-    'You have {$gold|no gold|{$gold} gold}.\n'
+    'You have {(gold)|no gold|{(gold)} gold}.\n'
 ], {
     "start": {
         "type": "text",
@@ -1806,7 +1806,7 @@ test([
 });
 
 test([
-    '{$a + b}\n'
+    '{(a + b)}\n'
 ], {
     "start": {
         "type": "echo",
@@ -1847,7 +1847,7 @@ test([
 });
 
 test([
-    '{$x < 10}\n'
+    '{(x < 10)}\n'
 ], {
     "start": {
         "type": "echo",
@@ -1859,7 +1859,7 @@ test([
 });
 
 test([
-    '{$1 and 0}\n'
+    '{(1 and 0)}\n'
 ], {
     "start": {
         "type": "echo",
@@ -1875,7 +1875,7 @@ test([
 });
 
 test([
-    '{$1 and 2 or 3}\n'
+    '{(1 and 2 or 3)}\n'
 ], {
     "start": {
         "type": "echo",
@@ -1891,7 +1891,7 @@ test([
 });
 
 test([
-    '{$x < 10 and y > 20}\n'
+    '{(x < 10 and y > 20)}\n'
 ], {
     "start": {
         "type": "echo",
@@ -1907,7 +1907,7 @@ test([
 });
 
 test([
-    '{$2~6 + 1}\n'
+    '{(2~6 + 1)}\n'
 ], {
     "start": {
         "type": "echo",
@@ -1952,8 +1952,8 @@ test([
 });
 
 test([
-    '{$20\n',
-    '- 10}\n',
+    '{(20\n',
+    '- 10)}\n',
 ], {
     "start": {
         "type": "echo",

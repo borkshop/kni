@@ -1,4 +1,4 @@
-You are {$x} west and {$y} north.
+You are {(x)} west and {(y)} north.
 
 {=(x#y) here}
 {=((x+1)#y) west}
@@ -10,14 +10,10 @@ You are {$x} west and {$y} north.
 {=((north==here+1)v(north==here-1)) north.open}
 {=((east==here+1)v(east==here-1)) east.open}
 
-- {?west.open}
-  + [You g[G]o west.] {+x}
-- {?east.open}
-  + [You g[G]o east.] {-x}
-- {?north.open}
-  + [You g[G]o north.] {+y}
-- {?south.open}
-  + [You g[G]o south.] {-y}
++ {(west.open)} {+x} [You g[G]o west.]
++ {(east.open)} {-x} [You g[G]o east.]
++ {(north.open)} {+y} [You g[G]o north.]
++ {(south.open)} {-y} [You g[G]o south.]
 + [Escape.] <-
 >
 

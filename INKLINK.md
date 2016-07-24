@@ -54,35 +54,57 @@ Inkblot diverges rapidly from its roots in inspiration from Inkle’s Ink.
     time thereafter, always incrementing a variable with the same name as the
     underlying instruction label.
 
-  - Cycles are marked with ``{%a|b|c}`` instead of ``{&a|b|c}``.
-
   - Once only lists don’t have a special marker, but you can leave the final
     variant empty like ``{a|b|c|}`` instead of ``{!a|b|c}``
 
   - Shuffles are the same, ``{~heads|tails}``.
 
-  - Printing the value of a variable uses ``{$variable}`` notation instead of
+  - Printing the value of a variable uses ``{(variable)}`` notation instead of
     merely ``{variable}``.
 
-  - Inkblot also supports variable backed lists ``{$variable|a|b|c}``, which
+  - Inkblot also supports variable backed lists ``{(expression)|a|b|c}``, which
     like the default list stick on the last variant, and loops
-    ``{@variable|a|b|c}``, which walk around the list.
+    ``{@expression|a|b|c}``, which walk around the list.
     Inkblot has deterministic but arbitrary choices using the hash as well
-    ``{#variable|a|b|c}``.
+    ``{#expression|a|b|c}``.
 
-  - Inkblot’s conditional notation is like ``{?condition|then|else}`` instead
-    of ``{condition: then}``, and works for comparison operators like ``{>10
-    health| very much alive| hurting}`` and abbreviated negation like
-    ``{!condition|then}``.
+  - Inkblot’s conditional notation is like ``{(condition)|else|then}`` instead
+    of ``{condition: then}``, and works for comparison operators like
+    ``{(health>10) | very much alive| hurting}``.
     By omitting the then and else clauses, a condition can apply, skipping
     to the end of the current thread.
 
-- Inkblot does not yet use `~` bulleted lines for mutation and logic.  Instead,
-  there are blocks that modify state like ``{+gold}`` and ``{=10 hearts}`` that
-  can be applied inline with narrative.
+- Inkblot’s notation for conditional options is slightly different.
 
-- Inkblot’s algebraic expressions vary in many small ways, like `!` instead of
-  `not`.
+  ```inkblot
+  + {(seen.clue)} Accuse Mr.\ Jefferson.
+  ```
+
+  Inkblot also supports "condition and consequence" prefixes, like this
+  example that will only show an option if the player has an arrow,
+  and will consequently take that arrow if selected.
+
+  ```inkblot
+  + {-arrow}
+    [You s[S]hoot an arrow[.]]
+    {~ and hit the target, winning 1 gold piece!
+    {+gold} {+score} ->range||}
+    and miss.
+  ``
+
+  And also, Inkblot supports simple "consequence" notation, like this
+  example that echanges gold for arrows. The `+3arrow` consequence does not
+  have a corresponding condition.
+
+  ```inkblot
+  + {-gold} {+3arrow}
+    [You b[B]uy 3 arrows for a gold piece. ]
+  ```
+
+- Inkblot has a notation like `~` bulleted blocks, except bulleted `!` and
+  can as yet only contain assignment expressions and no other declarations.
+  Inkblot also supports `{+gold}` and `{=10 hearts}` style expressions
+  for assigning or mutating state inline with the narrative.
 
 - The compiled JSON and the virtual machine that runs it are entirely
   different.
@@ -110,14 +132,6 @@ Inkblot is missing many things available to Ink.
 
 - Inkblot does not support calling out to game logic. This is not likely to
   change. Games should bind to Ink narrative by watching the variable bag.
-
-- Inkblot does not yet support conditions directly on options.
-  For the nonce, you have to nest options in threads.
-
-  ```inkblot
-  - {?seen.clue}
-    + Accuse Mr.\ Jefferson.
-  ```
 
 Yet Inkblot has some features that Ink leaves out.
 Ink’s smallness is a virtue for keeping the language easy to pick up for

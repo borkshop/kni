@@ -131,15 +131,15 @@ test([
 ]);
 
 test([
-    '{#gold|no gold|{$gold} gold}'
+    '{(gold)|no gold|{(gold)} gold}'
 ], [
     'TOKEN', '{',
-    'SYMBOL', '#', 'gold',
+    'SYMBOL', '(', 'gold', 'SYMBOL', ')',
     'TOKEN', '|',
     'no', ' ', 'gold',
     'TOKEN', '|',
     'TOKEN', '{',
-    'SYMBOL', '$', 'gold',
+    'SYMBOL', '(', 'gold', 'SYMBOL', ')',
     'TOKEN', '}',
     ' ', 'gold',
     'TOKEN', '}',

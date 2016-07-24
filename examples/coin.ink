@@ -1,5 +1,3 @@
-
-
 ! heads = 0
   tails = 1
 
@@ -10,8 +8,7 @@ This is a coin toss.
 >
 
 You flip the coin.
-{=~2 flipped}
+{= ~2 flipped}
 It lands on {(flipped)|heads|tails}.
 
 You {(called == flipped)|lose|win}.
-

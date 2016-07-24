@@ -160,7 +160,7 @@ function test(inkscript, typescript) {
 
 function describeStory(states) {
     var keys = Object.keys(states);
-    var cells = [['AT', 'DO', '-', 'USING', '-', 'GO']];
+    var cells = [['AT', 'DO', 'S', 'USING', 'S', 'GO']];
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var node = states[key];

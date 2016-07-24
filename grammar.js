@@ -657,6 +657,7 @@ function Block(story, path, parent, ends) {
     this.ends = ends;
 }
 
+// TODO replace with postfix ?
 var jumps = {
     '?': '!=', // to 0
 };
@@ -670,7 +671,6 @@ var mutators = {
 };
 
 var variables = {
-    '$': 'walk',
     '@': 'loop',
     '#': 'hash'
 };
@@ -852,7 +852,7 @@ Variable.prototype.next = function next(type, space, text, scanner) {
         tie(this.ends, this.path);
         return new Thread(this.story, Path.next(this.path), this.parent, [node], []);
     } else {
-        this.story.error('Expected | or } after expression in {$} block, got ' + type + '/' + text + ' at ' + scanner.position());
+        this.story.error('Expected | or } after expression, got ' + type + '/' + text + ' at ' + scanner.position());
         return new Thread(this.story, this.path, this.parent, this.ends, []);
     }
 };

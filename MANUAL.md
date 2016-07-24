@@ -346,7 +346,7 @@ The story can read or modify this variable.
 ### Loops
 
 ```
-When you emerge, {%day|night} greets you, with the {%sun|moon} overhead.
+When you emerge, {&day|night} greets you, with the {&sun|moon} overhead.
 ```
 
 ### Random
@@ -355,18 +355,24 @@ When you emerge, {%day|night} greets you, with the {%sun|moon} overhead.
 You flip a coin. {~Heads|Tails}!
 ```
 
+This example uses the corresponding `~` expression to
+choose either 0 or 1 (2 options).
+
 ```
+! heads = 0
+  tails = 1
+
 This is a coin toss.
 
-+ You c[C]all heads. {=0 expected}
-+ You c[C]all tails. {=1 expected}
++ [You c[C]all heads. ] {=heads called}
++ [You c[C]all tails. ] {=tails called}
+>
 
-You flip the coin. It lands on
-{~heads{=0 actual}|tails{=1 actual}}.
+You flip the coin.
+{= ~2 flipped}
+It lands on {(flipped)|heads|tails}.
 
-You {$expected|
-{$actual|win|lose}|
-{$actual|lose|win}}.
+You {(called == flipped)|lose|win}.
 ```
 
 ### Echo a variable
@@ -374,29 +380,42 @@ You {$expected|
 The narrator can read variables directly.
 
 ```
-You have {$gold} gold.
+You have {(gold)} gold.
 ```
 
 ### Switch on variable
 
-Providing any number of bar delimited threads after a variable
-indicates that the narrator should chose a thread based on the value of the
-variable, starting with 0.
+Providing any number of bar delimited threads after a variable indicates that
+the narrator should chose a thread based on the value of the variable,
+starting with 0.
 As with sequences above, the narrator falls back to the final thread for all
 values greater than the number of available threads.
+That is, if the variable is greater than the number of alternatives, it chooses
+the final alternative.
+If the variable is less than zero, it chooses the first alternative.
 A variable switch does not implicitly increment the variable.
 
 ```
-You have {$gold|no|some} gold.
+You have {(gold)|no|some} gold.
 ```
 
 ### Loop over variable
 
 Using the at `@`, the narrator will draw a *circle around a* sequence,
-using modulo to wrap the variable around the available number of threads.
+using a proper mathematical modulo to wrap the variable around the available
+number of threads.
+If the value exceeds the number of options, it wraps around.
 
 ```
 Today is {@day|Mon|Tues|Wednes|Thurs|Fri|Sat|Sun}day.
+```
+
+Also, if the number is -1, it will choose the final alternative, -2 chooses the
+penultimate, ad nauseaum. The following example indicates the sign of a variable,
+taking advantage of negative wrapping.
+
+```
+-1 is {@sign(-1)|neutral|positive|negative} /
 ```
 
 A variable loop does not implicitly modify the variable.
@@ -434,29 +453,23 @@ indent and allows these expressions to jump.
 
 ```
 - {?gold} You have some gold.
-- {!gold} You have no gold.
-- {>10 gold} You have more than 10 gold pieces.
-- {>=10 gold} You have 10 or more gold pieces.
-- {<10 gold} You have less than 10 gold pieces.
-- {<=10 gold} You have 10 or less gold pieces.
-- {==10 gold} You have exactly 10 gold pieces.
-- {!=10 gold} You do not have exactly 10 gold pieces.
 ```
 
 ### Conditions
 
-All of the above variable checks support an `{if|then|else}` notation.
+Instead of jumping to the end of the current thread, a condition can choose
+from either a then or else thread with `{?expression|then|else}` notation.
 The following expression skips to the end if there is no gold.
 
 ```
-{!gold|<-}
+{?not gold|<-}
 ```
 
 The following expression says red or blue depending on whether the variable is
 positive.
 
 ```
-{>0 team| red | blue }
+{(team > 0)| red | blue }
 ```
 
 ### Expressions
@@ -537,7 +550,7 @@ using braces.
 {=10 x}
 {=20 y}
 {=1 point.{x}.{y}}
-{$point.{x}.{y}}
+{(point.{x}.{y})}
 ```
 
 ## Typographic Helpers
