@@ -1,12 +1,17 @@
+
+
+! heads = 0
+  tails = 1
+
 This is a coin toss.
 
-+ [You c[C]all heads. ] {=0 expected}
-+ [You c[C]all tails. ] {=1 expected}
++ [You c[C]all heads. ] {=heads called}
++ [You c[C]all tails. ] {=tails called}
 >
 
-You flip the coin. It lands on
-{~{=0 actual}heads|{=1 actual}tails}.
+You flip the coin.
+{=~2 flipped}
+It lands on {(flipped)|heads|tails}.
 
-You {(expected)|
-{(actual)|win|lose}|
-{(actual)|lose|win}}.
+You {(called == flipped)|lose|win}.
+
