@@ -85,15 +85,15 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         if (text === '+' || text === '*') {
             return new MaybeOption(this.story, this.path, this, this.ends, this.jumps, text);
         } else if (text === '-') {
-            return new Thread(this.story, this.path, new Indent(this.story, this), this.ends, []);
+            return new Thread(this.story, this.path, new MiniExpect('stop', '', this.story, this), this.ends, []);
         } else if (text === '>') {
             var node = this.story.create(this.path, 'prompt');
             // tie off ends to the prompt.
             tie(this.ends, this.path);
             // promote jumps to ends, tying them off after the prompt.
-            return new Thread(this.story, Path.next(this.path), new Indent(this.story, this), this.jumps, []);
+            return new Thread(this.story, Path.next(this.path), new MiniExpect('stop', '', this.story, this), this.jumps, []);
         } else { // if text === '!') {
-            return new Program(this.story, this.path, new Indent(this.story, this), this.jumps, []);
+            return new Program(this.story, this.path, new MiniExpect('stop', '', this.story, this), this.jumps, []);
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'rule');
@@ -114,16 +114,6 @@ Thread.prototype.return = function _return(path, ends, jumps, scanner) {
     // any rule that might use them. If the rule fails to use them, they must
     // return them. However, jumps are never passed to any rule that returns.
     return new Thread(this.story, path, this.parent, ends, this.jumps.concat(jumps));
-};
-
-function Indent(story, parent) {
-    this.story = story;
-    this.parent = parent;
-    Object.seal(this);
-}
-
-Indent.prototype.return = function _return(path, ends, jumps, scanner) {
-    return new Expect('stop', '', this.story, path, this.parent, ends, jumps);
 };
 
 function Text(story, path, lift, text, parent, ends) {
