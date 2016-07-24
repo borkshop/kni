@@ -30,7 +30,6 @@ function main() {
 
     test('tests/brief.ink', 'tests/brief.1');
     test('tests/choices.ink', 'tests/choices.1');
-    test('tests/conjunctions.ink', 'tests/conjunctions.1');
     test('tests/functions.ink', 'tests/functions.1');
     test('tests/indirect.ink', 'tests/indirect.1');
     test('tests/literals.ink', 'tests/literals.1');

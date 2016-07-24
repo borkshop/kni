@@ -81,26 +81,6 @@ Engine.prototype.$rule = function $rule() {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$startJoin = function $startJoin() {
-    this.render.startJoin(
-        this.instruction.lift,
-        this.instruction.delimiter,
-        this.instruction.text
-    );
-    return this.goto(this.instruction.next);
-};
-
-Engine.prototype.$delimit = function $delimit() {
-    this.render.delimit(this.instruction.delimiter);
-    return this.goto(this.instruction.next);
-};
-
-Engine.prototype.$stopJoin = function $stopJoin() {
-    // TODO thread for "if no delimits"
-    this.render.stopJoin();
-    return this.goto(this.instruction.next);
-};
-
 Engine.prototype.$goto = function $goto() {
     return this.goto(this.instruction.next);
 };

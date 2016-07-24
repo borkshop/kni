@@ -25,18 +25,6 @@ Console.prototype.paragraph = function paragraph() {
     this.cursor.paragraph();
 };
 
-Console.prototype.startJoin = function startJoin(lift, delimiter, conjunction) {
-    this.cursor.startJoin(lift, delimiter, conjunction);
-};
-
-Console.prototype.delimit = function delimit(delimiter) {
-    this.cursor.delimit(delimiter);
-};
-
-Console.prototype.stopJoin = function stopJoin() {
-    this.cursor.stopJoin();
-};
-
 Console.prototype.startOption = function startOption() {
     var option = new Excerpt();
     this.cursor = option;

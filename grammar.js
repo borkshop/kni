@@ -759,8 +759,6 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return expression(this.story, new Set(this.story, this.path, this.parent, this.ends, text));
         } else if (variables[text]) {
             return expression(this.story, new ExpressionSwitch(this.story, this.path, this.parent, this.ends, variables[text]));
-        } else if (text === ',') {
-            return new Conjunction(this.story, this.path, this.parent, this.ends);
         } else if (switches[text]) {
             return new Switch(this.story, this.path, this.parent, this.ends)
                 .start(null, Path.toName(this.path), null, switches[text])
@@ -773,67 +771,6 @@ Block.prototype.next = function next(type, space, text, scanner) {
         .start(null, Path.toName(this.path), 1, 'walk') // with variable and value, waiting for case to start
         .case() // first case
         .next(type, space, text, scanner);
-};
-
-function Conjunction(story, path, parent, ends) {
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.ends = ends;
-    this.text = '';
-    this.lift = '';
-    this.drop = '';
-    Object.seal(this);
-}
-
-Conjunction.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'symbol' || type === 'alphanum' || type === 'number') {
-        return new ContinueConjunction(this.story, this.path, this.parent, this.ends, space, text);
-    // istanbul ignore else
-    } else if (type === 'token' && text === '}') {
-        var delimit = this.story.create(this.path, 'delimit');
-        tie(this.ends, this.path);
-        return this.parent.return(Path.next(this.path), [delimit], [], scanner);
-    } else {
-        this.story.error('Expected conjunction text or delimiter in {,} block, got: ' + type + '/' + text + ' at ' + scanner.position());
-        return new Thread(this.story, this.path, this.parent, this.ends, []);
-    }
-};
-
-function ContinueConjunction(story, path, parent, ends, lift, text) {
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.ends = ends;
-    this.lift = lift;
-    this.text = text;
-    Object.seal(this);
-}
-
-ContinueConjunction.prototype.next = function next(type, space, text, scanner) {
-    // istanbul ignore if
-    if (type === 'symbol' || type === 'number') {
-        this.text += space + text;
-        return this;
-    // istanbul ignore else
-    } else if (text === '|') {
-        var start = this.story.create(this.path, 'startJoin');
-        start.text = this.text;
-        start.lift = this.lift;
-        start.drop = space;
-        // TODO thread text lift drop of conjunction
-        tie(this.ends, this.path);
-        return new Thread(this.story, Path.next(this.path), this, [start], []);
-    } else {
-        this.story.error('Expected conjunction text or pipe |, got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Thread(this.story, this.path, this.parent, this.ends, []);
-    }
-};
-
-ContinueConjunction.prototype.return = function _return(path, ends, jumps, scanner) {
-    var stop = this.story.create(path, 'stopJoin');
-    tie(ends, path);
-    return new Expect('token', '}', this.story, Path.next(path), this.parent, [stop], jumps);
 };
 
 function Jump(story, path, parent, ends, condition, right) {
