@@ -150,6 +150,7 @@ function Switch(expression) {
     this.value = 0;
     this.mode = null;
     this.branches = [];
+    this.weights = [];
     Object.seal(this);
 }
 Switch.prototype.tie = tie;
@@ -158,7 +159,8 @@ Switch.prototype.equals = function _equals(that) {
         equals(this.expression, that.expression) &&
         this.value === that.value &&
         this.mode === that.mode &&
-        equals(this.branches, that.branches);
+        equals(this.branches, that.branches) &&
+        equals(this.weights, that.weights);
 };
 
 constructors.set = Set;

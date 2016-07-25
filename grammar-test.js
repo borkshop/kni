@@ -764,7 +764,8 @@ test([
         "expression": ["get", "start"],
         "branches": ["start.0.1"],
         "mode": "walk",
-        "value": 1
+        "value": 1,
+        "weights": [["val", 1]]
     },
     "start.0.1": {
         "type": "goto",
@@ -780,7 +781,8 @@ test([
         "expression": ["get", "start"],
         "branches": ["start.0.1", "start.0.2"],
         "value": 1,
-        "mode": "walk"
+        "mode": "walk",
+        "weights": [["val", 1], ["val", 1]]
     },
     "start.0.1": {
         "type": "goto",
@@ -799,6 +801,7 @@ test([
         "type": "switch",
         "expression": ["get", "start"],
         "branches": ["start.0.1", "start.0.2", "start.0.3"],
+        "weights": [["val", 1], ["val", 1], ["val", 1]],
         "mode": "walk",
         "value": 1
     },
@@ -832,6 +835,7 @@ test([
         "type": "switch",
         "expression": ["get", "start"],
         "branches": ["start.0.1", "start.0.2", "start.0.3"],
+        "weights": [["val", 1], ["val", 1], ["val", 1]],
         "value": 1,
         "mode": "walk"
     },
@@ -879,6 +883,7 @@ test([
         "type": "switch",
         "expression": ["get", "start.1"],
         "branches": ["start.1.1", "start.1.2", "start.1.3"],
+        "weights": [["val", 1], ["val", 1], ["val", 1]],
         "value": 1,
         "mode": "walk"
     },
@@ -926,6 +931,7 @@ test([
         "type": "switch",
         "expression": ["get", "start.1"],
         "branches": ["start.1.1", "start.1.2", "start.1.3"],
+        "weights": [["val", 1], ["val", 1], ["val", 1]],
         "value": 1,
         "mode": "walk"
     },
@@ -973,6 +979,7 @@ test([
         "type": "switch",
         "expression": ["get", "start.1"],
         "branches": ["start.1.1", "start.1.2", "start.1.3"],
+        "weights": [["val", 1], ["val", 1], ["val", 1]],
         "value": 1,
         "mode": "walk"
     },
@@ -1010,6 +1017,7 @@ test([
         "type": "switch",
         "expression": ["get", "start"],
         "branches": ["start.0.1"],
+        "weights": [["val", 1]],
         "value": 1,
         "mode": "walk"
     },
@@ -1029,6 +1037,7 @@ test([
         "type": "switch",
         "expression": ["get", "start"],
         "branches": ["start.0.1"],
+        "weights": [["val", 1]],
         "value": 1,
         "mode": "walk"
     },
@@ -1132,7 +1141,8 @@ test([
         "mode": "walk",
         "branches": [
             "start.0.1"
-        ]
+        ],
+        "weights": [["val", 1]]
     },
     "start.0.1": {
         "type": "switch",
@@ -1142,7 +1152,8 @@ test([
         "branches": [
             "start.0.1.0.1",
             "start.0.1.0.2"
-        ]
+        ],
+        "weights": [["val", 1], ["val", 1]]
     },
     "start.0.1.0.1": {
         "type": "text",
@@ -1172,7 +1183,8 @@ test([
         "mode": "walk",
         "branches": [
             "start.0.1"
-        ]
+        ],
+        "weights": [["val", 1]]
     },
     "start.0.1": {
         "type": "text",
@@ -1240,6 +1252,7 @@ test([
             "start.0.2",
             "start.0.3"
         ],
+        "weights": [["val", 1], ["val", 1], ["val", 1]],
         "value": 0,
         "mode": "walk"
     },
@@ -1283,6 +1296,7 @@ test([
             "start.0.1",
             "start.0.2"
         ],
+        "weights": [["val", 1], ["val", 1]],
         "value": 0,
         "mode": "walk"
     },
@@ -1326,6 +1340,7 @@ test([
             "start.1.1",
             "start.1.2"
         ],
+        "weights": [["val", 1], ["val", 1]],
         "value": 0,
         "mode": "walk"
     },
@@ -1370,6 +1385,7 @@ test([
             "start.1.1",
             "start.1.2"
         ],
+        "weights": [["val", 1], ["val", 1]],
         "value": 0,
         "mode": "walk"
     },
@@ -1401,6 +1417,7 @@ test([
             "start.3.1",
             "start.3.2"
         ],
+        "weights": [["val", 1], ["val", 1]],
         "value": 0,
         "mode": "walk"
     },
@@ -1444,6 +1461,7 @@ test([
             "start.1.1",
             "start.1.2"
         ],
+        "weights": [["val", 1], ["val", 1]],
         "value": 0,
         "mode": "walk"
     },
@@ -1542,7 +1560,8 @@ test([
         "branches": [
             "start.1.1",
             "start.1.2"
-        ]
+        ],
+        "weights": [["val", 1], ["val", 1]]
     },
     "start.1.1": {
         "type": "text",
@@ -1578,7 +1597,8 @@ test([
         "branches": [
             "start.1.1",
             "start.1.2"
-        ]
+        ],
+        "weights": [["val", 1], ["val", 1]]
     },
     "start.1.1": {
         "type": "text",
@@ -1614,7 +1634,8 @@ test([
         "branches": [
             "start.1.1",
             "start.1.2"
-        ]
+        ],
+        "weights": [["val", 1], ["val", 1]]
     },
     "start.1.1": {
         "type": "text",
@@ -1828,7 +1849,8 @@ test([
         "branches": [
             "start.0.1",
             "start.0.2"
-        ]
+        ],
+        "weights": [["val", 1], ["val", 1]]
     },
     "start.0.1": {
         "type": "text",

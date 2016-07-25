@@ -709,12 +709,10 @@ Block.prototype.next = function next(type, space, text, scanner) {
         } else if (switches[text]) {
             return new SwitchBlock(this.story, this.path, this.parent, this.ends)
                 .start(null, Path.toName(this.path), null, switches[text])
-                .case();
         }
     }
     return new SwitchBlock(this.story, this.path, this.parent, this.ends)
         .start(null, Path.toName(this.path), 1, 'walk') // with variable and value, waiting for case to start
-        .case() // first case
         .next(type, space, text, scanner);
 };
 
@@ -819,11 +817,9 @@ AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) 
     if (text === '|') {
         return new SwitchBlock(this.story, this.path, this.parent, this.ends)
             .start(this.expression, null, 0, this.mode)
-            .case();
     } else if (text === '?') {
         return new SwitchBlock(this.story, this.path, this.parent, this.ends)
             .start(expression.invert(this.expression), null, 0, this.mode, 2)
-            .case();
     // istanbul ignore else
     } else if (text === '}') {
         var node = this.story.create(this.path, 'echo', this.expression);
@@ -842,6 +838,7 @@ function SwitchBlock(story, path, parent, ends) {
     this.parent = parent;
     this.ends = ends;
     this.branches = [];
+    this.weights = [];
 }
 
 SwitchBlock.prototype.start = function start(expression, variable, value, mode, min) {
@@ -856,7 +853,8 @@ SwitchBlock.prototype.start = function start(expression, variable, value, mode, 
     node.mode = mode;
     tie(this.ends, this.path);
     node.branches = this.branches;
-    return new Case(this.story, Path.firstChild(this.path), this, [], this.branches, min || 0);
+    node.weights = this.weights;
+    return new MaybeWeightedCase(this.story, new Case(this.story, Path.firstChild(this.path), this, [], this.branches, min || 0));
 };
 
 SwitchBlock.prototype.return = function _return(path, ends, jumps, scanner) {
@@ -876,7 +874,7 @@ function Case(story, path, parent, ends, branches, min) {
 
 Case.prototype.next = function next(type, space, text, scanner) {
     if (text === '|') {
-        return this.case();
+        return new MaybeWeightedCase(this.story, this);
     } else {
         var path = this.path;
         while (this.branches.length < this.min) {
@@ -890,7 +888,8 @@ Case.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-Case.prototype.case = function _case() {
+Case.prototype.case = function _case(args) {
+    this.parent.weights.push(args || ['val', 1]);
     var path = Path.zerothChild(this.path);
     var node = this.story.create(path, 'goto', null);
     this.branches.push(Path.toName(path));
@@ -899,6 +898,25 @@ Case.prototype.case = function _case() {
 
 Case.prototype.return = function _return(path, ends, jumps, scanner) {
     return new Case(this.story, Path.next(this.path), this.parent, this.ends.concat(ends, jumps), this.branches, this.min);
+};
+
+function MaybeWeightedCase(story, parent) {
+    this.story = story;
+    this.parent = parent;
+}
+
+MaybeWeightedCase.prototype.next = function next(type, space, text, scanner) {
+    if (text === '(') {
+        return expression(this.story, this)
+            .next(type, space, text, scanner);
+    } else {
+        return this.parent.case()
+            .next(type, space, text, scanner);
+    }
+};
+
+MaybeWeightedCase.prototype.return = function _return(args) {
+    return this.parent.case(args);
 };
 
 function Program(story, path, parent, ends, jumps) {

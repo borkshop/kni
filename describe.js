@@ -41,12 +41,14 @@ types.jump = function jump(node) {
 };
 
 types.switch = function _switch(node) {
+    var desc = '';
     if (node.variable) {
-        return '(' + node.variable + '+' +  node.value + ') ' + S(node.expression) +
-            ' ' + node.branches.join(' ') + ')';
+        desc += '(' + node.variable + '+' +  node.value + ') ' + S(node.expression);
     } else {
-        return S(node.expression) + ' (' + node.branches.join(' ') + ')';
+        desc += S(node.expression);
     }
+    desc += ' (' + node.branches.join(' ') + ') W(' + node.weights.map(S).join(' ') + ')'
+    return desc;
 };
 
 types.set = function set(node) {
