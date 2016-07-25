@@ -89,10 +89,10 @@ Every time a line starts on a deeper column than the prior, it starts a new
 thread ends ends on the next line that starts on a shallower column.
 
 ```
-* You s[S]ay, “Hello”.
-  - You are too kind, hello
-    again to you too.
-+ You s[S]ay, “Farewell.”
+* [You s[S]ay, {"Hello."} ]
+  You are too kind, hello
+  again to you too.
++ You s[S]ay, {"Farewell."}
 >
 ```
 
@@ -100,14 +100,13 @@ The asterisk denotes an optional thread that the narrator will only propose
 once.
 The plus denotes a thread that the narrator will always propose.
 The hyphen denotes a thread that is separated purely for organizational purposes.
-All loose ends in the subthread will be gathered and flow into the next sibling
-of the parent thread, skipping any subsequent siblings.
+All loose ends in options will be gathered and connected after the next prompt.
 
 Within a thread, conditional jumps can optionally skip to the end of a thread.
 
 ```
-- {!arrows or !gold} <-
-You still have either gold or arrows!
+- {door == open} The door is open.
+  + [You w[W]alk through the open door. ] -> blue
 ```
 
 Indented threads are useful for controlling the flow of the narrative.
@@ -115,9 +114,8 @@ The `*` and `+` bullets indicate an optional branch in the narrative,
 and pose a choice for the interlocutor.
 The `-` bullet is useful for separating a thread of narrative without
 presenting an option.
-These threads of the narrative can include conditional jumps that skip to the
-end of the thread, or isolate procedures that implicitly exit when the thread
-ends.
+Any thread can begin with a conditional expression.
+Failing the condition, the narrative will skip the entire thread.
 
 ## Options
 
@@ -132,14 +130,16 @@ redirected elsewhere.
 You are in a blue room.
 There is a door.
 
-- {?door} The door is open.
-  + You w[W]alk through the open door.
-  + You c[C]lose the door.
-    - {=0 door} ->blue
-- {!door} The door is closed.
-  + You o[O]pen the door.
-    - {=1 door} ->blue
-+ Where am I again? ->blue
+@blue2
+
+- {door} The door is open.
+  + [You w[W]alk through the open door. ] -> red
+  + [You c[C]lose the door. ]
+    {=0 door} -> blue2
+- {not door} The door is closed.
+  + [You o[O]pen the door. ]
+    {=1 door} -> blue2
++ [Where am I again?] -> blue
 >
 
 @red
@@ -156,40 +156,56 @@ The form of this notation denotes text that is part of the narrator’s answer,
 question, and a part that is common to both.
 
 ```
-+ You saunter[Walk] out of the saloon.
++ [You saunter[Walk] out of the saloon. ]
 ```
 
-In general, this is the form:
+Various patterns of brackets are suitable for threading bits of the question,
+the answer, and threads that are common to both the question and answer.
+This is a breakdown of the possibilities:
 
 ```
-+ Answer[Question]Common
++ [Q] A
+  Q: Q
+  A: A
++ C []
+  Q: C
+  A: C
++ C [Q] A
+  Q: C Q
+  A: Q A
++ [A1 [Q] C] A2
+  Q: Q C
+  A: A1 C A2
++ [A1 [Q1] C [Q2]] A2
+  Q: Q1 C Q2
+  A: A1 C A2
++ [A1 [Q1] C1 [Q2] C2] A2
+  Q: Q1 C1 Q2 C2
+  A: A1 C1 A2 A2
 ```
 
-An option can consist exclusively of text common to the question and answer by
-omitting the brackets.
-Often, the answer will restate most of the question, so the question block
-reduces to differences in case and punctuation.
-
-Inverting the brackets swaps the sides that the answer and common text appear.
+Examples:
 
 ```
-+ Common]Question[Answer
-```
+# Ink style option
++ Hello [back!] right back to you!
 
-```
-+ You reply, []“I could not possibly eat another bite.”
-+ “I could not possibly have another bite].”[,” you reply.
-```
+# Abbreviated Ink style option
++ [North. ] You head north.
 
-Regardless, an option implicitly terminates with the first directive, or
-explicitly with the solidus.
+# Second person variant illustrating inner bracket.
+# [A    [Q] QA          ]
++ [You b[B]uy an arrow. ]
 
-```
-+ You s[S]ay, “Hello”. /
-  You are too kind, hello
-  again to you too. ->loop
-```
+# Second person with alternating question-specific threads, and a trailing
+# answer that continues from the question with alternate punctuation.
+# [A    [Q] QA          [Q]] A
++ [You s[S]hoot an arrow[.]], scoring a {~hit|miss}!
 
+# [Q     ] A
++ [Quit. ] <-
+>
+```
 
 # Directives
 
@@ -229,8 +245,8 @@ the text might not be necessarily separated by a paragraph.
 
 ```
 And they lived mellowly for ever after. //
-+ Try again!? ->start
-+ No, just finish.
++ [Try again!? ] ->start
++ [No, just finish. ]
 The end.
 ```
 
@@ -332,7 +348,7 @@ transition within the story.
 This name can be determined with a label.
 
 ```
-=fruit {apple|banana|cherry}
+@fruit {apple|banana|cherry}
 ```
 
 Each time we visit the sequence, the narrator increments the `fruit` variable,
@@ -399,6 +415,37 @@ A variable switch does not implicitly increment the variable.
 You have {(gold)|no|some} gold.
 ```
 
+### Conditions
+
+By happy accident, switching on an expression can serve as a conditional
+expression like `{(condition)|else|then}`. If the condition evaluates
+to 0 (generally accepted as false), the block will express the "else" thread.
+If the number is more than zero (any such value generally accepted as true),
+the block will express the final "then" thread.
+The following expression says "poor" if "gold" is zero, and "rich" if "gold" is
+more than zero. Negative values are not accounted for.
+
+```
+{(gold == 0)| poor | rich }
+```
+
+This does not take into account negative numbers, the order is awkward,
+and you must always express both the "then" and "else" threads.
+A ternary conditional block solves both of these problems, and takes
+the form `{(condition)?then}` or `{(condition)?then|else}`.
+The following expression skips to the end if there is no gold.
+
+```
+{(not gold)? <-}
+```
+
+The following expression says "rich" or "poor" depending on whether there is
+"gold".
+
+```
+{(gold)? rich | poor }
+```
+
 ### Loop over variable
 
 Using the at `@`, the narrator will draw a *circle around a* sequence,
@@ -429,9 +476,9 @@ Each place in the forest has an arbitrary, but not random, tree.
 
 ```
 There is an {#x|an ash|an oak|a birch|a yew} here.
-+ You g[G]o east. {+1 x} ->start
-+ You g[G]o west. {-1 x} ->start
-+ You l[L]eave the forest.
++ [You g[G]o east.] {+1 x}
++ [You g[G]o west.] {-1 x}
++ [You l[L]eave the forest.] <-
 ```
 
 ### Modify a variable
@@ -445,45 +492,11 @@ Modifiers all take a concise form: operator, value, variable.
   you have 10 gold now. {=10 gold}
 ```
 
-### Check a variable or expression
-
-Checking an expression at the beginning of a bulleted thread will jump to the
-end of the bullet point if that variable is zero.
+Inkblot also supports `*` and `/` for multiplying or dividing a variable in
+place. The quantity is optional and defaults to 1.
 
 ```
-- {gold} You have some gold.
-```
-
-### Conditions
-
-By happy accident, switching on an expression can serve as a conditional
-expression like `{(condition)|else|then}`. If the condition evaluates
-to 0 (generally accepted as false), the block will express the "else" thread.
-If the number is more than zero (any such value generally accepted as true),
-the block will express the final "then" thread.
-The following expression says "poor" if "gold" is zero, and "rich" if "gold" is
-more than zero. Negative values are not accounted for.
-
-```
-{(gold == 0)| poor | rich }
-```
-
-
-This does not take into account negative numbers, the order is awkward,
-and you must always express both the "then" and "else" threads.
-A ternary conditional block solves both of these problems, and takes
-the form `{(condition)?then}` or `{(condition)?then|else}`.
-The following expression skips to the end if there is no gold.
-
-```
-{(not gold)? <-}
-```
-
-The following expression says "rich" or "poor" depending on whether there is
-"gold".
-
-```
-{(gold)? rich | poor }
+- You gain an arrow. {+arrow}
 ```
 
 ### Expressions
@@ -583,4 +596,3 @@ supports some operators that assist making common typographical niceties.
 - ``{'`` and ``'}`` can stand for the equivalent single ‘curly quotes’.
 - ``--`` is good for an en-dash, suitable for use in number ranges like 1–10.
 - ``---`` is good for em-dash—suitable for parenthetical phrases.
-

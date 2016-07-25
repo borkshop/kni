@@ -68,16 +68,16 @@ Inkblot diverges rapidly from its roots in inspiration from Inkle’s Ink.
     Inkblot has deterministic but arbitrary choices using the hash as well
     ``{#expression|a|b|c}``.
 
-  - Inkblot’s conditional notation is like ``{(condition)|else|then}`` instead
+  - Inkblot’s conditional notation is like ``{(condition)?then|else}`` instead
     of ``{condition: then}``, and works for comparison operators like
-    ``{(health>10) | very much alive| hurting}``.
+    ``{(health>10)? | very much alive| hurting}``.
     By omitting the then and else clauses, a condition can apply, skipping
     to the end of the current thread.
 
 - Inkblot’s notation for conditional options is slightly different.
 
   ```inkblot
-  + {(seen.clue)} Accuse Mr.\ Jefferson.
+  + {seen.clue} Accuse Mr.\ Jefferson.
   ```
 
   Inkblot also supports "condition and consequence" prefixes, like this
@@ -128,7 +128,7 @@ Inkblot is missing many things available to Ink.
 
 - Inkblot does not yet support modules.
 
-- Inkblot does not support functions for expressions.
+- Inkblot does not support defining functions for use in expressions.
 
 - Inkblot does not support calling out to game logic. This is not likely to
   change. Games should bind to Ink narrative by watching the variable bag.
