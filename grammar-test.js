@@ -1071,13 +1071,13 @@ test([
 });
 
 test([
-    '{?hi} Hello'
+    '- {hi} Hello'
 ], {
     "start": {
         "type": "jump",
-        "condition": ["get", "hi"],
-        "branch": "start.1",
-        "next": null
+        "condition": ["not", ["get", "hi"]],
+        "branch": null,
+        "next": "start.1"
     },
     "start.1": {
         "type": "text",
@@ -1818,7 +1818,7 @@ test([
 });
 
 test([
-    '{?x|true|false}\n'
+    '{(x)?true|false}\n'
 ], {
     "start": {
         "type": "switch",

@@ -445,31 +445,45 @@ Modifiers all take a concise form: operator, value, variable.
   you have 10 gold now. {=10 gold}
 ```
 
-### Check a variable
+### Check a variable or expression
 
-Checking a variable will jump to the end of a scope if that variable is zero.
-This is a handy use for the `-` block, which serves only as an organizational
-indent and allows these expressions to jump.
+Checking an expression at the beginning of a bulleted thread will jump to the
+end of the bullet point if that variable is zero.
 
 ```
-- {?gold} You have some gold.
+- {gold} You have some gold.
 ```
 
 ### Conditions
 
-Instead of jumping to the end of the current thread, a condition can choose
-from either a then or else thread with `{?expression|then|else}` notation.
+By happy accident, switching on an expression can serve as a conditional
+expression like `{(condition)|else|then}`. If the condition evaluates
+to 0 (generally accepted as false), the block will express the "else" thread.
+If the number is more than zero (any such value generally accepted as true),
+the block will express the final "then" thread.
+The following expression says "poor" if "gold" is zero, and "rich" if "gold" is
+more than zero. Negative values are not accounted for.
+
+```
+{(gold == 0)| poor | rich }
+```
+
+
+This does not take into account negative numbers, the order is awkward,
+and you must always express both the "then" and "else" threads.
+A ternary conditional block solves both of these problems, and takes
+the form `{(condition)?then}` or `{(condition)?then|else}`.
 The following expression skips to the end if there is no gold.
 
 ```
-{?not gold|<-}
+{(not gold)? <-}
 ```
 
-The following expression says red or blue depending on whether the variable is
-positive.
+The following expression says "rich" or "poor" depending on whether there is
+"gold".
 
 ```
-{(team > 0)| red | blue }
+{(gold)? rich | poor }
 ```
 
 ### Expressions
@@ -480,7 +494,7 @@ There are three tiers of precedence from tightly binding to loosely binding.
 All of these operators produce 32 bit integers.
 Logical operators return 0 or 1.
 
-- unary `!`, `-`, `~`, `#`
+- unary `not`, `-`, `~`, `#`
 - `*`, `/`, `%`, `~`
 - `+`, `-`
 - ``<``, ``<=``, `==`, `!=`, `>=`, `>`, `#`.
@@ -513,7 +527,7 @@ Logical operators return 0 or 1.
 
 `or` is logical union.
 
-unary `!` is logical negation.
+unary `not` is logical negation.
 
 unary `-` is negative.
 
@@ -539,6 +553,13 @@ accidental symmetry over any axis.  For example `{#x+y}` creates symmetry
 along a diagonal. `{#x*y}` produces symmetry across multiple axes about the
 origin.  The Hilbert operator presumes a space with 4 billion unique
 coordinates in a square of height and width 64k centered about the origin.
+
+Inkblot also supports a limited set of functions: `abs(x)`, `acos(t)`,
+`asin(t)`, `atan2(x, y)`, `exp(x, y)`, `log(x)` (natural log), `log(x, root)`,
+`max(n...)`, `min(n...)`, `pow(x, y)`, `sin(t)`, `tan(t)`, `sign(x)`,
+`mean(n...)`, `root(x)` (square root), `root(x, root)`, `distance(x1, y1, x2,
+y2)`, `manhattan(x1, y1, x2, y2)` (distance if only travelling orthogonally to
+the x or y axes).
 
 ## Variables
 

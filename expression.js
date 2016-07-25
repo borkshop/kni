@@ -77,7 +77,9 @@ var inversions = {
 
 expression.invert = invert;
 function invert(expression) {
-    if (inversions[expression[0]]) {
+    if (expression[0] === 'not') {
+        return expression[1];
+    } else if (inversions[expression[0]]) {
         return [inversions[expression[0]], expression[1], expression[2]];
     } else {
         return ['not', expression];
