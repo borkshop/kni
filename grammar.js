@@ -93,7 +93,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
             // promote jumps to ends, tying them off after the prompt.
             return new Thread(this.story, Path.next(this.path), new MiniExpect('stop', '', this.story, this), this.jumps, []);
         } else { // if text === '!') {
-            return new Program(this.story, this.path, new MiniExpect('stop', '', this.story, this), this.jumps, []);
+            return new Program(this.story, this.path, new MiniExpect('stop', '', this.story, this), this.ends, []);
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'rule');
@@ -683,14 +683,14 @@ var switches = {
 Block.prototype.next = function next(type, space, text, scanner) {
     if (type === 'symbol' || type === 'alphanum' || type === 'token') {
         if (text === '(') {
-            return expression(this.story, new ExpressionSwitch(this.story, this.path, this.parent, this.ends, 'walk'))
+            return expression(this.story, new ExpressionBlock(this.story, this.path, this.parent, this.ends, 'walk'))
                 .next(type, space, text, scanner);
         } else if (jumps[text]) {
-            return expression(this.story, new Jump(this.story, this.path, this.parent, this.ends, jumps[text], ['val', 0]));
+            return expression(this.story, new Jump(this.story, this.path, this.parent, this.ends));
         } else if (mutators[text]) {
             return expression(this.story, new Set(this.story, this.path, this.parent, this.ends, text));
         } else if (variables[text]) {
-            return expression(this.story, new ExpressionSwitch(this.story, this.path, this.parent, this.ends, variables[text]));
+            return expression(this.story, new ExpressionBlock(this.story, this.path, this.parent, this.ends, variables[text]));
         } else if (switches[text]) {
             return new Switch(this.story, this.path, this.parent, this.ends)
                 .start(null, Path.toName(this.path), null, switches[text])
@@ -703,19 +703,17 @@ Block.prototype.next = function next(type, space, text, scanner) {
         .next(type, space, text, scanner);
 };
 
-function Jump(story, path, parent, ends, condition, right) {
+function Jump(story, path, parent, ends) {
     this.type = 'jump';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    this.condition = condition;
-    this.right = right;
     Object.seal(this);
 }
 
 Jump.prototype.return = function _return(left) {
-    return new MaybeConditional(this.story, this.path, this.parent, this.ends, [this.condition, left, this.right]);
+    return new MaybeConditional(this.story, this.path, this.parent, this.ends, left);
 };
 
 function MaybeConditional(story, path, parent, ends, condition) {
@@ -817,7 +815,7 @@ function setVariable(story, path, parent, ends, op, source, target, scanner) {
     }
 }
 
-function ExpressionSwitch(story, path, parent, ends, mode) {
+function ExpressionBlock(story, path, parent, ends, mode) {
     this.type = 'expression-switch';
     this.story = story;
     this.path = path;
@@ -826,11 +824,11 @@ function ExpressionSwitch(story, path, parent, ends, mode) {
     this.mode = mode;
 }
 
-ExpressionSwitch.prototype.return = function _return(expression) {
-    return new Variable(this.story, this.path, this.parent, this.ends, this.mode, expression);
+ExpressionBlock.prototype.return = function _return(expression) {
+    return new AfterExpressionBlock(this.story, this.path, this.parent, this.ends, this.mode, expression);
 };
 
-function Variable(story, path, parent, ends, mode, expression) {
+function AfterExpressionBlock(story, path, parent, ends, mode, expression) {
     this.type = 'variable';
     this.story = story;
     this.path = path;
@@ -841,10 +839,14 @@ function Variable(story, path, parent, ends, mode, expression) {
     Object.seal(this);
 }
 
-Variable.prototype.next = function next(type, space, text, scanner) {
+AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) {
     if (text === '|') {
         return new Switch(this.story, this.path, this.parent, this.ends)
             .start(this.expression, null, 0, this.mode)
+            .case();
+    } else if (text === '?') {
+        return new Switch(this.story, this.path, this.parent, this.ends)
+            .start(expression.invert(this.expression), null, 0, this.mode, 2)
             .case();
     // istanbul ignore else
     } else if (text === '}') {

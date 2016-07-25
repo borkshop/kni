@@ -6,7 +6,7 @@
 @list
 {=0 i}
 @shapes
-{(i >= shapes.length)||->options}
+{(i >= shapes.length)?->options}
 {(shapes.{i})||square|circle}{(shapes.length-i+1)|| and |, }
 {+i} ->shapes
 

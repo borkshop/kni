@@ -77,7 +77,11 @@ var inversions = {
 
 expression.invert = invert;
 function invert(expression) {
-    return [inversions[expression[0]], expression[1], expression[2]];
+    if (inversions[expression[0]]) {
+        return [inversions[expression[0]], expression[1], expression[2]];
+    } else {
+        return ['not', expression];
+    }
 }
 
 function Open(story, parent) {

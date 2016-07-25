@@ -1,20 +1,20 @@
 {~Choose|Pick} a number from 1 to 100. //
 
-{=1 lo}
-{=100 hi}
+! lo = 1
+  hi = 100
 
 @try
 
-{=(hi+lo)/2 mid}
-{? hi == lo | -> end}
+! mid = lo + (hi - lo) / 2
+{(hi == lo)? -> end}
 
 Is the number less than {(mid)}? {+q}
 + [Yes] {=mid-1 hi}
 + [No]  {=mid   lo}
 >
 
-{=(hi+lo)/2 mid}
-{? hi == lo | -> end}
+! mid = lo + (hi - lo) / 2
+{(hi == lo)? -> end}
 
 Is the number greater than {(mid)}? {+q}
 + [Yes] {=mid+1 lo}

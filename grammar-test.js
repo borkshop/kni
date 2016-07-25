@@ -1075,7 +1075,7 @@ test([
 ], {
     "start": {
         "type": "jump",
-        "condition": ["!=", ["get", "hi"], ["val", 0]],
+        "condition": ["get", "hi"],
         "branch": "start.1",
         "next": null
     },
@@ -1822,7 +1822,7 @@ test([
 ], {
     "start": {
         "type": "switch",
-        "expression": ["==", ["get", "x"], [ "val", 0]],
+        "expression": ["not", ["get", "x"]],
         "value": 0,
         "mode": "walk",
         "branches": [
