@@ -391,6 +391,57 @@ It lands on {(flipped)|heads|tails}.
 You {(called == flipped)|lose|win}.
 ```
 
+Inkblot also support weighted random. Every thread in an alternation block has
+a weight of 1 by default, meaning they are equally likely to be chosen.
+An expression (in parentheses) at the beginning of each block can determine an
+alternate weight.
+In the following example, the coin toss is slightly biased for tails.
+
+```
+{~(2) heads |(3) tails }
+```
+
+The expression may contain variables and operators.
+In the following example, the probability of choosing
+"x" is initially 15:0, guaranteeing "x" as the first choice.
+Then, we loop over that random alternation 30 times, each
+time increasing the weight of the second thread.
+On the last iteration of the loop, there is a 29:15 chance of choosing "y" over
+"x".
+
+```
+@loop
+{~(15)x|(n)y} /
+{+n} {(n < 30)?-> loop}
+```
+
+Inkblot also supports "hypergeometric sampling", or rather "sampling without
+replacement".
+With the "^" prefix followed by an expression, you can determine the number
+of threads to sample from the alternation.
+Once a thread has been sampled, it is inelligible for the next sample, until
+the number of samples or the number of threads has been exhausted.
+Samples can also have weights.
+If the weight of a thread is 0, it is inelligible for sampling.
+
+In the next example, there are threads, each catering to a different sense.
+Depending on the narrators perception of those senses, they may experience up
+to two of these threads.
+
+```
+{^2
+|(smell) You smell roses.
+|(sight) The sky is bright blue.
+|(hearing) You hear bees buzzing.
+|(touch) The air feels cool on your skin.
+}
+```
+
+Unordered random sampling makes possible many interesting procedural
+narratives ideated by [Bruno Dias][] for Voyaguer.
+
+[Bruno Dias]: http://www.gamasutra.com/blogs/BrunoDias/20160718/277314/Procedural_meaning_Pragmatic_procgen_in_Voyageur.php
+
 ### Echo a variable
 
 The narrator can read variables directly.
