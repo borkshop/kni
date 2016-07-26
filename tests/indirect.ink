@@ -1,3 +1,4 @@
 {=1 x}
 {=10 prefix.{x}}
-10 is {(prefix.{x})} is {(prefix.1)}
+{+prefix.{x}}
+11 is {(prefix.{x})} is {(prefix.1)}

@@ -1,6 +1,5 @@
 'use strict';
 
-var equals = require('pop-equals');
 var Path = require('./path');
 
 var constructors = {};
@@ -42,13 +41,6 @@ function Text(text) {
     Object.seal(this);
 }
 Text.prototype.tie = tie;
-Text.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.text === that.text &&
-        this.lift === that.lift &&
-        this.drop === that.drop &&
-        this.next === that.next;
-};
 
 constructors.echo = Echo;
 function Echo(expression) {
@@ -60,13 +52,6 @@ function Echo(expression) {
     Object.seal(this);
 }
 Echo.prototype.tie = tie;
-Echo.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.expression, that.expression) &&
-        this.lift === that.lift &&
-        this.drop === that.drop &&
-        this.next === that.next;
-};
 
 constructors.option = Option;
 function Option(label) {
@@ -77,12 +62,6 @@ function Option(label) {
     Object.seal(this);
 }
 Option.prototype.tie = tie;
-Option.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.question, that.question) &&
-        equals(this.answer, that.answer) &&
-        this.next === that.next;
-};
 
 constructors.goto = Goto;
 function Goto(next) {
@@ -91,10 +70,6 @@ function Goto(next) {
     Object.seal(this);
 }
 Goto.prototype.tie = tie;
-Goto.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
 
 constructors.apply = Apply;
 function Apply(branch) {
@@ -105,12 +80,6 @@ function Apply(branch) {
     Object.seal(this);
 }
 Apply.prototype.tie = tie;
-Apply.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        this.branch === that.branch &&
-        equals(this.args, that.args) &&
-        this.next === that.next;
-};
 
 constructors.args = Args;
 function Args(locals) {
@@ -120,11 +89,6 @@ function Args(locals) {
     Object.seal(this);
 };
 Args.prototype.tie = tie;
-Args.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.locals, that.locals) &&
-        this.next === that.next;
-};
 
 constructors.jump = Jump;
 function Jump(condition) {
@@ -135,12 +99,6 @@ function Jump(condition) {
     Object.seal(this);
 }
 Jump.prototype.tie = tie;
-Jump.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.condition, that.condition) &&
-        this.branch === that.branch &&
-        this.next === that.next;
-};
 
 constructors.switch = Switch;
 function Switch(expression) {
@@ -151,17 +109,10 @@ function Switch(expression) {
     this.mode = null;
     this.branches = [];
     this.weights = [];
+    this.next = null;
     Object.seal(this);
 }
 Switch.prototype.tie = tie;
-Switch.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.expression, that.expression) &&
-        this.value === that.value &&
-        this.mode === that.mode &&
-        equals(this.branches, that.branches) &&
-        equals(this.weights, that.weights);
-};
 
 constructors.set = Set;
 function Set(variable) {
@@ -173,12 +124,6 @@ function Set(variable) {
     Object.seal(this);
 }
 Set.prototype.tie = tie;
-Set.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.variable === that.variable &&
-        this.parameter === Boolean(that.parameter) &&
-        this.next === that.next;
-};
 
 constructors.mov = Mov;
 function Mov() {
@@ -189,12 +134,6 @@ function Mov() {
     Object.seal(this);
 }
 Mov.prototype.tie = tie;
-Mov.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.source, that.source) &&
-        equals(this.target, that.target) &&
-        this.next === that.next;
-};
 
 constructors.break = Break;
 function Break() {
@@ -203,10 +142,6 @@ function Break() {
     Object.seal(this);
 }
 Break.prototype.tie = tie;
-Break.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
 
 constructors.paragraph = Paragraph;
 function Paragraph() {
@@ -215,10 +150,6 @@ function Paragraph() {
     Object.seal(this);
 }
 Paragraph.prototype.tie = tie;
-Paragraph.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
 
 constructors.rule = Rule;
 function Rule() {
@@ -227,10 +158,6 @@ function Rule() {
     Object.seal(this);
 }
 Rule.prototype.tie = tie;
-Rule.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
 
 constructors.prompt = Prompt;
 function Prompt(variable) {
@@ -238,9 +165,6 @@ function Prompt(variable) {
     Object.seal(this);
 }
 Prompt.prototype.tie = tie;
-Prompt.prototype.equals = function equals(that) {
-    return this.type === that.type;
-};
 
 function tie(end) {
     this.next = end;

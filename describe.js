@@ -47,7 +47,7 @@ types.switch = function _switch(node) {
     } else {
         desc += S(node.expression);
     }
-    desc += ' (' + node.branches.join(' ') + ') W(' + node.weights.map(S).join(' ') + ')'
+    desc += ' (' + node.branches.join(' ') + ') W(' + node.weights.map(S).join(' ') + ')';
     return desc;
 };
 

@@ -689,7 +689,8 @@ var mutators = {
 
 var variables = {
     '@': 'loop',
-    '#': 'hash'
+    '#': 'hash',
+    '^': 'pick'
 };
 
 var switches = {
@@ -708,7 +709,7 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return expression(this.story, new ExpressionBlock(this.story, this.path, this.parent, this.ends, variables[text]));
         } else if (switches[text]) {
             return new SwitchBlock(this.story, this.path, this.parent, this.ends)
-                .start(null, Path.toName(this.path), null, switches[text])
+                .start(null, Path.toName(this.path), null, switches[text]);
         }
     }
     return new SwitchBlock(this.story, this.path, this.parent, this.ends)
@@ -816,10 +817,10 @@ function AfterExpressionBlock(story, path, parent, ends, mode, expression) {
 AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) {
     if (text === '|') {
         return new SwitchBlock(this.story, this.path, this.parent, this.ends)
-            .start(this.expression, null, 0, this.mode)
+            .start(this.expression, null, 0, this.mode);
     } else if (text === '?') {
         return new SwitchBlock(this.story, this.path, this.parent, this.ends)
-            .start(expression.invert(this.expression), null, 0, this.mode, 2)
+            .start(expression.invert(this.expression), null, 0, this.mode, 2);
     // istanbul ignore else
     } else if (text === '}') {
         var node = this.story.create(this.path, 'echo', this.expression);
@@ -837,6 +838,7 @@ function SwitchBlock(story, path, parent, ends) {
     this.path = path;
     this.parent = parent;
     this.ends = ends;
+    this.node = null;
     this.branches = [];
     this.weights = [];
 }
@@ -848,6 +850,7 @@ SwitchBlock.prototype.start = function start(expression, variable, value, mode, 
     }
     expression = expression || ['get', Path.toName(this.path)];
     var node = this.story.create(this.path, 'switch', expression);
+    this.node = node;
     node.variable = variable;
     node.value = value;
     node.mode = mode;
@@ -858,6 +861,10 @@ SwitchBlock.prototype.start = function start(expression, variable, value, mode, 
 };
 
 SwitchBlock.prototype.return = function _return(path, ends, jumps, scanner) {
+    if (this.node.mode === 'pick') {
+        ends = [this.node];
+        // TODO think about what to do with jumps.
+    }
     return new Expect('token', '}', this.story, Path.next(this.path), this.parent, ends, jumps);
 };
 
