@@ -14,9 +14,8 @@ function start(story) {
 }
 
 function Stop(story) {
-    this.type = 'end';
     this.story = story;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 // istanbul ignore next
@@ -33,8 +32,7 @@ Stop.prototype.return = function _return() {
 };
 
 function End() {
-    this.type = 'end';
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 // istanbul ignore next
@@ -45,13 +43,12 @@ End.prototype.next = function next(type, space, text, scanner) {
 // ends are tied to the next instruction
 // jumps are tied off after the next encountered prompt
 function Thread(story, path, parent, ends, jumps) {
-    this.type = 'thread';
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.jumps = jumps;
     this.story = story;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 Thread.prototype.next = function next(type, space, text, scanner) {
@@ -83,17 +80,17 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
-            return new MaybeOption(this.story, this.path, new MiniExpect('stop', '', this.story, this), this.ends, this.jumps, text);
+            return new MaybeOption(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, this.jumps, text);
         } else if (text === '-') {
-            return new MaybeThread(this.story, this.path, new MiniExpect('stop', '', this.story, this), this.ends, [], []);
+            return new MaybeThread(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, [], []);
         } else if (text === '>') {
             var node = this.story.create(this.path, 'prompt');
             // tie off ends to the prompt.
             tie(this.ends, this.path);
             // promote jumps to ends, tying them off after the prompt.
-            return new Thread(this.story, Path.next(this.path), new MiniExpect('stop', '', this.story, this), this.jumps, []);
+            return new Thread(this.story, Path.next(this.path), new ThenExpect('stop', '', this.story, this), this.jumps, []);
         } else { // if text === '!') {
-            return new Program(this.story, this.path, new MiniExpect('stop', '', this.story, this), this.ends, []);
+            return new Program(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, []);
         }
     } else if (type === 'dash') {
         var node = this.story.create(this.path, 'rule');
@@ -117,7 +114,6 @@ Thread.prototype.return = function _return(path, ends, jumps, scanner) {
 };
 
 function Text(story, path, lift, text, parent, ends) {
-    this.type = 'text';
     this.story = story;
     this.path = path;
     this.lift = lift;
@@ -173,7 +169,7 @@ MaybeThread.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token') {
         if (text === '{') {
             return expression(this.story,
-                new MiniExpect('token', '}', this.story,
+                new ThenExpect('token', '}', this.story,
                     new ThreadCondition(this.story, this.path, this.parent, this.ends, this.jumps, this.skips)));
         }
     }
@@ -192,6 +188,7 @@ function ThreadCondition(story, path, parent, ends, jumps, skips) {
     this.ends = ends;
     this.jumps = jumps;
     this.skips = skips;
+    Object.freeze(this);
 }
 
 ThreadCondition.prototype.return = function _return(args) {
@@ -219,7 +216,7 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token') {
         if (text === '{') {
             return new OptionOperator(this.story,
-                new MiniExpect('token', '}', this.story, this));
+                new ThenExpect('token', '}', this.story, this));
         }
     }
     return this.option().next(type, space, text, scanner);
@@ -285,7 +282,7 @@ MaybeOption.prototype.option = function option() {
 function OptionOperator(story, parent) {
     this.story = story;
     this.parent = parent;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 OptionOperator.prototype.next = function next(type, space, text, scanner) {
@@ -304,7 +301,7 @@ function OptionArgument(story, parent, operator) {
     this.story = story;
     this.parent = parent;
     this.operator = operator;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 OptionArgument.prototype.return = function _return(args, scanner) {
@@ -321,7 +318,7 @@ function OptionArgument2(story, parent, operator, args) {
     this.parent = parent;
     this.operator = operator;
     this.args = args;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 OptionArgument2.prototype.return = function _return(args) {
@@ -337,8 +334,6 @@ function Option(story, path, parent, ends, jumps, leader, consequences) {
     this.node = null;
     this.leader = leader;
     this.consequences = consequences;
-    this.order = 0;
-    this.variable = null;
     this.next = null;
     this.mode = '';
     this.branch = null;
@@ -390,7 +385,6 @@ Option.prototype.push = function push(path, mode) {
 // adds that arc to the option's questions and/or answer depending on the
 // "mode" ("q", "a", or "qa") and proceeds to the following state.
 function OptionThread(story, path, parent, ends, option, mode, Next) {
-    this.type = 'option-thread';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -398,7 +392,7 @@ function OptionThread(story, path, parent, ends, option, mode, Next) {
     this.option = option;
     this.mode = mode;
     this.Next = Next;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 OptionThread.prototype.return = function _return(path, ends, jumps) {
@@ -409,13 +403,12 @@ OptionThread.prototype.return = function _return(path, ends, jumps) {
 // Every option begins with a (potentially empty) thread before the first open
 // backet that will contribute both to the question and the answer.
 function AfterInitialQA(story, path, parent, ends, option) {
-    this.type = 'after-first-qa';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.option = option;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
@@ -458,13 +451,12 @@ AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
 // to the question or the answer, we decide which based on whether there is a
 // following bracket.
 function DecideQorA(story, path, parent, ends, option) {
-    this.type = 'q-or-a';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.option = option;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 DecideQorA.prototype.next = function next(type, space, text, scanner) {
@@ -493,13 +485,12 @@ DecideQorA.prototype.return = function _return(path, ends, jumps, scanner) {
 // ad nauseam. Here we check whether this is the end of the bracketed
 // expression or continue after a [Question].
 function AfterQA(story, path, parent, ends, option) {
-    this.type = 'after-qa';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.option = option;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 AfterQA.prototype.next = function next(type, space, text, scanner) {
@@ -524,13 +515,12 @@ AfterQA.prototype.return = function _return(path, ends, jumps, scanner) {
 // This captures the first arc without committing to either Q or A until we
 // know whether it is followed by a bracketed term.
 function AfterQorA(story, path, parent, ends, option) {
-    this.type = 'after-q-or-a';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.option = option;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 // Just capture the path and proceed.
@@ -541,13 +531,12 @@ AfterQorA.prototype.return = function _return(path, ends, jumps, scanner) {
 // After a [Q] or [A [Q] QA...] block, there must be a closing bracket and we
 // return to the parent arc of the option.
 function ExpectFinalBracket(story, path, parent, ends, option) {
-    this.type = 'after-q-or-a';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.option = option;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 ExpectFinalBracket.prototype.next = function next(type, space, text, scanner) {
@@ -564,12 +553,11 @@ ExpectFinalBracket.prototype.next = function next(type, space, text, scanner) {
 // node of the answer. After that thread has been submitted, we expect the
 // block to end.
 function AfterFinalA(story, path, parent, ends, option) {
-    this.type = 'after-final-a';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 AfterFinalA.prototype.next = function next(type, space, text, scanner) {
@@ -580,9 +568,8 @@ AfterFinalA.prototype.next = function next(type, space, text, scanner) {
 // This concludes the portion dedicated to parsing options
 
 function Branch(node) {
-    this.type = 'branch';
     this.node = node;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 Branch.prototype.tie = function tie(path) {
@@ -590,12 +577,11 @@ Branch.prototype.tie = function tie(path) {
 };
 
 function Label(story, path, parent, ends) {
-    this.type = 'label';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 Label.prototype.return = function _return(expression, scanner) {
@@ -637,7 +623,7 @@ function ConcludeProcedure(story, path, parent, ends) {
     this.path = path;
     this.parent = parent;
     this.ends = ends;
-    Object.seal(this);
+    Object.freeze(this);
 };
 
 ConcludeProcedure.prototype.return = function _return(path, ends, jumps, scanner) {
@@ -647,7 +633,6 @@ ConcludeProcedure.prototype.return = function _return(path, ends, jumps, scanner
 };
 
 function Goto(story, path, parent, ends, jumps) {
-    this.type = 'goto';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -672,7 +657,6 @@ Goto.prototype.return = function _return(args, scanner) {
 };
 
 function Block(story, path, parent, ends) {
-    this.type = 'block';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -704,7 +688,7 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return expression(this.story, new ExpressionBlock(this.story, this.path, this.parent, this.ends, 'walk'))
                 .next(type, space, text, scanner);
         } else if (mutators[text]) {
-            return expression(this.story, new SetBlock(this.story, this.path, new MiniExpect('token', '}', this.story, this.parent), this.ends, text));
+            return expression(this.story, new SetBlock(this.story, this.path, new ThenExpect('token', '}', this.story, this.parent), this.ends, text));
         } else if (variables[text]) {
             return expression(this.story, new ExpressionBlock(this.story, this.path, this.parent, this.ends, variables[text]));
         } else if (switches[text]) {
@@ -718,7 +702,6 @@ Block.prototype.next = function next(type, space, text, scanner) {
 };
 
 function SetBlock(story, path, parent, ends, op) {
-    this.type = 'set';
     this.op = op;
     this.story = story;
     this.path = path;
@@ -762,19 +745,7 @@ ExpectSetVariable.prototype.return = function _return(target, scanner) {
 };
 
 function setVariable(story, path, parent, ends, op, source, target, scanner) {
-    if (target[0] === 'get') {
-        var variable = target[1];
-        var node = story.create(path, 'set');
-        if (op === '=') {
-            node.expression = source;
-        } else {
-            node.expression = [op, target, source];
-        }
-        node.variable = variable;
-        tie(ends, path);
-        return parent.return(Path.next(path), [node], [], scanner);
-    // istanbul ignore else
-    } else if (target[0] === 'var') {
+    if (target[0] === 'var' || target[0] === 'get') {
         var node = story.create(path, 'mov');
         if (op === '=') {
             node.source = source;
@@ -791,7 +762,6 @@ function setVariable(story, path, parent, ends, op, source, target, scanner) {
 }
 
 function ExpressionBlock(story, path, parent, ends, mode) {
-    this.type = 'expression-switch';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -804,14 +774,13 @@ ExpressionBlock.prototype.return = function _return(expression) {
 };
 
 function AfterExpressionBlock(story, path, parent, ends, mode, expression) {
-    this.type = 'variable';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.mode = mode;
     this.expression = expression;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) {
@@ -833,7 +802,6 @@ AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) 
 };
 
 function SwitchBlock(story, path, parent, ends) {
-    this.type = 'switch';
     this.story = story;
     this.path = path;
     this.parent = parent;
@@ -869,14 +837,13 @@ SwitchBlock.prototype.return = function _return(path, ends, jumps, scanner) {
 };
 
 function Case(story, path, parent, ends, branches, min) {
-    this.type = 'case';
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.branches = branches;
     this.min = min;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 Case.prototype.next = function next(type, space, text, scanner) {
@@ -932,7 +899,7 @@ function Program(story, path, parent, ends, jumps) {
     this.parent = parent;
     this.ends = ends;
     this.jumps = jumps;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 Program.prototype.next = function next(type, space, text, scanner) {
@@ -961,7 +928,7 @@ function Assignment(story, path, parent, ends, jumps) {
     this.parent = parent;
     this.ends = ends;
     this.jumps = jumps;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 Assignment.prototype.return = function _return(expression, scanner) {
@@ -982,7 +949,7 @@ function ExpectOperator(story, path, parent, ends, jumps, left) {
     this.ends = ends;
     this.jumps = jumps;
     this.left = left;
-    Object.seal(this);
+    Object.freeze(this);
 }
 
 ExpectOperator.prototype.next = function next(type, space, text, scanner) {
@@ -1006,72 +973,43 @@ function ExpectExpression(story, path, parent, ends, jumps, left, operator) {
 }
 
 ExpectExpression.prototype.return = function _return(right, scanner) {
-    var node;
-    if (this.left[0] === 'get') {
-        tie(this.ends, this.path);
-        node = this.story.create(this.path, 'set', null);
-        node.variable = this.left[1];
-        node.expression = right;
     // istanbul ignore else
-    } else if (this.left[0] === 'var') {
+    if (this.left[0] === 'var' || this.left[0] === 'get') {
         tie(this.ends, this.path);
-        node = this.story.create(this.path, 'mov', null);
+        var node = this.story.create(this.path, 'mov', null);
         node.target = this.left;
         node.source = right;
+        return this.parent.return(Path.next(this.path), [node], this.jumps, scanner);
     } else {
         this.story.error('Expected bindable expression, got: ' + JSON.stringify(expression) + ' at ' + scanner.position());
         return this.parent.return(Path.next(this.path), this.ends, this.jumps, scanner);
     }
-    return this.parent.return(Path.next(this.path), [node], this.jumps, scanner);
 };
 
-function Expect(type, text, story, path, parent, ends, jumps) {
-    this.type = 'expect';
-    this.expect = type;
+function ThenExpect(expect, text, story, parent) {
+    this.expect = expect;
+    this.text = text;
+    this.story = story;
+    this.parent = parent;
+    Object.freeze(this);
+}
+
+ThenExpect.prototype.return = function _return(path, ends, jumps, scanner) {
+    return new Expect(this.expect, this.text, this.story, path, this.parent, ends, jumps);
+};
+
+function Expect(expect, text, story, path, parent, ends, jumps) {
+    this.expect = expect;
     this.text = text;
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.jumps = jumps;
+    Object.freeze(this);
 }
 
 Expect.prototype.next = function next(type, space, text, scanner) {
-    // istanbul ignore else
-    if (type === this.expect && text === this.text) {
-        return this.parent.return(this.path, this.ends, this.jumps, scanner);
-    } else {
-        this.story.error('Expected ' + this.expect + '/' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Thread(this.story, this.path, this.parent, this.ends, this.jumps);
-    }
-};
-
-function MiniExpect(expect, text, story, parent) {
-    this.type = 'mini-expect';
-    this.expect = expect;
-    this.text = text;
-    this.story = story;
-    this.parent = parent;
-    Object.seal(this);
-}
-
-MiniExpect.prototype.return = function _return(path, ends, jumps, scanner) {
-    return new ExpectNext(this.expect, this.text, this.story, path, this.parent, ends, jumps);
-};
-
-function ExpectNext(expect, text, story, path, parent, ends, jumps) {
-    this.type = 'expect-next';
-    this.expect = expect;
-    this.text = text;
-    this.story = story;
-    this.path = path;
-    this.parent = parent;
-    this.ends = ends;
-    this.jumps = jumps;
-    Object.seal(this);
-}
-
-ExpectNext.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore if
     if (type !== this.expect || text !== this.text) {
         this.story.error('Expected ' + this.expect + '/' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());

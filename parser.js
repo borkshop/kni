@@ -10,7 +10,7 @@ function Parser(generator) {
 }
 
 Parser.prototype.next = function next(type, space, text, scanner) {
-    var prior = this.generator.type;
+    var prior = this.generator.constructor.name;
     this.generator = this.generator.next(type, space, text, scanner);
     // istanbul ignore if
     if (!this.generator) {
@@ -22,7 +22,7 @@ Parser.prototype.next = function next(type, space, text, scanner) {
             'PAR',
             scanner.position(),
             type, JSON.stringify(text),
-            prior + '->' + this.generator.type
+            prior + '->' + this.generator.constructor.name
         );
     }
     return this;
