@@ -36,3 +36,4 @@
 {(#0)} is hash of 0 and should not be 0 /
 {(0#0)} is hilbert of (0, 0), midway through i32 domain /
 {(-32768#-32768)} is hilbert of (-half i16, -half i16), and should be zero /
+2 squared is {(2**2)} (4) /

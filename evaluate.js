@@ -146,6 +146,9 @@ var binary = {
     '%': function (x, y) {
         return ((x % y) + y) % y;
     },
+    '**': function (x, y) {
+        return Math.pow(x, y);
+    },
     'or': function (x, y) {
         return x || y ? 1 : 0;
     },

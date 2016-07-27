@@ -9,6 +9,10 @@ var unary = {
     '#': true
 };
 
+var exponential = {
+    '**': true // x ** y
+};
+
 var multiplicative = {
     '*': true,
     '/': true,
@@ -41,6 +45,7 @@ var union = {
 };
 
 var precedence = [
+    exponential,
     multiplicative,
     arithmetic,
     comparison,
