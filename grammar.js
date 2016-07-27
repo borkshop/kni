@@ -253,7 +253,7 @@ MaybeOption.prototype.option = function option() {
 
     if (this.leader === '*') {
         this.consequences.push([['get', variable], ['+', ['get', variable], ['val', 1]]]);
-        var jump = this.story.create(this.at, 'jump', ['!=', ['get', variable], ['val', 0]]);
+        var jump = this.story.create(this.at, 'jump', ['<>', ['get', variable], ['val', 0]]);
         var jumpBranch = new Branch(jump);
         ends.push(jumpBranch);
         this.advance();

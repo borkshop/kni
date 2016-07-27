@@ -26,7 +26,7 @@ var comparison = {
     '<': true,
     '<=': true,
     '==': true,
-    '!=': true,
+    '<>': true,
     '>=': true,
     '>': true,
     '#': true
@@ -67,8 +67,8 @@ function label(story, parent) {
 }
 
 var inversions = {
-    '==': '!=',
-    '!=': '==',
+    '==': '<>',
+    '<>': '==',
     '>': '<=',
     '<': '>=',
     '>=': '<',
