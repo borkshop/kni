@@ -689,6 +689,8 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return expression(this.story, new SetBlock(this.story, this.path, new ThenExpect('token', '}', this.story, this.parent), this.ends, text));
         } else if (variables[text]) {
             return expression(this.story, new ExpressionBlock(this.story, this.path, this.parent, this.ends, variables[text]));
+        } else if (text === '!') {
+            return new Program(this.story, this.path, new ThenExpect('token', '}', this.story, this.parent), this.ends, []);
         } else if (switches[text]) {
             return new SwitchBlock(this.story, this.path, this.parent, this.ends)
                 .start(null, Path.toName(this.path), null, switches[text]);
@@ -891,10 +893,10 @@ function Program(story, path, parent, ends, jumps) {
 }
 
 Program.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'stop') {
+    if (type === 'stop' || text === '}') {
         return this.parent.return(this.path, this.ends, this.jumps, scanner)
             .next(type, space, text, scanner);
-    } else if (type === 'break') {
+    } else if (text === ',' || type === 'break') {
         return this;
     // istanbul ignore if
     } else if (type === 'error') {

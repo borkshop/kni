@@ -38,6 +38,7 @@ function main() {
     test('tests/math.ink', 'tests/math.1');
     test('tests/procedure.ink', 'tests/procedure.1');
     test('tests/program.ink', 'tests/program.1');
+    test('tests/program.ink', 'tests/program.1');
     test('tests/random.ink', 'tests/random.1');
     test('tests/rule.ink', 'tests/rule.1');
     test('tests/sample.ink', 'tests/sample.1');

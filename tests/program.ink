@@ -1,4 +1,4 @@
-! items.{items.length} = 10
-  items.length = 1
-num items: {(items.length)} /
-item 0: {(items.0)} /
+! a = 10, b = 20, c = 30
+  d = 40,
+{! e = 50, f.{a} = 60 }
+{(a)} / {(b)} / {(c)} / {(d)} / {(e)} / {(f.{a})}
