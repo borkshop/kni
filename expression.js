@@ -145,18 +145,18 @@ function AfterVariable(story, parent) {
 }
 
 AfterVariable.prototype.return = function _return(expression, scanner) {
-    return new MaybeApply(this.story, this.parent, expression);
+    return new MaybeCall(this.story, this.parent, expression);
 };
 
-function MaybeApply(story, parent, expression) {
-    this.type = 'maybe-apply';
+function MaybeCall(story, parent, expression) {
+    this.type = 'maybe-call';
     this.story = story;
     this.parent = parent;
     this.expression = expression;
     Object.seal(this);
 }
 
-MaybeApply.prototype.next = function next(type, space, text, scanner) {
+MaybeCall.prototype.next = function next(type, space, text, scanner) {
     if (space === '' && text === '(') {
         return new Arguments(this.story, this.parent, this.expression);
     } else {
@@ -169,7 +169,7 @@ function Arguments(story, parent, expression) {
     this.type = 'arguments';
     this.story = story;
     this.parent = parent;
-    this.args = ['apply', expression];
+    this.args = ['call', expression];
 }
 
 Arguments.prototype.next = function next(type, space, text, scanner) {

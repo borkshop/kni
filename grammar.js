@@ -80,7 +80,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
-            return new MaybeOption(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, this.jumps, text);
+            return new MaybeOption(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, [], text);
         } else if (text === '-') {
             return new MaybeThread(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, [], []);
         } else if (text === '>') {
@@ -434,7 +434,7 @@ AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
     }
     for (var i = 0; i < consequences.length; i++) {
         var consequence = consequences[i];
-        var node = this.story.create(path, 'mov');
+        var node = this.story.create(path, 'move');
         node.source = consequence[1];
         node.target = consequence[0];
         tie(ends, path);
@@ -540,13 +540,11 @@ function ExpectFinalBracket(story, path, parent, ends, option) {
 }
 
 ExpectFinalBracket.prototype.next = function next(type, space, text, scanner) {
-    // istanbul ignore else
-    if (type === 'token' && text === ']') {
-        return this.parent.return(this.path, this.ends, [], scanner);
-    } else {
+    // istanbul ignore if
+    if (type !== 'token' || text !== ']') {
         this.story.error('Expected close bracket in option at ' + scanner.position());
-        return this.parent.return(this.path, this.ends, [], scanner);
     }
+    return this.parent.return(this.path, this.ends, [], scanner);
 };
 
 // After the closing bracket in an option], everything that remains is the last
@@ -594,7 +592,7 @@ Label.prototype.return = function _return(expression, scanner) {
         // ends also forwarded so they can be tied off if the goto is replaced.
         return this.parent.return(path, this.ends.concat([node]), [], scanner);
     // istanbul ignore else
-    } else if (expression[0] === 'apply') {
+    } else if (expression[0] === 'call') {
         var label = expression[1][1];
         var path = [label, 0];
         var node = this.story.create(path, 'args', null);
@@ -644,9 +642,9 @@ Goto.prototype.return = function _return(args, scanner) {
     if (args[0] === 'get') {
         tieName(this.ends, args[1]);
         return this.parent.return(Path.next(this.path), [], [], scanner);
-    } else if (args[0] === 'apply') {
+    } else if (args[0] === 'call') {
         var label = args[1][1];
-        var node = this.story.create(this.path, 'apply', label);
+        var node = this.story.create(this.path, 'call', label);
         node.args = args.slice(2);
         tie(this.ends, this.path);
         return this.parent.return(Path.next(this.path), [node], [], scanner);
@@ -724,42 +722,32 @@ function MaybeSetVariable(story, path, parent, ends, op, expression) {
 
 MaybeSetVariable.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token' && text === '}') {
-        return setVariable(this.story, this.path, this.parent, this.ends, this.op, ['val', 1], this.expression, scanner)
+        return this.set(['val', 1], this.expression, scanner)
             .next(type, space, text, scanner);
     }
-    return expression(this.story, new ExpectSetVariable(this.story, this.path, this.parent, this.ends, this.op, this.expression))
+    return expression(this.story, new ExpectSetVariable(this))
         .next(type, space, text, scanner);
 };
 
-function ExpectSetVariable(story, path, parent, ends, op, source) {
-    this.story = story;
-    this.path = path;
+MaybeSetVariable.prototype.set = function set(source, target, scanner) {
+    var node = this.story.create(this.path, 'move');
+    if (this.op === '=') {
+        node.source = source;
+    } else {
+        node.source = [this.op, target, source];
+    }
+    node.target = target;
+    tie(this.ends, this.path);
+    return this.parent.return(Path.next(this.path), [node], [], scanner);
+};
+
+function ExpectSetVariable(parent) {
     this.parent = parent;
-    this.ends = ends;
-    this.op = op;
-    this.source = source;
 }
 
 ExpectSetVariable.prototype.return = function _return(target, scanner) {
-    return setVariable(this.story, this.path, this.parent, this.ends, this.op, this.source, target, scanner);
+    return this.parent.set(this.parent.expression, target, scanner);
 };
-
-function setVariable(story, path, parent, ends, op, source, target, scanner) {
-    if (target[0] === 'var' || target[0] === 'get') {
-        var node = story.create(path, 'mov');
-        if (op === '=') {
-            node.source = source;
-        } else {
-            node.source = [op, target, source];
-        }
-        node.target = target;
-        tie(ends, path);
-        return parent.return(Path.next(path), [node], [], scanner);
-    } else {
-        this.story.error('Expected a variable to set, got expression ' + JSON.stringify(source) + ' ' + op + ' ' + JSON.stringify(target) + ' at ' + scanner.position());
-        return parent.return(path, ends, [], scanner);
-    }
-}
 
 function ExpressionBlock(story, path, parent, ends, mode) {
     this.story = story;
@@ -973,17 +961,13 @@ function ExpectExpression(story, path, parent, ends, jumps, left, operator) {
 }
 
 ExpectExpression.prototype.return = function _return(right, scanner) {
-    // istanbul ignore else
-    if (this.left[0] === 'var' || this.left[0] === 'get') {
-        tie(this.ends, this.path);
-        var node = this.story.create(this.path, 'mov', null);
-        node.target = this.left;
-        node.source = right;
-        return this.parent.return(Path.next(this.path), [node], this.jumps, scanner);
-    } else {
-        this.story.error('Expected bindable expression, got: ' + JSON.stringify(expression) + ' at ' + scanner.position());
-        return this.parent.return(Path.next(this.path), this.ends, this.jumps, scanner);
-    }
+    var node;
+    // TODO validate this.left as a valid move target
+    tie(this.ends, this.path);
+    node = this.story.create(this.path, 'move', null);
+    node.target = this.left;
+    node.source = right;
+    return this.parent.return(Path.next(this.path), [node], this.jumps, scanner);
 };
 
 function ThenExpect(expect, text, story, parent) {

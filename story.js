@@ -71,15 +71,15 @@ function Goto(next) {
 }
 Goto.prototype.tie = tie;
 
-constructors.apply = Apply;
-function Apply(branch) {
-    this.type = 'apply';
+constructors.call = Call;
+function Call(branch) {
+    this.type = 'call';
     this.branch = branch;
     this.args = null;
     this.next = null;
     Object.seal(this);
 }
-Apply.prototype.tie = tie;
+Call.prototype.tie = tie;
 
 constructors.args = Args;
 function Args(locals) {
@@ -87,7 +87,7 @@ function Args(locals) {
     this.locals = locals;
     this.next = null;
     Object.seal(this);
-};
+}
 Args.prototype.tie = tie;
 
 constructors.jump = Jump;
@@ -114,26 +114,15 @@ function Switch(expression) {
 }
 Switch.prototype.tie = tie;
 
-constructors.set = Set;
-function Set(variable) {
-    this.type = 'set';
-    this.variable = variable;
-    this.expression = null;
-    this.parameter = false;
-    this.next = null;
-    Object.seal(this);
-}
-Set.prototype.tie = tie;
-
-constructors.mov = Mov;
-function Mov() {
-    this.type = 'mov';
+constructors.move = Move;
+function Move() {
+    this.type = 'move';
     this.source = null;
     this.target = null;
     this.next = null;
     Object.seal(this);
 }
-Mov.prototype.tie = tie;
+Move.prototype.tie = tie;
 
 constructors.break = Break;
 function Break() {

@@ -24,7 +24,7 @@ types.goto = function goto(node) {
     return '';
 };
 
-types.apply = function apply(node) {
+types.call = function call(node) {
     return node.branch + '(' + node.args.map(S).join(' ') + ')';
 };
 
@@ -55,7 +55,7 @@ types.set = function set(node) {
     return node.variable + ' ' + S(node.expression);
 };
 
-types.mov = function mov(node) {
+types.move = function move(node) {
     return S(node.source) + ' -> ' + S(node.target);
 };
 

@@ -52,17 +52,98 @@ Engine.prototype.continue = function _continue() {
     } while (_continue);
 };
 
-Engine.prototype.print = function print(text) {
+Engine.prototype.goto = function _goto(label) {
+    while (label == null && this.stack.length > 1) {
+        var top = this.stack.pop();
+        if (top.stopOption) {
+            this.render.stopOption();
+        }
+        this.top = this.stack[this.stack.length - 1];
+        label = top.next;
+    }
+    if (label == null) {
+        return this.end();
+    }
+    var next = this.story[label];
+    // istanbul ignore if
+    if (!next) {
+        throw new Error('Story missing instruction for label: ' + label);
+    }
+    this.label = label;
+    this.instruction = next;
+    return true;
+};
+
+Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
+    var prev = this.label;
+    for (var i = sequence.length -1; i >= 0; i--) {
+        // Note that we pass the top frame as both the parent scope and the
+        // caller scope so that the entire sequence has the same variable
+        // visibility.
+        this.top = new Frame(this.top, this.top, [], next, prev, stopOption);
+        this.stack.push(this.top);
+        prev = next;
+        next = sequence[i];
+        stopOption = false;
+    }
+    return this.goto(next);
+};
+
+Engine.prototype.ask = function ask() {
+    this.display();
+    // this.continue();
+    this.dialog.question();
+};
+
+Engine.prototype.answer = function answer(text) {
+    this.render.flush();
+    if (text === 'quit') {
+        this.dialog.close();
+        return;
+    }
+    // istanbul ignore next
+    if (text === 'bt') {
+        this.render.clear();
+        this.top.log();
+        this.ask();
+        return;
+    }
+    var n = +text;
+    if (n >= 1 && n <= this.options.length) {
+        this.render.clear();
+        // There is no known case where gothrough would immediately exit for
+        // lack of further instructions, so
+        var answer = this.options[n - 1].answer;
+        // istanbul ignore else
+        if (this.gothrough(answer, null, false)) {
+            this.flush();
+            this.continue();
+        }
+    } else {
+        this.render.pardon();
+        this.ask();
+    }
+};
+
+Engine.prototype.display = function display() {
+    this.render.display();
+};
+
+Engine.prototype.flush = function flush() {
+    this.options.length = 0;
+};
+
+Engine.prototype.write = function write(text) {
     this.render.write(this.instruction.lift, text, this.instruction.drop);
     return this.goto(this.instruction.next);
 };
 
 Engine.prototype.$text = function $text() {
-    return this.print(this.instruction.text);
+    return this.write(this.instruction.text);
 };
 
 Engine.prototype.$echo = function $echo() {
-    return this.print('' + evaluate(this.top, this.randomer, this.instruction.expression));
+    return this.write('' + evaluate(this.top, this.randomer, this.instruction.expression));
 };
 
 Engine.prototype.$br = function $br() {
@@ -85,7 +166,7 @@ Engine.prototype.$goto = function $goto() {
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$apply = function $apply() {
+Engine.prototype.$call = function $call() {
     var procedure = this.story[this.instruction.branch];
     // istanbul ignore if
     if (!procedure) {
@@ -128,17 +209,7 @@ Engine.prototype.$opt = function $opt() {
     return this.gothrough(option.question, this.instruction.next, true);
 };
 
-Engine.prototype.$set = function $set() {
-    var value = evaluate(this.top, this.randomer, this.instruction.expression);
-    // istanbul ignore if
-    if (this.debug) {
-        console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.variable + ' == ' + value);
-    }
-    this.top.set(this.instruction.variable, value);
-    return this.goto(this.instruction.next);
-};
-
-Engine.prototype.$mov = function $mov() {
+Engine.prototype.$move = function $move() {
     var value = evaluate(this.top, this.randomer, this.instruction.source);
     var name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
     // istanbul ignore if
@@ -196,14 +267,11 @@ Engine.prototype.$switch = function $switch() {
         pop(weightExpressions, value);
         nexts.push(next);
     }
-    if (this.instruction.mode === 'pick') {
-        nexts.push(this.instruction.next);
-    }
     // istanbul ignore if
     if (this.debug) {
         console.log(this.top.at() + '/' + this.label + ' ' + value + ' -> ' + next);
     }
-    return this.gothrough(nexts);
+    return this.gothrough(nexts, this.instruction.next, false);
 };
 
 function weigh(scope, randomer, expressions, weights) {
@@ -233,93 +301,13 @@ function pop(array, index) {
 }
 
 Engine.prototype.$ask = function $ask() {
-    this.prompt();
+    this.ask();
     return false;
-};
-
-Engine.prototype.goto = function _goto(label) {
-    while (label == null && this.stack.length > 1) {
-        var top = this.stack.pop();
-        if (top.stopOption) {
-            this.render.stopOption();
-        }
-        this.top = this.stack[this.stack.length - 1];
-        label = top.next;
-    }
-    if (label == null) {
-        return this.end();
-    }
-    var next = this.story[label];
-    // istanbul ignore if
-    if (!next) {
-        throw new Error('Story missing instruction for label: ' + label);
-    }
-    this.label = label;
-    this.instruction = next;
-    return true;
-};
-
-Engine.prototype.answer = function answer(text) {
-    this.render.flush();
-    if (text === 'quit') {
-        this.dialog.close();
-        return;
-    }
-    // istanbul ignore next
-    if (text === 'bt') {
-        this.render.clear();
-        this.top.log();
-        this.prompt();
-        return;
-    }
-    var n = +text;
-    if (n >= 1 && n <= this.options.length) {
-        this.render.clear();
-        // There is no known case where gothrough would immediately exit for
-        // lack of further instructions, so
-        // istanbul ignore else
-        if (this.gothrough(this.options[n - 1].answer, null, false)) {
-            this.flush();
-            this.continue();
-        }
-    } else {
-        this.render.pardon();
-        this.prompt();
-    }
-};
-
-Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
-    var prev = this.label;
-    for (var i = sequence.length -1; i >= 0; i--) {
-        // Note that we pass the top frame as both the parent scope and the
-        // caller scope so that the entire sequence has the same variable
-        // visibility.
-        this.top = new Frame(this.top, this.top, [], next, prev, stopOption);
-        this.stack.push(this.top);
-        prev = next;
-        next = sequence[i];
-        stopOption = false;
-    }
-    return this.goto(next);
-};
-
-Engine.prototype.display = function display() {
-    this.render.display();
-};
-
-Engine.prototype.prompt = function prompt() {
-    this.display();
-    // this.continue();
-    this.dialog.question();
-};
-
-Engine.prototype.flush = function flush() {
-    this.options.length = 0;
 };
 
 function Global() {
     this.scope = Object.create(null);
-    this.next = null;
+    Object.seal(this);
 }
 
 Global.prototype.get = function get(name) {

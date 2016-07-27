@@ -24,7 +24,7 @@ function evaluate(scope, randomer, args) {
     // istanbul ignore else
     } else if (name === 'var') {
         return +scope.get(nominate(scope, randomer, args));
-    } else if (name === 'apply') {
+    } else if (name === 'call') {
         var name = args[1][1];
         var f = functions[name];
         if (!f) {
