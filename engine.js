@@ -19,7 +19,7 @@ function Engine(args) {
     this.stack = [this.top];
     this.label = '';
     // istanbul ignore next
-    var start = args.start || this.storage.get('@') || 'start';
+    var start = args.start || 'start';
     this.instruction = new Story.constructors.goto(start);
     this.render = args.render;
     this.dialog = args.dialog;
@@ -29,6 +29,7 @@ function Engine(args) {
     this.debug = debug;
     this.end = this.end;
     this.waypoint = null;
+    this.handleWaypoint = this.handleWaypoint;
     Object.seal(this);
 }
 
@@ -116,6 +117,7 @@ Engine.prototype.answer = function answer(text) {
         // lack of further instructions, so
         var answer = this.options[n - 1].answer;
         this.waypoint = this.capture(answer);
+        this.handleWaypoint(this.waypoint);
         // istanbul ignore else
         if (this.gothrough(answer, null, false)) {
             this.flush();
@@ -125,6 +127,9 @@ Engine.prototype.answer = function answer(text) {
         this.render.pardon();
         this.ask();
     }
+};
+
+Engine.prototype.handleWaypoint = function handleWaypoint() {
 };
 
 Engine.prototype.display = function display() {
@@ -166,12 +171,20 @@ Engine.prototype.capture = function capture(answer) {
 // istanbul ignore next
 Engine.prototype.restore = function restore(state) {
     this.render.clear();
-    this.label = state[0];
-    var answer = state[1];
-    var stack = state[2];
+    this.flush();
+    this.label = '';
     this.storage = new Global();
     this.top = this.storage;
     this.stack = [this.top];
+    if (state == null) {
+        this.goto('start');
+        this.continue();
+        return;
+    }
+
+    this.label = state[0];
+    var answer = state[1];
+    var stack = state[2];
     for (var i = 0; i < stack.length; i++) {
         this.top = Frame.restore(this.top, this.storage, stack[i]);
         this.stack.push(this.top);

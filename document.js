@@ -128,7 +128,7 @@ Document.prototype.handleEvent = function handleEvent(event) {
     }
 };
 
-Document.prototype.question = function question() {
+Document.prototype.ask = function ask() {
 };
 
 Document.prototype.answer = function answer(text) {

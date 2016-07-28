@@ -58,7 +58,489 @@ global = this;
         main = bundle[filename];
         main._require();
     }
-})([["document.js","inkblot","document.js",{},function (require, exports, module, __filename, __dirname){
+})([["index.js","hashbind","index.js",{"rezult":9},function (require, exports, module, __filename, __dirname){
+
+// hashbind/index.js
+// -----------------
+
+'use strict';
+
+var Result = require('rezult');
+
+module.exports = Hash;
+
+Hash.decodeUnescape =
+function decodeUnescape(str) {
+    var keyvals = [];
+    var parts = str.split('&');
+    for (var i = 0; i < parts.length; i++) {
+        var keystr = parts[i].split('=');
+        var key = unescape(keystr[0]);
+        var val = unescape(keystr[1]) || '';
+        keyvals.push([key, val]);
+    }
+    return keyvals;
+};
+
+Hash.encodeMinEscape =
+function encodeMinEscape(keyvals) {
+    var parts = [];
+    for (var i = 0; i < keyvals.length; i++) {
+        var key = keyvals[i][0];
+        var val = keyvals[i][1];
+        var part = '' + minEscape(key);
+        if (val !== undefined && val !== '') {
+            part += '=' + minEscape(val);
+        }
+
+        parts.push(part);
+    }
+    return parts.join('&');
+};
+
+Hash.encodeMaxEscape =
+function encodeMaxEscape(keyvals) {
+    var parts = [];
+    for (var i = 0; i < keyvals.length; i++) {
+        var key = keyvals[i][0];
+        var val = keyvals[i][1];
+        var part = '' + escape(key);
+        if (val !== undefined && val !== '') {
+            part += '=' + escape(val);
+        }
+        parts.push(part);
+    }
+    return parts.join('&');
+};
+
+function Hash(window, options) {
+    var self = this;
+    if (!options) {
+        options = {};
+    }
+
+    this.window = window;
+    this.last = '';
+    this.cache = {};
+    this.values = {};
+    this.bound = {};
+    // TODO: do we ever need to escape?
+    this.decode = options.decode || Hash.decodeUnescape;
+    this.encode = options.encode || (options.escape
+        ? Hash.encodeMaxEscape
+        : Hash.encodeMinEscape);
+
+    this.window.addEventListener('hashchange', onHashChange);
+    this.load();
+
+    function onHashChange(e) {
+        self.load();
+    }
+}
+
+Hash.prototype.load =
+function load() {
+    if (this.window.location.hash === this.last) {
+        return;
+    }
+
+    this.last = this.window.location.hash;
+    var keystrs = this.decode(this.last.slice(1));
+
+    var seen = {};
+    for (var i = 0; i < keystrs.length; i++) {
+        var key = keystrs[i][0];
+        var str = keystrs[i][1];
+        if (this.cache[key] !== str) {
+            this.cache[key] = str;
+            if (this.bound[key]) {
+                this.bound[key].onChange();
+            } else {
+                var res = parseValue(str);
+                if (!res.err) {
+                    // intentional ignore parse error; best-effort load
+                    this.values[key] = res.value;
+                }
+            }
+        }
+        seen[key] = true;
+    }
+    this.prune(seen);
+};
+
+Hash.prototype.prune =
+function prune(except) {
+    if (!except) {
+        except = {};
+    }
+    var cacheKeys = Object.keys(this.cache);
+    for (var i = 0; i < cacheKeys.length; i++) {
+        var key = cacheKeys[i];
+        if (!except[key]) {
+            if (this.bound[key]) {
+                this.bound[key].reset();
+            } else {
+                delete this.cache[key];
+                delete this.values[key];
+            }
+        }
+    }
+};
+
+Hash.prototype.save =
+function save() {
+    var keystrs = [];
+    var keys = Object.keys(this.cache);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (!this.bound[key]) {
+            this.cache[key] = valueToString(this.values[key]);
+        }
+        var str = this.cache[key];
+        keystrs.push([key, str]);
+    }
+
+    var hash = this.encode(keystrs);
+    if (hash) {
+        hash = '#' + hash;
+    }
+    this.window.location.hash = this.last = hash;
+};
+
+Hash.prototype.bind =
+function bind(key) {
+    if (this.bound[key]) {
+        throw new Error('key already bound');
+    }
+    var bound = new HashKeyBinding(this, key);
+    this.bound[key] = bound;
+    return bound;
+};
+
+Hash.prototype.getStr =
+function getStr(key) {
+    return this.cache[key];
+};
+
+Hash.prototype.get =
+function get(key) {
+    return this.values[key];
+};
+
+Hash.prototype.set =
+function set(key, val, callback) {
+    var bound = this.bound[key] || this.bind(key);
+    return bound.set(val, callback);
+};
+
+function HashKeyBinding(hash, key) {
+    this.hash = hash;
+    this.key = key;
+    this.def = undefined;
+    this.value = hash.values[key];
+    this.parse = parseValue;
+    this.valToString = valueToString;
+    this.listener = null;
+    this.listeners = [];
+    this.notify = this.notifyNoop;
+}
+
+HashKeyBinding.prototype.load =
+function load() {
+    var str = this.hash.cache[this.key];
+    if (str !== undefined) {
+        var res = this.parse(str);
+        if (res.err) {
+            // intentional ignore parse error; best-effort load
+            return this;
+        }
+        var val = res.value;
+        if (this.value !== val) {
+            this.value = val;
+            this.hash.values[this.key] = this.value;
+            this.notify();
+        }
+    }
+    return this;
+};
+
+HashKeyBinding.prototype.save =
+function save() {
+    this.hash.values[this.key] = this.value;
+    var str = this.valToString(this.value);
+    if (this.hash.cache[this.key] !== str) {
+        this.hash.cache[this.key] = str;
+        this.hash.save();
+    }
+    return this;
+};
+
+HashKeyBinding.prototype.notifyNoop =
+function notifyNoop() {
+    return this;
+};
+
+HashKeyBinding.prototype.notifyOne =
+function notifyOne() {
+    this.listener(this.value);
+    return this;
+};
+
+HashKeyBinding.prototype.notifyAll =
+function notifyAll() {
+    for (var i = 0; i < this.listeners.length; i++) {
+        this.listeners[i].call(this, this.value);
+    }
+    return this;
+};
+
+HashKeyBinding.prototype.setParse =
+function setParse(parse, toString) {
+    this.parse = parse || parseValue;
+    this.load();
+    if (toString) {
+        this.setToString(toString);
+    }
+    return this;
+};
+
+HashKeyBinding.prototype.setToString =
+function setToString(toString) {
+    this.valToString = toString;
+    if (this.value !== undefined) {
+        this.save();
+    }
+    return this;
+};
+
+HashKeyBinding.prototype.addListener =
+function addListener(listener) {
+    if (this.listeners.length) {
+        this.listeners.push(listener);
+    } else if (this.listener) {
+        this.listeners = [this.listener, listener];
+        this.listener = null;
+        this.notify = this.notifyAll;
+    } else {
+        this.listener = listener;
+        this.notify = this.notifyOne;
+    }
+    if (this.value !== undefined) {
+        this.notify();
+    }
+    return this;
+};
+
+HashKeyBinding.prototype.setDefault =
+function setDefault(def) {
+    var value = null;
+    if (typeof def === 'string') {
+        value = this.parse(def).toValue();
+    } else {
+        value = def;
+    }
+
+    this.def = value;
+    if (this.value === undefined) {
+        this.value = this.def;
+        this.save();
+    }
+
+    return this;
+};
+
+HashKeyBinding.prototype.onChange =
+function onChange() {
+    this.load();
+};
+
+HashKeyBinding.prototype.get =
+function get() {
+    return this.value;
+};
+
+HashKeyBinding.prototype.reset =
+function reset() {
+    if (this.value !== this.def) {
+        this.value = this.def;
+        this.save();
+    }
+    return this;
+};
+
+HashKeyBinding.prototype.set =
+function set(val, callback) {
+    var value = null;
+    if (typeof val === 'string') {
+        var res = this.parse(val);
+        if (callback) {
+            callback(res.err, val, res.value);
+            if (res.err) {
+                return undefined;
+            }
+            value = res.value;
+        } else {
+            value = res.toValue();
+        }
+    } else {
+        value = val;
+    }
+
+    if (this.value !== value) {
+        this.value = value;
+        this.notify();
+        this.save();
+    }
+
+    return this.value;
+};
+
+function valueToString(val) {
+    if (val === false) {
+        return undefined;
+    }
+    if (val === true) {
+        return '';
+    }
+    return '' + val;
+}
+
+function parseValue(str) {
+    if (str === '' || str === 'true') {
+        return new Result(null, true);
+    }
+    if (str === 'false') {
+        return new Result(null, false);
+    }
+    if (str === 'null') {
+        return new Result(null, null);
+    }
+    return new Result(null, str);
+}
+
+function minEscape(str) {
+    return str.replace(/[#=&]/g, escapeMatch);
+}
+
+function escapeMatch(part) {
+    return escape(part);
+}
+
+}],["describe.js","inkblot","describe.js",{},function (require, exports, module, __filename, __dirname){
+
+// inkblot/describe.js
+// -------------------
+
+'use strict';
+
+module.exports = describe;
+
+function describe(node) {
+    return types[node.type](node);
+}
+
+var types = {};
+
+types.text = function text(node) {
+    return node.text;
+};
+
+types.echo = function echo(node) {
+    return S(node.expression);
+};
+
+types.opt = function opt(node) {
+    return '(Q ' + node.question.join(' ') + ') (A ' + node.answer.join(' ') + ')';
+};
+
+types.goto = function goto(node) {
+    return '';
+};
+
+types.call = function call(node) {
+    return node.branch + '(' + node.args.map(S).join(' ') + ')';
+};
+
+types.call = function call(node) {
+    return node.label + ' ' + node.branch + '() -> ' + node.next;
+};
+
+types.args = function args(node) {
+    return '(' + node.locals.join(' ') + ')';
+};
+
+types.jump = function jump(node) {
+    return node.branch + ' if ' + S(node.condition);
+};
+
+types.switch = function _switch(node) {
+    var desc = '';
+    if (node.variable) {
+        desc += '(' + node.variable + '+' +  node.value + ') ' + S(node.expression);
+    } else {
+        desc += S(node.expression);
+    }
+    desc += ' (' + node.branches.join(' ') + ') W(' + node.weights.map(S).join(' ') + ')';
+    return desc;
+};
+
+types.set = function set(node) {
+    return node.variable + ' ' + S(node.expression);
+};
+
+types.move = function move(node) {
+    return S(node.source) + ' -> ' + S(node.target);
+};
+
+types.br = function br(node) {
+    return '';
+};
+
+types.par = function par(node) {
+    return '';
+};
+
+types.rule = function rule(node) {
+    return '';
+};
+
+types.startJoin = function startJoin(node) {
+    return '';
+};
+
+types.stopJoin = function stopJoin(node) {
+    return '';
+};
+
+types.delimit = function delimit(node) {
+    return '';
+};
+
+types.ask = function ask(node) {
+    return '';
+};
+
+function S(args) {
+    if (args[0] === 'val' || args[0] === 'get') {
+        return args[1];
+    } else if (args[0] === 'var') {
+        return '(' + args[0] + ' ' + V(args[1], args[2]) + ')';
+    } else {
+        return '(' + args[0] + ' ' + args.slice(1).map(S).join(' ') + ')';
+    }
+}
+
+function V(source, target) {
+    var r = '';
+    for (var i = 0; i < target.length; i++) {
+        r += source[i];
+        r += '{' + S(target[i]) + '}';
+    }
+    r += source[i];
+    return r;
+}
+
+}],["document.js","inkblot","document.js",{},function (require, exports, module, __filename, __dirname){
 
 // inkblot/document.js
 // -------------------
@@ -67,17 +549,22 @@ global = this;
 
 module.exports = Document;
 
-function Document(element) {
+function Document(element, redraw) {
     var self = this;
-    this.element = element;
+    this.document = element.ownerDocument;
+    this.parent = element;
+    this.container = null;
+    this.element = null;
     this.engine = null;
     this.carry = '';
     this.cursor = null;
     this.next = null;
+    this.optionIndex = 0;
     this.options = null;
     this.p = false;
     this.br = false;
     this.onclick = onclick;
+    this.redraw = redraw;
     function onclick(event) {
         self.answer(event.target.number);
     }
@@ -108,45 +595,87 @@ Document.prototype.paragraph = function paragraph() {
     this.p = true;
 };
 
-Document.prototype.option = function option(number, label) {
+Document.prototype.startOption = function startOption() {
+    this.optionIndex++;
     var document = this.element.ownerDocument;
     var tr = document.createElement("tr");
     this.options.appendChild(tr);
     var th = document.createElement("th");
     tr.appendChild(th);
-    th.innerText = number + '.';
+    th.innerText = this.optionIndex + '.';
     var td = document.createElement("td");
-    td.innerText = label;
-    td.number = number;
+    this.cursor = td;
+    td.number = this.optionIndex;
     td.onclick = this.onclick;
     tr.appendChild(td);
 };
 
+Document.prototype.stopOption = function stopOption() {
+};
+
 Document.prototype.flush = function flush() {
+    if (this.redraw) {
+        this.redraw();
+    }
     // No-op (for console only)
 };
 
 Document.prototype.pardon = function pardon() {
-    this.clear();
-    // No-op (for console only)
+    this.options.innerHTML = '';
 };
 
 Document.prototype.display = function display() {
-    // No-op (for console only)
+    if (this.redraw) {
+        this.redraw();
+    }
+    this.container.style.opacity = 0;
+    this.container.style.transform = 'translateX(2ex)';
+    this.parent.appendChild(this.container);
+
+    // TODO not this
+    var container = this.container;
+    setTimeout(function () {
+        container.style.opacity = 1;
+        container.style.transform = 'translateX(0)';
+    }, 10);
 };
 
 Document.prototype.clear = function clear() {
-    var document = this.element.ownerDocument;
-    this.element.innerHTML = "";
-    this.options = document.createElement("table");
+    if (this.container) {
+        this.container.style.opacity = 0;
+        this.container.style.transform = 'translateX(-2ex)';
+        this.container.addEventListener("transitionend", this);
+    }
+
+    this.container = this.document.createElement("div");
+    this.container.classList.add("parent");
+    this.container.style.opacity = 0;
+    var child = this.document.createElement("div");
+    child.classList.add("child");
+    this.container.appendChild(child);
+    var outer = this.document.createElement("outer");
+    outer.classList.add("outer");
+    child.appendChild(outer);
+    this.element = this.document.createElement("inner");
+    this.element.classList.add("inner");
+    outer.appendChild(this.element);
+    this.options = this.document.createElement("table");
     this.element.appendChild(this.options);
+
     this.cursor = null;
     this.br = false;
     this.p = true;
     this.carry = '';
+    this.optionIndex = 0;
 };
 
-Document.prototype.question = function question() {
+Document.prototype.handleEvent = function handleEvent(event) {
+    if (event.target.parentNode === this.parent) {
+        this.parent.removeChild(event.target);
+    }
+};
+
+Document.prototype.ask = function ask() {
 };
 
 Document.prototype.answer = function answer(text) {
@@ -156,7 +685,7 @@ Document.prototype.answer = function answer(text) {
 Document.prototype.close = function close() {
 };
 
-}],["engine.js","inkblot","engine.js",{"./story":6,"./evaluate":2},function (require, exports, module, __filename, __dirname){
+}],["engine.js","inkblot","engine.js",{"./story":8,"./evaluate":4,"./describe":1},function (require, exports, module, __filename, __dirname){
 
 // inkblot/engine.js
 // -----------------
@@ -165,38 +694,50 @@ Document.prototype.close = function close() {
 
 var Story = require('./story');
 var evaluate = require('./evaluate');
+var describe = require('./describe');
 
 module.exports = Engine;
 
 var debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
-function Engine(story, start, render, interlocutor, randomer) {
+function Engine(args) {
     // istanbul ignore next
-    start = start || 'start';
     var self = this;
-    this.story = story;
+    this.story = args.story;
     this.options = [];
-    this.keywords = {};
-    this.variables = {};
-    this.global = new Global(randomer);
-    this.top = this.global;
+    this.noOption = null;
+    this.storage = new Global();
+    this.top = this.storage;
     this.stack = [this.top];
     this.label = '';
+    // istanbul ignore next
+    var start = args.start || 'start';
     this.instruction = new Story.constructors.goto(start);
-    this.render = render;
-    this.interlocutor = interlocutor;
-    this.interlocutor.engine = this;
-    this.randomer = randomer;
+    this.render = args.render;
+    this.dialog = args.dialog;
+    this.dialog.engine = this;
+    // istanbul ignore next
+    this.randomer = args.randomer || Math;
     this.debug = debug;
+    this.end = this.end;
+    this.waypoint = null;
+    this.handleWaypoint = this.handleWaypoint;
     Object.seal(this);
 }
+
+Engine.prototype.end = function end() {
+    this.display();
+    this.render.break();
+    this.dialog.close();
+    return false;
+};
 
 Engine.prototype.continue = function _continue() {
     var _continue;
     do {
         // istanbul ignore if
         if (this.debug) {
-            console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.type + ' ' + this.instruction.describe());
+            console.log(this.label + ' ' +  this.instruction.type + ' ' + describe(this.instruction));
         }
         // istanbul ignore if
         if (!this['$' + this.instruction.type]) {
@@ -206,46 +747,187 @@ Engine.prototype.continue = function _continue() {
     } while (_continue);
 };
 
-Engine.prototype.print = function print(text) {
+Engine.prototype.goto = function _goto(label) {
+    while (label == null && this.stack.length > 1) {
+        var top = this.stack.pop();
+        if (top.stopOption) {
+            this.render.stopOption();
+        }
+        this.top = this.stack[this.stack.length - 1];
+        label = top.next;
+    }
+    if (label == null) {
+        return this.end();
+    }
+    var next = this.story[label];
+    // istanbul ignore if
+    if (!next) {
+        throw new Error('Story missing instruction for label: ' + label);
+    }
+    this.label = label;
+    this.instruction = next;
+    return true;
+};
+
+Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
+    var prev = this.label;
+    for (var i = sequence.length -1; i >= 0; i--) {
+        // Note that we pass the top frame as both the parent scope and the
+        // caller scope so that the entire sequence has the same variable
+        // visibility.
+        if (next) {
+            this.top = new Frame(this.top, this.top, [], next, prev, stopOption);
+            this.stack.push(this.top);
+        }
+        prev = next;
+        next = sequence[i];
+        stopOption = false;
+    }
+    return this.goto(next);
+};
+
+Engine.prototype.ask = function ask() {
+    if (this.options.length) {
+        this.display();
+        this.dialog.ask();
+    } else if (this.noOption != null) {
+        var answer = this.noOption.answer;
+        this.flush();
+        this.gothrough(answer, null, false);
+        this.continue();
+    } else {
+        return this.goto(this.instruction.next);
+    }
+};
+
+Engine.prototype.answer = function answer(text) {
+    this.render.flush();
+    var n = +text;
+    if (n >= 1 && n <= this.options.length) {
+        this.render.clear();
+        // There is no known case where gothrough would immediately exit for
+        // lack of further instructions, so
+        var answer = this.options[n - 1].answer;
+        this.waypoint = this.capture(answer);
+        this.handleWaypoint(this.waypoint);
+        // istanbul ignore else
+        if (this.gothrough(answer, null, false)) {
+            this.flush();
+            this.continue();
+        }
+    } else {
+        this.render.pardon();
+        this.ask();
+    }
+};
+
+Engine.prototype.handleWaypoint = function handleWaypoint() {
+};
+
+Engine.prototype.display = function display() {
+    this.render.display();
+};
+
+Engine.prototype.flush = function flush() {
+    this.options.length = 0;
+    this.noOption = null;
+};
+
+Engine.prototype.write = function write(text) {
     this.render.write(this.instruction.lift, text, this.instruction.drop);
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$text = function text() {
-    return this.print(this.instruction.text);
+// istanbul ignore next
+Engine.prototype.capture = function capture(answer) {
+    var stack = [];
+    var top = this.top;
+    while (top !== this.storage) {
+        stack.unshift(top.capture());
+        top = top.parent;
+    }
+    return [
+        this.label || "",
+        answer,
+        stack,
+        this.storage.capture(),
+        [
+            this.randomer._state0U,
+            this.randomer._state0L,
+            this.randomer._state1U,
+            this.randomer._state1L
+        ]
+    ];
 };
 
-Engine.prototype.$print = function print() {
-    return this.print('' + evaluate(this.top, this.instruction.expression));
+// istanbul ignore next
+Engine.prototype.restore = function restore(state) {
+    this.render.clear();
+    this.flush();
+    this.label = '';
+    this.storage = new Global();
+    this.top = this.storage;
+    this.stack = [this.top];
+    if (state == null) {
+        this.goto('start');
+        this.continue();
+        return;
+    }
+
+    this.label = state[0];
+    var answer = state[1];
+    var stack = state[2];
+    for (var i = 0; i < stack.length; i++) {
+        this.top = Frame.restore(this.top, this.storage, stack[i]);
+        this.stack.push(this.top);
+    }
+    var storage = state[3];
+    var keys = storage[0];
+    var values = storage[1];
+    for (var i = 0; i < keys.length; i++) {
+        this.storage.set(keys[i], values[i]);
+    }
+    var random = state[4];
+    this.randomer._state0U = random[0];
+    this.randomer._state0L = random[1];
+    this.randomer._state1U = random[2];
+    this.randomer._state1L = random[3];
+    var stack = [];
+    if (this.gothrough(answer, null, false)) {
+        this.flush();
+        this.continue();
+    }
 };
 
-Engine.prototype.$break = function $break() {
+// istanbul ignore next
+Engine.prototype.log = function log() {
+    this.top.log();
+    console.log('');
+};
+
+// Here begin the instructions
+
+Engine.prototype.$text = function $text() {
+    return this.write(this.instruction.text);
+};
+
+Engine.prototype.$echo = function $echo() {
+    return this.write('' + evaluate(this.top, this.randomer, this.instruction.expression));
+};
+
+Engine.prototype.$br = function $br() {
     this.render.break();
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$paragraph = function $paragraph() {
+Engine.prototype.$par = function $par() {
     this.render.paragraph();
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$startJoin = function $startJoin() {
-    this.render.startJoin(
-        this.instruction.lift,
-        this.instruction.delimiter,
-        this.instruction.text
-    );
-    return this.goto(this.instruction.next);
-};
-
-Engine.prototype.$delimit = function $delimit() {
-    this.render.delimit(this.instruction.delimiter);
-    return this.goto(this.instruction.next);
-};
-
-Engine.prototype.$stopJoin = function $stopJoin() {
-    // TODO thread for "if no delimits"
-    this.render.stopJoin();
+Engine.prototype.$rule = function $rule() {
+    // TODO
+    this.render.paragraph();
     return this.goto(this.instruction.next);
 };
 
@@ -254,162 +936,156 @@ Engine.prototype.$goto = function $goto() {
 };
 
 Engine.prototype.$call = function $call() {
-    var routine = this.story[this.instruction.label];
+    var procedure = this.story[this.instruction.branch];
     // istanbul ignore if
-    if (!routine) {
-        throw new Error('no such routine ' + this.instruction.label);
+    if (!procedure) {
+        throw new Error('no such procedure ' + this.instruction.branch);
     }
-    // TODO replace this.global with closure scope if scoped procedures become
+    // istanbul ignore if
+    if (procedure.type !== 'args') {
+        throw new Error('can\'t call non-procedure ' + this.instruction.branch);
+    }
+    // istanbul ignore if
+    if (procedure.locals.length !== this.instruction.args.length) {
+        throw new Error('argument length mismatch for ' + this.instruction.branch);
+    }
+    // TODO replace this.storage with closure scope if scoped procedures become
     // viable. This will require that the engine create references to closures
     // when entering a new scope (calling a procedure), in addition to
     // capturing locals. As such the parser will need to retain a reference to
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
-    this.top = new Frame(this.global, routine.locals || [], this.instruction.next, this.instruction.branch);
-    this.stack.push(this.top);
+    this.top = new Frame(this.top, this.storage, procedure.locals, this.instruction.next, this.label);
+    if (this.instruction.next) {
+        this.stack.push(this.top);
+    }
+    for (var i = 0; i < this.instruction.args.length; i++) {
+        var arg = this.instruction.args[i];
+        var value = evaluate(this.top.caller, this.randomer, arg);
+        this.top.set(procedure.locals[i], value);
+    }
     return this.goto(this.instruction.branch);
 };
 
-Engine.prototype.$subroutine = function $subroutine() {
-    // Subroutines exist as targets for labels as well as for reference to
-    // locals in calls.
+Engine.prototype.$args = function $args() {
+    // Procedure argument instructions exist as targets for labels as well as
+    // for reference to locals in calls.
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$option = function option() {
-    this.options.push(this.instruction);
-    // for (var i = 0; i < this.instruction.keywords.length; i++) {
-    //     var keyword = this.instruction.keywords[i];
-    //     this.keywords[keyword] = this.instruction.branch;
-    // }
-    return this.goto(this.instruction.next);
+Engine.prototype.$opt = function $opt() {
+    var option = this.instruction;
+    if (option.question.length) {
+        this.options.push(option);
+        this.render.startOption();
+        return this.gothrough(option.question, this.instruction.next, true);
+    } else if (this.noOption == null) {
+        this.noOption = option;
+    }
+    return this.goto(option.next);
 };
 
-Engine.prototype.$set = function set() {
-    var value = evaluate(this.top, this.instruction.expression);
+Engine.prototype.$move = function $move() {
+    var value = evaluate(this.top, this.randomer, this.instruction.source);
+    var name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
     // istanbul ignore if
     if (this.debug) {
-        console.log(this.top.at() + '/' + this.label + ' ' + this.instruction.variable + ' = ' + value);
+        console.log(this.top.at() + '/' + this.label + ' ' + name + ' = ' + value);
     }
-    this.top.set(this.instruction.variable, value);
+    this.top.set(name, value);
     return this.goto(this.instruction.next);
 };
 
-Engine.prototype.$jump = function jump() {
+Engine.prototype.$jump = function $jump() {
     var j = this.instruction;
-    if (evaluate(this.top, j.condition)) {
+    if (evaluate(this.top, this.randomer, j.condition)) {
         return this.goto(this.instruction.branch);
     } else {
         return this.goto(this.instruction.next);
     }
 };
 
-Engine.prototype.$switch = function _switch() {
-    var branches = this.instruction.branches;
-    var value;
-    if (this.instruction.mode === 'rand') {
-        value = Math.floor(this.randomer.random() * branches.length);
-    } else {
-        value = evaluate(this.top, this.instruction.expression);
-        this.top.set(this.instruction.variable, value + this.instruction.value);
+Engine.prototype.$switch = function $switch() {
+    var branches = this.instruction.branches.slice();
+    var weightExpressions = this.instruction.weights.slice();
+    var samples = 1;
+    var nexts = [];
+    if (this.instruction.mode === 'pick') {
+        samples = evaluate(this.top, this.randomer, this.instruction.expression);
     }
-    if (this.instruction.mode === 'loop') {
-        value = value % branches.length;
-    } else if (this.instruction.mode === 'hash') {
-        value = evaluate.hash(value) % branches.length;
+    for (var i = 0; i < samples; i++) {
+        var value;
+        var weights = [];
+        var weight = weigh(this.top, this.randomer, weightExpressions, weights);
+        if (this.instruction.mode === 'rand' || this.instruction.mode === 'pick') {
+            if (weights.length === weight) {
+                value = Math.floor(this.randomer.random() * branches.length);
+            } else {
+                value = pick(weights, weight, this.randomer);
+                if (value == null) {
+                    break;
+                }
+            }
+        } else {
+            value = evaluate(this.top, this.randomer, this.instruction.expression);
+            if (this.instruction.variable != null) {
+                this.top.set(this.instruction.variable, value + this.instruction.value);
+            }
+        }
+        if (this.instruction.mode === 'loop') {
+            // actual modulo, wraps negatives
+            value = ((value % branches.length) + branches.length) % branches.length;
+        } else if (this.instruction.mode === 'hash') {
+            value = evaluate.hash(value) % branches.length;
+        }
+        value = Math.min(value, branches.length - 1);
+        value = Math.max(value, 0);
+        var next = branches[value];
+        pop(branches, value);
+        pop(weightExpressions, value);
+        nexts.push(next);
     }
-    value = Math.min(value, branches.length - 1);
-    value = Math.max(value, 0);
-    var next = branches[value];
     // istanbul ignore if
     if (this.debug) {
         console.log(this.top.at() + '/' + this.label + ' ' + value + ' -> ' + next);
     }
-    return this.goto(next);
+    return this.gothrough(nexts, this.instruction.next, false);
 };
 
-Engine.prototype.$prompt = function prompt() {
-    this.prompt();
+function weigh(scope, randomer, expressions, weights) {
+    var weight = 0;
+    for (var i = 0; i < expressions.length; i++) {
+        weights[i] = evaluate(scope, randomer, expressions[i]);
+        weight += weights[i];
+    }
+    return weight;
+}
+
+function pick(weights, weight, randomer) {
+    var offset = Math.floor(randomer.random() * weight);
+    var passed = 0;
+    for (var i = 0; i < weights.length; i++) {
+        passed += weights[i];
+        if (offset < passed) {
+            return i;
+        }
+    }
+    return null;
+}
+
+function pop(array, index) {
+    array[index] = array[array.length - 1];
+    array.length--;
+}
+
+Engine.prototype.$ask = function $ask() {
+    this.ask();
     return false;
 };
 
-Engine.prototype.goto = function _goto(name) {
-    while (name === null && this.stack.length > 1 && this.options.length === 0) {
-        var top = this.stack.pop();
-        this.top = this.stack[this.stack.length - 1];
-        name = top.next;
-    }
-    if (name == null) {
-        this.display();
-        this.render.break();
-        this.interlocutor.close();
-        return false;
-    }
-    var next = this.story[name];
-    // istanbul ignore if
-    if (!next) {
-        throw new Error('Story missing knot for name: ' + name);
-    }
-    this.label = name;
-    this.instruction = next;
-    return true;
-};
-
-Engine.prototype.answer = function answer(text) {
-    this.render.flush();
-    if (text === 'quit') {
-        this.interlocutor.close();
-        return;
-    }
-    // istanbul ignore next
-    if (text === 'bt') {
-        this.render.clear();
-        this.top.log();
-        this.prompt();
-        return;
-    }
-    var n = +text;
-    if (n >= 1 && n <= this.options.length) {
-        this.render.clear();
-        if (this.goto(this.options[n - 1].branch)) {
-            this.flush();
-            this.continue();
-        }
-    // istanbul ignore next
-    } else if (this.keywords[text]) {
-        this.render.clear();
-        if (this.goto(this.keywords[text])) {
-            this.flush();
-            this.continue();
-        }
-    } else {
-        this.render.pardon();
-        this.prompt();
-    }
-};
-
-Engine.prototype.display = function display() {
-    this.render.display();
-};
-
-Engine.prototype.prompt = function prompt() {
-    this.display();
-    for (var i = 0; i < this.options.length; i++) {
-        var option = this.options[i];
-        this.render.option(i + 1, option.label);
-    }
-    this.interlocutor.question();
-};
-
-Engine.prototype.flush = function flush() {
-    this.options.length = 0;
-    this.keywords = {};
-};
-
-function Global(randomer) {
+function Global() {
     this.scope = Object.create(null);
-    this.randomer = randomer;
-    this.next = null;
+    Object.seal(this);
 }
 
 Global.prototype.get = function get(name) {
@@ -420,19 +1096,16 @@ Global.prototype.set = function set(name, value) {
     this.scope[name] = value;
 };
 
-Global.prototype.random = function random() {
-    return this.randomer.random();
-};
-
 // istanbul ignore next
 Global.prototype.log = function log() {
     var globals = Object.keys(this.scope);
+    globals.sort();
     for (var i = 0; i < globals.length; i++) {
         var name = globals[i];
         var value = this.scope[name];
         console.log(name + ' = ' + value);
     }
-    render.paragraph();
+    console.log('');
 };
 
 // istanbul ignore next
@@ -440,15 +1113,35 @@ Global.prototype.at = function at() {
     return '';
 };
 
-function Frame(caller, locals, next, branch) {
+// istanbul ignore next
+Global.prototype.capture = function capture() {
+    var keys = Object.keys(this.scope);
+    var values = [];
+    // var object = {};
+    for (var i = 0; i < keys.length; i++) {
+        values[i] = this.scope[keys[i]] || 0;
+        // object[keys[i]] = values[i];
+    }
+    // return object;
+    return [
+        keys,
+        values
+    ];
+};
+
+// TODO names of parent and caller are not right, might be swapped.
+// parent should be the scope parent for upchain lookups.
+function Frame(parent, caller, locals, next, branch, stopOption) {
     this.locals = locals;
     this.scope = Object.create(null);
     for (var i = 0; i < locals.length; i++) {
         this.scope[locals[i]] = 0;
     }
+    this.parent = parent;
     this.caller = caller;
     this.next = next;
     this.branch = branch;
+    this.stopOption = stopOption || false;
 }
 
 Frame.prototype.get = function get(name) {
@@ -467,12 +1160,9 @@ Frame.prototype.set = function set(name, value) {
     this.caller.set(name, value);
 };
 
-Frame.prototype.random = function random() {
-    return this.caller.random();
-};
-
 // istanbul ignore next
 Frame.prototype.log = function log() {
+    this.parent.log();
     console.log('--- ' + this.branch + ' -> ' + this.next);
     for (var i = 0; i < this.locals.length; i++) {
         var name = this.locals[i];
@@ -486,6 +1176,46 @@ Frame.prototype.at = function at() {
     return this.caller.at() + '/' + this.branch;
 };
 
+// istanbul ignore next
+Frame.prototype.capture = function capture() {
+    var values = [];
+    // var object = {};
+    for (var i = 0; i < this.locals.length; i++) {
+        var local = this.locals[i];
+        values.push(this.scope[local] || 0);
+    }
+    return [
+        this.locals,
+        values,
+        this.next || "",
+        this.branch || "",
+        +(this.caller === this.top),
+        +this.stopOption
+    ];
+};
+
+// istanbul ignore next
+Frame.restore = function restore(top, storage, state) {
+    var keys = state[0];
+    var values = state[1];
+    var next = state[2];
+    var branch = state[3];
+    var dynamic = state[4];
+    var stopOption = state[5];
+    top = new Frame(
+        top,
+        dynamic ? top : storage,
+        keys,
+        next,
+        branch,
+        !!stopOption
+    );
+    for (var i = 0; i < keys.length; i++) {
+        top.set(keys[i], values[i]);
+    }
+    return top;
+};
+
 }],["evaluate.js","inkblot","evaluate.js",{},function (require, exports, module, __filename, __dirname){
 
 // inkblot/evaluate.js
@@ -495,26 +1225,133 @@ Frame.prototype.at = function at() {
 
 module.exports = evaluate;
 
-function evaluate(scope, args) {
+function evaluate(scope, randomer, args) {
     var name = args[0];
-    if (binary[name]) {
-        return binary[name](
-            evaluate(scope, args[1]),
-            evaluate(scope, args[2]),
-            scope
+    if (unary[name] && args.length === 2) {
+        return unary[name](
+            evaluate(scope, randomer, args[1]),
+            scope,
+            randomer
         );
-    // istanbul ignore next
-    } else if (unary[name]) {
-        return unary[name](evaluate(scope, args[1]));
+    } else if (binary[name] && args.length === 3) {
+        return binary[name](
+            evaluate(scope, randomer, args[1]),
+            evaluate(scope, randomer, args[2]),
+            scope,
+            randomer
+        );
     } else if (name === 'val') {
         return args[1];
-    // istanbul ignore else
     } else if (name === 'get') {
-        return scope.get(args[1]);
+        return +scope.get(args[1]);
+    // istanbul ignore else
+    } else if (name === 'var') {
+        return +scope.get(nominate(scope, randomer, args));
+    } else if (name === 'call') {
+        var name = args[1][1];
+        var f = functions[name];
+        if (!f) {
+            // TODO thread line number for containing instruction
+            throw new Error('No function named ' + name);
+        }
+        var values = [];
+        for (var i = 2; i < args.length; i++) {
+            values.push(evaluate(scope, randomer, args[i]));
+        }
+        return f.apply(null, values);
+    } else {
+        throw new Error('Unexpected operator ' + JSON.stringify(args));
     }
-    // istanbul ignore next
-    throw new Error('Unexpected operator ' + args[0]);
 }
+
+evaluate.nominate = nominate;
+function nominate(scope, randomer, args) {
+    if (args[0] === 'get') {
+        return args[1];
+    }
+    var literals = args[1];
+    var variables = args[2];
+    var name = '';
+    for (var i = 0; i < variables.length; i++) {
+        name += literals[i] + evaluate(scope, randomer, variables[i]);
+    }
+    name += literals[i];
+    return name;
+}
+
+var functions = {
+    abs: Math.abs,
+    acos: Math.acos,
+    asin: Math.asin,
+    atan2: Math.atan2,
+    atan: Math.atan,
+    exp: Math.exp,
+    log: Math.log,
+    max: Math.max,
+    min: Math.min,
+    pow: Math.pow,
+    sin: Math.sin,
+    tan: Math.tan,
+
+    sign: function (x) {
+        if (x < 0) {
+            return -1;
+        }
+        if (x > 0) {
+            return 1;
+        }
+        return 0;
+    },
+
+    mean: function () {
+        var mean = 0;
+        for (var i = 0; i < arguments.length; i++) {
+            mean += arguments[i];
+        }
+        return mean / i;
+    },
+
+    root: function root(x, y) {
+        if (y === 2 || y == null) {
+            return Math.sqrt(x);
+        }
+        return Math.pow(x, 1 / y);
+    },
+
+    distance: function distance(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    },
+
+    manhattan: function distance(x1, y1, x2, y2) {
+        return Math.abs(x2 - x1, 2) + Math.abs(y2 - y1);
+    },
+
+    // TODO parameterize these functions in terms of the expected turns to
+    // go from 25% to 75% of capacity, to adjust the rate. This will maybe
+    // almost make them understandable.
+    //
+    // sigmoid: function (steps, cap) {
+    //     if (steps === -Infinity) {
+    //         return 0;
+    //     } else if (steps === Infinity) {
+    //         return cap;
+    //     } else {
+    //         return cap / (1 + Math.pow(Math.E, -steps));
+    //     }
+    // },
+
+    // diomgis: function (pop, cap) {
+    //     if (pop <= 0) {
+    //         return -Infinity;
+    //     }
+    //     var ratio = cap / pop - 1;
+    //     if (ratio === 0) {
+    //         return Infinity;
+    //     }
+    //     return -Math.log(ratio, Math.E);
+    // },
+
+};
 
 var binary = {
     '+': function (x, y) {
@@ -527,15 +1364,18 @@ var binary = {
         return x * y;
     },
     '/': function (x, y) {
-        return (x / y) >>> 0;
+        return (x / y) >> 0;
     },
     '%': function (x, y) {
-        return x % y;
+        return ((x % y) + y) % y;
     },
-    'v': function (x, y) {
+    '**': function (x, y) {
+        return Math.pow(x, y);
+    },
+    'or': function (x, y) {
         return x || y ? 1 : 0;
     },
-    '^': function (x, y) {
+    'and': function (x, y) {
         return x && y ? 1 : 0;
     },
     '>=': function (x, y) {
@@ -553,16 +1393,16 @@ var binary = {
     '==': function (x, y) {
         return x === y ? 1 : 0;
     },
-    '!=': function (x, y) {
+    '<>': function (x, y) {
         return x != y ? 1 : 0;
     },
     '#': function (x, y) {
         return hilbert(x, y);
     },
-    '~': function (x, y, scope) {
+    '~': function (x, y, scope, randomer) {
         var r = 0;
         for (var i = 0; i < x; i++) {
-            r += scope.random() * y;
+            r += randomer.random() * y;
         }
         return Math.floor(r);
     }
@@ -570,33 +1410,45 @@ var binary = {
 
 // istanbul ignore next
 var unary = {
-    '!': function (x) {
+    'not': function (x) {
         return x ? 0 : 1;
+    },
+    '-': function (x) {
+        return -x;
+    },
+    '~': function (x, scope, randomer) {
+        return Math.floor(randomer.random() * x);
+    },
+    '#': function (x) {
+        return hash(x);
     }
 };
 
+// Robert Jenkins's 32 bit hash function
+// https://gist.github.com/badboy/6267743
 evaluate.hash = hash;
-function hash(x) {
-    x = ((x >>> 16) ^ x) * 0x45d9f3b;
-    x = ((x >>> 16) ^ x) * 0x45d9f3b;
-    x = ((x >>> 16) ^ x);
-    return x >>> 0;
+function hash(a) {
+    a = (a+0x7ed55d16) + (a<<12);
+    a = (a^0xc761c23c) ^ (a>>>19);
+    a = (a+0x165667b1) + (a<<5);
+    a = (a+0xd3a2646c) ^ (a<<9);
+    a = (a+0xfd7046c5) + (a<<3);
+    a = (a^0xb55a4f09) ^ (a>>>16);
+    return a;
 }
 
-var msb = (-1 >>> 1) + 1;
-var hsb = (-1 >>> 16) + 1;
-
+// hilbert in range from 0 to 2^32
+// x and y in range from 0 to 2^16
+// each dimension has origin at 2^15
+var dimensionWidth = (-1 >>> 16) + 1;
+var halfDimensionWidth = dimensionWidth / 2;
 function hilbert(x, y) {
-    if (x < 0) {
-        x += hsb;
-    }
-    if (y < 0) {
-        y += hsb;
-    }
+    x += halfDimensionWidth;
+    y += halfDimensionWidth;
     var rx = 0;
     var ry = y;
     var scalar = 0;
-    for (var scale = msb; scale > 0; scale /= 2) {
+    for (var scale = dimensionWidth; scale > 0; scale /= 2) {
         rx = x & scale;
         ry = y & scale;
         scalar += scale * ((3 * rx) ^ ry);
@@ -622,44 +1474,54 @@ function hilbert(x, y) {
 
 module.exports = {
     "start": {
-        "type": "set",
-        "variable": "gold",
-        "expression": [
+        "type": "move",
+        "source": [
             "val",
             2
         ],
-        "parameter": false,
-        "next": "start.1"
+        "target": [
+            "get",
+            "gold"
+        ],
+        "next": "start.1",
+        "position": "2:3"
     },
     "start.1": {
-        "type": "set",
-        "variable": "arrow",
-        "expression": [
+        "type": "move",
+        "source": [
             "val",
             0
         ],
-        "parameter": false,
-        "next": "start.2"
+        "target": [
+            "get",
+            "arrow"
+        ],
+        "next": "start.2",
+        "position": "3:3"
     },
     "start.2": {
-        "type": "set",
-        "variable": "hit",
-        "expression": [
+        "type": "move",
+        "source": [
             "val",
             0
         ],
-        "parameter": false,
-        "next": "start.3"
+        "target": [
+            "get",
+            "score"
+        ],
+        "next": "start.3",
+        "position": "36:3"
     },
     "start.3": {
         "type": "text",
         "text": "You enter the fletcher’s shop. The fletcher beckons, “There are arrows for sale and a range out back to try your skill and fortune. For each score hit, you win more gold!”",
         "lift": "",
         "drop": " ",
-        "next": "start.4"
+        "next": "start.4",
+        "position": "7:1"
     },
     "start.4": {
-        "type": "paragraph",
+        "type": "par",
         "next": "shop"
     },
     "shop": {
@@ -667,51 +1529,15 @@ module.exports = {
         "text": "You have",
         "lift": "",
         "drop": " ",
-        "next": "shop.1"
+        "next": "shop.1",
+        "position": "11:3"
     },
     "shop.1": {
-        "type": "switch",
-        "expression": [
-            "get",
-            "arrow"
-        ],
-        "variable": null,
-        "value": 0,
-        "mode": "walk",
-        "branches": [
-            "shop.1.1",
-            "shop.1.2",
-            "shop.1.3"
-        ]
-    },
-    "shop.1.1": {
-        "type": "text",
-        "text": "no arrows",
-        "lift": "",
-        "drop": "",
-        "next": "shop.2"
-    },
-    "shop.1.2": {
-        "type": "text",
-        "text": "an arrow",
-        "lift": "",
-        "drop": "",
-        "next": "shop.2"
-    },
-    "shop.1.3": {
-        "type": "print",
-        "expression": [
-            "get",
-            "arrow"
-        ],
-        "next": "shop.1.3.1"
-    },
-    "shop.1.3.1": {
-        "type": "text",
-        "text": "arrows",
-        "lift": " ",
-        "drop": "",
-        "next": "shop.2"
+        "type": "call",
+        "branch": "arrow",
+        "args": [],
+        "next": "shop.2",
+        "position": "11:3"
     },
     "shop.2": {
         "type": "switch",
@@ -725,7 +1551,19 @@ module.exports = {
         "branches": [
             "shop.2.1",
             "shop.2.2"
-        ]
+        ],
+        "weights": [
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "next": null,
+        "position": "12:3"
     },
     "shop.2.1": {
         "type": "switch",
@@ -739,115 +1577,174 @@ module.exports = {
         "branches": [
             "shop.2.1.0.1",
             "shop.2.1.0.2"
-        ]
+        ],
+        "weights": [
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "next": null,
+        "position": "12:3"
     },
     "shop.2.1.0.1": {
         "type": "text",
         "text": "and",
         "lift": " ",
         "drop": " ",
-        "next": "shop.3"
+        "next": "shop.3",
+        "position": "12:3"
     },
     "shop.2.1.0.2": {
         "type": "text",
         "text": "but",
         "lift": " ",
         "drop": " ",
-        "next": "shop.3"
+        "next": "shop.3",
+        "position": "12:3"
     },
     "shop.2.2": {
         "type": "text",
         "text": "and",
         "lift": " ",
         "drop": " ",
-        "next": "shop.3"
+        "next": "shop.3",
+        "position": "12:3"
     },
     "shop.3": {
         "type": "call",
-        "label": "gold",
         "branch": "gold",
-        "next": "shop.4"
+        "args": [],
+        "next": "shop.4",
+        "position": "13:3"
     },
     "shop.4": {
         "type": "text",
         "text": ".",
         "lift": "",
         "drop": " ",
-        "next": "shop.5"
+        "next": "shop.5",
+        "position": "15:3"
     },
     "shop.5": {
-        "type": "jump",
-        "condition": [
-            "==",
+        "type": "switch",
+        "expression": [
+            "and",
             [
-                "get",
-                "gold"
+                "not",
+                [
+                    "get",
+                    "gold"
+                ]
+            ],
+            [
+                "not",
+                [
+                    "get",
+                    "arrow"
+                ]
+            ]
+        ],
+        "variable": null,
+        "value": 0,
+        "mode": "walk",
+        "branches": [
+            "shop.5.1",
+            "shop.5.2"
+        ],
+        "weights": [
+            [
+                "val",
+                1
             ],
             [
                 "val",
-                0
+                1
             ]
         ],
-        "branch": "shop.6",
-        "next": "shop.8"
+        "next": null,
+        "position": "15:3"
+    },
+    "shop.5.1": {
+        "type": "goto",
+        "next": "shop.6",
+        "position": "15:3"
+    },
+    "shop.5.2": {
+        "type": "goto",
+        "next": "exit",
+        "position": "15:3"
     },
     "shop.6": {
         "type": "jump",
         "condition": [
             "==",
             [
-                "get",
-                "arrow"
+                ">=",
+                [
+                    "get",
+                    "gold"
+                ],
+                [
+                    "val",
+                    1
+                ]
             ],
             [
                 "val",
                 0
             ]
         ],
-        "branch": "exit",
-        "next": "shop.8"
+        "branch": "shop.7",
+        "next": "shop.6.1",
+        "position": "18:5"
     },
-    "shop.8": {
-        "type": "jump",
-        "condition": [
-            "!=",
-            [
-                "get",
-                "gold"
-            ],
-            [
-                "val",
-                0
-            ]
+    "shop.6.1": {
+        "type": "opt",
+        "question": [
+            "shop.6.3",
+            "shop.6.4"
         ],
-        "branch": "shop.9",
-        "next": "shop.10"
+        "answer": [
+            "shop.6.2",
+            "shop.6.4",
+            "shop.6.5",
+            "shop.6.7"
+        ],
+        "next": "shop.7",
+        "position": "18:5"
     },
-    "shop.9": {
-        "type": "option",
-        "label": "Buy 3 arrows for a gold piece.",
-        "keywords": [],
-        "branch": "shop.9.1",
-        "next": "shop.10"
-    },
-    "shop.9.1": {
+    "shop.6.2": {
         "type": "text",
         "text": "You b",
         "lift": "",
         "drop": "",
-        "next": "shop.9.2"
+        "next": null,
+        "position": "18:5"
     },
-    "shop.9.2": {
+    "shop.6.3": {
+        "type": "text",
+        "text": "B",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "18:5"
+    },
+    "shop.6.4": {
         "type": "text",
         "text": "uy 3 arrows for a gold piece.",
         "lift": "",
         "drop": " ",
-        "next": "shop.9.3"
+        "next": null,
+        "position": "18:5"
     },
-    "shop.9.3": {
-        "type": "set",
-        "variable": "gold",
-        "expression": [
+    "shop.6.5": {
+        "type": "move",
+        "source": [
             "-",
             [
                 "get",
@@ -858,13 +1755,15 @@ module.exports = {
                 1
             ]
         ],
-        "parameter": false,
-        "next": "shop.9.4"
+        "target": [
+            "get",
+            "gold"
+        ],
+        "next": "shop.6.6"
     },
-    "shop.9.4": {
-        "type": "set",
-        "variable": "arrow",
-        "expression": [
+    "shop.6.6": {
+        "type": "move",
+        "source": [
             "+",
             [
                 "get",
@@ -875,50 +1774,83 @@ module.exports = {
                 3
             ]
         ],
-        "parameter": false,
-        "next": "shop"
+        "target": [
+            "get",
+            "arrow"
+        ],
+        "next": null
     },
-    "shop.10": {
+    "shop.6.7": {
+        "type": "goto",
+        "next": "shop",
+        "position": "19:5"
+    },
+    "shop.7": {
         "type": "jump",
         "condition": [
-            ">=",
+            "==",
             [
-                "get",
-                "arrow"
+                ">=",
+                [
+                    "get",
+                    "arrow"
+                ],
+                [
+                    "val",
+                    4
+                ]
             ],
             [
                 "val",
-                4
+                0
             ]
         ],
-        "branch": "shop.11",
-        "next": "shop.12"
+        "branch": "shop.8",
+        "next": "shop.7.1",
+        "position": "20:5"
     },
-    "shop.11": {
-        "type": "option",
-        "label": "Sell 4 arrows for a gold piece.",
-        "keywords": [],
-        "branch": "shop.11.1",
-        "next": "shop.12"
+    "shop.7.1": {
+        "type": "opt",
+        "question": [
+            "shop.7.3",
+            "shop.7.4"
+        ],
+        "answer": [
+            "shop.7.2",
+            "shop.7.4",
+            "shop.7.5",
+            "shop.7.7"
+        ],
+        "next": "shop.8",
+        "position": "20:5"
     },
-    "shop.11.1": {
+    "shop.7.2": {
         "type": "text",
         "text": "You s",
         "lift": "",
         "drop": "",
-        "next": "shop.11.2"
+        "next": null,
+        "position": "20:5"
     },
-    "shop.11.2": {
+    "shop.7.3": {
+        "type": "text",
+        "text": "S",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "20:5"
+    },
+    "shop.7.4": {
         "type": "text",
         "text": "ell 4 arrows for a gold piece.",
         "lift": "",
         "drop": " ",
-        "next": "shop.11.3"
+        "next": null,
+        "position": "20:5"
     },
-    "shop.11.3": {
-        "type": "set",
-        "variable": "gold",
-        "expression": [
+    "shop.7.5": {
+        "type": "move",
+        "source": [
             "+",
             [
                 "get",
@@ -929,13 +1861,15 @@ module.exports = {
                 1
             ]
         ],
-        "parameter": false,
-        "next": "shop.11.4"
+        "target": [
+            "get",
+            "gold"
+        ],
+        "next": "shop.7.6"
     },
-    "shop.11.4": {
-        "type": "set",
-        "variable": "arrow",
-        "expression": [
+    "shop.7.6": {
+        "type": "move",
+        "source": [
             "-",
             [
                 "get",
@@ -946,48 +1880,353 @@ module.exports = {
                 4
             ]
         ],
-        "parameter": false,
-        "next": "shop"
+        "target": [
+            "get",
+            "arrow"
+        ],
+        "next": null
     },
-    "shop.12": {
-        "type": "option",
-        "label": "Visit the archery range.",
-        "keywords": [],
-        "branch": "shop.12.1",
-        "next": "shop.13"
+    "shop.7.7": {
+        "type": "goto",
+        "next": "shop",
+        "position": "21:5"
     },
-    "shop.12.1": {
+    "shop.8": {
+        "type": "opt",
+        "question": [
+            "shop.8.2",
+            "shop.8.3"
+        ],
+        "answer": [
+            "shop.8.1",
+            "shop.8.3",
+            "shop.8.4"
+        ],
+        "next": "shop.9",
+        "position": "21:5"
+    },
+    "shop.8.1": {
         "type": "text",
         "text": "You walk through the door to",
         "lift": "",
-        "drop": "",
-        "next": "shop.12.2"
+        "drop": " ",
+        "next": null,
+        "position": "21:5"
     },
-    "shop.12.2": {
+    "shop.8.2": {
+        "type": "text",
+        "text": "Visit",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "21:5"
+    },
+    "shop.8.3": {
         "type": "text",
         "text": "the archery range.",
         "lift": " ",
         "drop": " ",
-        "next": "range"
+        "next": null,
+        "position": "21:5"
     },
-    "shop.13": {
-        "type": "option",
-        "label": "Leave the store",
-        "keywords": [],
-        "branch": "exit",
-        "next": "shop.14"
+    "shop.8.4": {
+        "type": "goto",
+        "next": "range",
+        "position": "21:5"
     },
-    "shop.14": {
-        "type": "prompt"
+    "shop.9": {
+        "type": "opt",
+        "question": [
+            "shop.9.1"
+        ],
+        "answer": [
+            "shop.9.2"
+        ],
+        "next": "shop.10",
+        "position": "23:5"
+    },
+    "shop.9.1": {
+        "type": "text",
+        "text": "Leave the store.",
+        "lift": "",
+        "drop": " ",
+        "next": null,
+        "position": "23:5"
+    },
+    "shop.9.2": {
+        "type": "goto",
+        "next": "exit",
+        "position": "23:5"
+    },
+    "shop.10": {
+        "type": "ask",
+        "position": "24:3"
     },
     "range": {
         "type": "text",
         "text": "You have",
         "lift": "",
         "drop": " ",
-        "next": "range.1"
+        "next": "range.1",
+        "position": "30:3"
     },
     "range.1": {
+        "type": "call",
+        "branch": "arrow",
+        "args": [],
+        "next": "range.2",
+        "position": "30:3"
+    },
+    "range.2": {
+        "type": "text",
+        "text": ".",
+        "lift": "",
+        "drop": " ",
+        "next": "range.3",
+        "position": "32:5"
+    },
+    "range.3": {
+        "type": "jump",
+        "condition": [
+            "==",
+            [
+                ">=",
+                [
+                    "get",
+                    "arrow"
+                ],
+                [
+                    "val",
+                    1
+                ]
+            ],
+            [
+                "val",
+                0
+            ]
+        ],
+        "branch": "range.4",
+        "next": "range.3.1",
+        "position": "33:5"
+    },
+    "range.3.1": {
+        "type": "opt",
+        "question": [
+            "range.3.3",
+            "range.3.4",
+            "range.3.5"
+        ],
+        "answer": [
+            "range.3.2",
+            "range.3.4",
+            "range.3.6",
+            "range.3.7"
+        ],
+        "next": "range.4",
+        "position": "33:5"
+    },
+    "range.3.2": {
+        "type": "text",
+        "text": "You s",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "33:5"
+    },
+    "range.3.3": {
+        "type": "text",
+        "text": "S",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "33:5"
+    },
+    "range.3.4": {
+        "type": "text",
+        "text": "hoot an arrow",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "33:5"
+    },
+    "range.3.5": {
+        "type": "text",
+        "text": ".",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "33:5"
+    },
+    "range.3.6": {
+        "type": "move",
+        "source": [
+            "-",
+            [
+                "get",
+                "arrow"
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "target": [
+            "get",
+            "arrow"
+        ],
+        "next": null
+    },
+    "range.3.7": {
+        "type": "switch",
+        "expression": [
+            "get",
+            "range.3.7"
+        ],
+        "variable": "range.3.7",
+        "value": 0,
+        "mode": "rand",
+        "branches": [
+            "range.3.7.1",
+            "range.3.7.2",
+            "range.3.7.3"
+        ],
+        "weights": [
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "next": null,
+        "position": "34:5"
+    },
+    "range.3.7.1": {
+        "type": "text",
+        "text": "and hit the target, winning 1 gold piece!",
+        "lift": " ",
+        "drop": " ",
+        "next": "range.3.7.1.1",
+        "position": "35:5"
+    },
+    "range.3.7.1.1": {
+        "type": "move",
+        "source": [
+            "+",
+            [
+                "get",
+                "gold"
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "target": [
+            "get",
+            "gold"
+        ],
+        "next": "range.3.7.1.2",
+        "position": "35:5"
+    },
+    "range.3.7.1.2": {
+        "type": "move",
+        "source": [
+            "+",
+            [
+                "get",
+                "score"
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "target": [
+            "get",
+            "score"
+        ],
+        "next": "range",
+        "position": "35:5"
+    },
+    "range.3.7.2": {
+        "type": "goto",
+        "next": "range.3.8",
+        "position": "35:5"
+    },
+    "range.3.7.3": {
+        "type": "goto",
+        "next": "range.3.8",
+        "position": "35:5"
+    },
+    "range.3.8": {
+        "type": "text",
+        "text": "and miss.",
+        "lift": " ",
+        "drop": " ",
+        "next": "range",
+        "position": "37:5"
+    },
+    "range.4": {
+        "type": "opt",
+        "question": [
+            "range.4.2",
+            "range.4.3"
+        ],
+        "answer": [
+            "range.4.1",
+            "range.4.3",
+            "range.4.4"
+        ],
+        "next": "range.5",
+        "position": "37:5"
+    },
+    "range.4.1": {
+        "type": "text",
+        "text": "You r",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "37:5"
+    },
+    "range.4.2": {
+        "type": "text",
+        "text": "R",
+        "lift": "",
+        "drop": "",
+        "next": null,
+        "position": "37:5"
+    },
+    "range.4.3": {
+        "type": "text",
+        "text": "eturn to the archery shop.",
+        "lift": "",
+        "drop": " ",
+        "next": null,
+        "position": "37:5"
+    },
+    "range.4.4": {
+        "type": "goto",
+        "next": "shop",
+        "position": "37:5"
+    },
+    "range.5": {
+        "type": "ask",
+        "position": "38:3"
+    },
+    "arrow": {
+        "type": "args",
+        "locals": [],
+        "next": "arrow.1",
+        "position": "42:3"
+    },
+    "arrow.1": {
         "type": "switch",
         "expression": [
             "get",
@@ -997,200 +2236,67 @@ module.exports = {
         "value": 0,
         "mode": "walk",
         "branches": [
-            "range.1.1",
-            "range.1.2",
-            "range.1.3"
-        ]
+            "arrow.1.1",
+            "arrow.1.2",
+            "arrow.1.3"
+        ],
+        "weights": [
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "next": null,
+        "position": "43:3"
     },
-    "range.1.1": {
+    "arrow.1.1": {
         "type": "text",
         "text": "no arrows",
         "lift": "",
         "drop": "",
-        "next": "range.2"
+        "next": null,
+        "position": "43:3"
     },
-    "range.1.2": {
+    "arrow.1.2": {
         "type": "text",
         "text": "an arrow",
         "lift": "",
         "drop": "",
-        "next": "range.2"
+        "next": null,
+        "position": "43:3"
     },
-    "range.1.3": {
-        "type": "print",
+    "arrow.1.3": {
+        "type": "echo",
         "expression": [
             "get",
             "arrow"
         ],
-        "next": "range.1.3.1"
+        "lift": "",
+        "drop": "",
+        "next": "arrow.1.3.1",
+        "position": "43:3"
     },
-    "range.1.3.1": {
+    "arrow.1.3.1": {
         "type": "text",
         "text": "arrows",
         "lift": " ",
         "drop": "",
-        "next": "range.2"
-    },
-    "range.2": {
-        "type": "text",
-        "text": ".",
-        "lift": "",
-        "drop": " ",
-        "next": "range.3"
-    },
-    "range.3": {
-        "type": "jump",
-        "condition": [
-            "!=",
-            [
-                "get",
-                "arrow"
-            ],
-            [
-                "val",
-                0
-            ]
-        ],
-        "branch": "range.4",
-        "next": "range.5"
-    },
-    "range.4": {
-        "type": "option",
-        "label": "Shoot an arrow",
-        "keywords": [],
-        "branch": "range.4.1",
-        "next": "range.5"
-    },
-    "range.4.1": {
-        "type": "text",
-        "text": "You s",
-        "lift": "",
-        "drop": "",
-        "next": "range.4.2"
-    },
-    "range.4.2": {
-        "type": "text",
-        "text": "hoot an arrow",
-        "lift": "",
-        "drop": " ",
-        "next": "range.4.3"
-    },
-    "range.4.3": {
-        "type": "set",
-        "variable": "arrow",
-        "expression": [
-            "-",
-            [
-                "get",
-                "arrow"
-            ],
-            [
-                "val",
-                1
-            ]
-        ],
-        "parameter": false,
-        "next": "range.4.4"
-    },
-    "range.4.4": {
-        "type": "switch",
-        "expression": [
-            "get",
-            "range.4.4"
-        ],
-        "variable": null,
-        "value": 0,
-        "mode": "rand",
-        "branches": [
-            "range.4.4.1",
-            "range.4.4.2",
-            "range.4.4.3"
-        ]
-    },
-    "range.4.4.1": {
-        "type": "text",
-        "text": "and hit the target, winning 1 gold piece!",
-        "lift": "",
-        "drop": " ",
-        "next": "range.4.4.1.1"
-    },
-    "range.4.4.1.1": {
-        "type": "set",
-        "variable": "gold",
-        "expression": [
-            "+",
-            [
-                "get",
-                "gold"
-            ],
-            [
-                "val",
-                1
-            ]
-        ],
-        "parameter": false,
-        "next": "range.4.4.1.2"
-    },
-    "range.4.4.1.2": {
-        "type": "set",
-        "variable": "hit",
-        "expression": [
-            "+",
-            [
-                "get",
-                "hit"
-            ],
-            [
-                "val",
-                1
-            ]
-        ],
-        "parameter": false,
-        "next": "range"
-    },
-    "range.4.4.2": {
-        "type": "goto",
-        "next": "range.4.5"
-    },
-    "range.4.4.3": {
-        "type": "goto",
-        "next": "range.4.5"
-    },
-    "range.4.5": {
-        "type": "text",
-        "text": "and miss.",
-        "lift": " ",
-        "drop": " ",
-        "next": "range"
-    },
-    "range.5": {
-        "type": "option",
-        "label": "Return to the archery shop.",
-        "keywords": [],
-        "branch": "range.5.1",
-        "next": "range.6"
-    },
-    "range.5.1": {
-        "type": "text",
-        "text": "You r",
-        "lift": "",
-        "drop": "",
-        "next": "range.5.2"
-    },
-    "range.5.2": {
-        "type": "text",
-        "text": "eturn to the archery shop.",
-        "lift": "",
-        "drop": " ",
-        "next": "shop"
-    },
-    "range.6": {
-        "type": "prompt"
+        "next": null,
+        "position": "43:3"
     },
     "gold": {
-        "type": "subroutine",
+        "type": "args",
         "locals": [],
-        "next": "gold.1"
+        "next": "gold.1",
+        "position": "45:3"
     },
     "gold.1": {
         "type": "switch",
@@ -1205,156 +2311,272 @@ module.exports = {
             "gold.1.1",
             "gold.1.2",
             "gold.1.3"
-        ]
+        ],
+        "weights": [
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "next": null,
+        "position": "46:3"
     },
     "gold.1.1": {
         "type": "text",
         "text": "no gold",
         "lift": "",
         "drop": "",
-        "next": null
+        "next": null,
+        "position": "46:3"
     },
     "gold.1.2": {
         "type": "text",
         "text": "a gold piece",
         "lift": "",
         "drop": "",
-        "next": null
+        "next": null,
+        "position": "46:3"
     },
     "gold.1.3": {
-        "type": "print",
+        "type": "echo",
         "expression": [
             "get",
             "gold"
         ],
-        "next": "gold.1.3.1"
+        "lift": "",
+        "drop": "",
+        "next": "gold.1.3.1",
+        "position": "46:3"
     },
     "gold.1.3.1": {
         "type": "text",
         "text": "gold",
         "lift": " ",
         "drop": "",
-        "next": null
+        "next": null,
+        "position": "46:3"
     },
     "exit": {
         "type": "text",
         "text": "You depart the store through the back door with",
         "lift": " ",
         "drop": " ",
-        "next": "exit.1"
+        "next": "exit.1",
+        "position": "49:3"
     },
     "exit.1": {
         "type": "call",
-        "label": "gold",
         "branch": "gold",
-        "next": "exit.2"
+        "args": [],
+        "next": "exit.2",
+        "position": "49:3"
     },
     "exit.2": {
         "type": "text",
         "text": ".",
         "lift": "",
         "drop": " ",
-        "next": "exit.3"
+        "next": "exit.3",
+        "position": "50:3"
     },
     "exit.3": {
-        "type": "jump",
-        "condition": [
-            "!=",
-            [
-                "get",
-                "hit"
-            ],
-            [
-                "val",
-                0
-            ]
-        ],
-        "branch": "exit.4",
-        "next": null
-    },
-    "exit.4": {
-        "type": "text",
-        "text": "All told, you scored",
-        "lift": " ",
-        "drop": " ",
-        "next": "exit.5"
-    },
-    "exit.5": {
-        "type": "print",
-        "expression": [
-            "get",
-            "hit"
-        ],
-        "next": "exit.6"
-    },
-    "exit.6": {
-        "type": "text",
-        "text": "hit",
-        "lift": " ",
-        "drop": "",
-        "next": "exit.7"
-    },
-    "exit.7": {
         "type": "switch",
         "expression": [
             "get",
-            "hit"
+            "score"
         ],
         "variable": null,
         "value": 0,
         "mode": "walk",
         "branches": [
-            "exit.7.1",
-            "exit.7.2",
-            "exit.7.3"
-        ]
+            "exit.3.1",
+            "exit.3.2"
+        ],
+        "weights": [
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "next": null,
+        "position": "50:3"
     },
-    "exit.7.1": {
-        "type": "text",
-        "text": "s",
-        "lift": "",
-        "drop": "",
-        "next": "exit.8"
-    },
-    "exit.7.2": {
+    "exit.3.1": {
         "type": "goto",
-        "next": "exit.8"
+        "next": null,
+        "position": "50:3"
     },
-    "exit.7.3": {
+    "exit.3.2": {
+        "type": "text",
+        "text": "All told, you scored",
+        "lift": "",
+        "drop": " ",
+        "next": "exit.3.2.1",
+        "position": "50:3"
+    },
+    "exit.3.2.1": {
+        "type": "echo",
+        "expression": [
+            "get",
+            "score"
+        ],
+        "lift": "",
+        "drop": "",
+        "next": "exit.3.2.2",
+        "position": "50:3"
+    },
+    "exit.3.2.2": {
+        "type": "text",
+        "text": "hit",
+        "lift": " ",
+        "drop": "",
+        "next": "exit.3.2.3",
+        "position": "50:3"
+    },
+    "exit.3.2.3": {
+        "type": "switch",
+        "expression": [
+            "get",
+            "score"
+        ],
+        "variable": null,
+        "value": 0,
+        "mode": "walk",
+        "branches": [
+            "exit.3.2.3.1",
+            "exit.3.2.3.2",
+            "exit.3.2.3.3"
+        ],
+        "weights": [
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ],
+            [
+                "val",
+                1
+            ]
+        ],
+        "next": null,
+        "position": "50:3"
+    },
+    "exit.3.2.3.1": {
         "type": "text",
         "text": "s",
         "lift": "",
         "drop": "",
-        "next": "exit.8"
+        "next": "exit.3.2.4",
+        "position": "50:3"
     },
-    "exit.8": {
+    "exit.3.2.3.2": {
+        "type": "goto",
+        "next": "exit.3.2.4",
+        "position": "50:3"
+    },
+    "exit.3.2.3.3": {
+        "type": "text",
+        "text": "s",
+        "lift": "",
+        "drop": "",
+        "next": "exit.3.2.4",
+        "position": "50:3"
+    },
+    "exit.3.2.4": {
         "type": "text",
         "text": ".",
         "lift": "",
-        "drop": " ",
-        "next": null
+        "drop": "",
+        "next": null,
+        "position": "50:3"
     }
 }
 
-}],["index.js","inkblot","index.js",{"./engine":1,"./examples/archery.json":3,"./document":0},function (require, exports, module, __filename, __dirname){
+}],["index.js","inkblot","index.js",{"hashbind":0,"./engine":3,"./examples/archery.json":5,"./story":8,"./document":2},function (require, exports, module, __filename, __dirname){
 
 // inkblot/index.js
 // ----------------
 
 'use strict';
+var Hash = require('hashbind');
 var Engine = require('./engine');
 var story = require('./examples/archery.json');
+var Story = require('./story');
 var Document = require('./document');
-var doc = new Document(document.getElementById('body'));
-var engine = new Engine(story, 'start', doc, doc);
+
+var hash = new Hash(window);
+
+var reset = document.querySelector(".reset")
+reset.onclick = function onclick() {
+    engine.restore(null);
+};
+
+var doc = new Document(document.body);
+var engine = new Engine({
+    story: story,
+    render: doc,
+    dialog: doc
+});
+engine.end = function end() {
+    this.options.push({
+        'label': 'Once more from the top…',
+        'branch': 'start'
+    });
+    return this.$ask();
+};
+engine.handleWaypoint = function handleWaypoint(waypoint) {
+    var json = JSON.stringify(waypoint);
+    var encoded = btoa(json);
+    hash.set('waypoint', encoded);
+    localStorage.setItem('archery.ink', json);
+};
 doc.clear();
-engine.continue();
+
+var waypoint;
+if (waypoint = hash.get('waypoint')) {
+    try {
+        waypoint = atob(waypoint);
+        waypoint = JSON.parse(waypoint);
+    } catch (error) {
+        waypoint = null;
+    }
+} else if (waypoint = localStorage.getItem('archery.ink')) {
+    hash.set('waypoint', btoa(waypoint));
+    try {
+        waypoint = JSON.parse(waypoint);
+    } catch (error) {
+        waypoint = null;
+    }
+}
+
+if (waypoint) {
+    engine.restore(waypoint);
+} else {
+    engine.continue();
+}
 
 window.onkeypress = function onkeypress(event) {
     var key = event.code;
     var match = /^Digit(\d+)$/.exec(key);
     if (match) {
         engine.answer(match[1]);
+    } else if (key === 'KeyR') {
+        engine.restore(null);
     }
 };
 
@@ -1364,6 +2586,12 @@ window.onkeypress = function onkeypress(event) {
 // ---------------
 
 'use strict';
+
+exports.start = start;
+
+function start() {
+    return ['start'];
+}
 
 exports.toName = pathToName;
 
@@ -1404,14 +2632,13 @@ function zerothChildPath(path) {
     return path;
 }
 
-}],["story.js","inkblot","story.js",{"pop-equals":8,"./path":5},function (require, exports, module, __filename, __dirname){
+}],["story.js","inkblot","story.js",{"./path":7},function (require, exports, module, __filename, __dirname){
 
 // inkblot/story.js
 // ----------------
 
 'use strict';
 
-var equals = require('pop-equals');
 var Path = require('./path');
 
 var constructors = {};
@@ -1420,21 +2647,28 @@ module.exports = Story;
 
 function Story() {
     this.states = {};
+    this.errors = [];
     Object.seal(this);
 }
 
 Story.constructors = constructors;
 
-Story.prototype.create = function create(path, type, text) {
+Story.prototype.create = function create(path, type, arg, position) {
     var name = Path.toName(path);
     var Node = constructors[type];
     // istanbul ignore if
     if (!Node) {
         throw new Error('No node constructor for type: ' + type);
     }
-    var node = new Node(text);
+    var node = new Node(arg);
+    node.position = position;
     this.states[name] = node;
     return node;
+};
+
+// istanbul ignore next
+Story.prototype.error = function _error(error) {
+    this.errors.push(error);
 };
 
 constructors.text = Text;
@@ -1444,116 +2678,63 @@ function Text(text) {
     this.lift = ' ';
     this.drop = ' ';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Text.prototype.tie = tie;
-// istanbul ignore next
-Text.prototype.describe = function describe() {
-    return (this.lift ? '' : '-') +
-        this.text.slice(0, 30) +
-        (this.drop ? '' : '-');
-};
-Text.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.text === that.text &&
-        this.lift === that.lift &&
-        this.drop === that.drop &&
-        this.next === that.next;
-};
 
-constructors.print = Print;
-function Print(expression) {
-    this.type = 'print';
+constructors.echo = Echo;
+function Echo(expression) {
+    this.type = 'echo';
     this.expression = expression;
+    this.lift = '';
+    this.drop = '';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
-Print.prototype.tie = tie;
-// istanbul ignore next
-Print.prototype.describe = function describe() {
-    return S(this.expression);
-};
-Print.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.expression, that.expression) &&
-        this.next === that.next;
-};
+Echo.prototype.tie = tie;
 
 constructors.option = Option;
 function Option(label) {
-    this.type = 'option';
-    this.label = label;
-    this.keywords = [];
-    this.branch = null;
+    this.type = 'opt';
+    this.question = [];
+    this.answer = [];
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Option.prototype.tie = tie;
-// istanbul ignore next
-Option.prototype.describe = function describe() {
-    return this.label + ' ' + A(this.branch);
-};
-Option.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.label === that.label &&
-        // Don't care about keywords for the nonce
-        this.branch == that.branch &&
-        this.next === that.next;
-};
 
 constructors.goto = Goto;
 function Goto(next) {
     this.type = 'goto';
     this.next = next || null;
+    this.position = null;
     Object.seal(this);
 }
 Goto.prototype.tie = tie;
-// istanbul ignore next
-Goto.prototype.describe = function describe() {
-    return this.next;
-};
-Goto.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
 
 constructors.call = Call;
-function Call(label) {
+function Call(branch) {
     this.type = 'call';
-    this.label = label;
-    this.branch = null;
+    this.branch = branch;
+    this.args = null;
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Call.prototype.tie = tie;
-// istanbul ignore next
-Call.prototype.describe = function describe() {
-    return this.branch + '() -> ' + this.next;
-};
-Call.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.label === that.label &&
-        this.branch === that.branch &&
-        this.next === that.next;
-};
 
-constructors.subroutine = Subroutine;
-function Subroutine(locals) {
-    this.type = 'subroutine';
+constructors.args = Args;
+function Args(locals) {
+    this.type = 'args';
     this.locals = locals;
     this.next = null;
+    this.position = null;
     Object.seal(this);
-};
-Subroutine.prototype.tie = tie;
-// istanbul ignore next
-Subroutine.prototype.describe = function describe() {
-    return '(' + this.locals.join(', ') + ')';
-};
-Subroutine.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.locals, that.locals) &&
-        this.next === that.next;
-};
+}
+Args.prototype.tie = tie;
 
 constructors.jump = Jump;
 function Jump(condition) {
@@ -1561,19 +2742,10 @@ function Jump(condition) {
     this.condition = condition;
     this.branch = null;
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Jump.prototype.tie = tie;
-// istanbul ignore next
-Jump.prototype.describe = function describe() {
-    return this.branch + ' if ' + S(this.condition);
-};
-Jump.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.condition, that.condition) &&
-        this.branch === that.branch &&
-        this.next === that.next;
-};
 
 constructors.switch = Switch;
 function Switch(expression) {
@@ -1583,331 +2755,108 @@ function Switch(expression) {
     this.value = 0;
     this.mode = null;
     this.branches = [];
+    this.weights = [];
+    this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Switch.prototype.tie = tie;
-// istanbul ignore next
-Switch.prototype.describe = function describe() {
-    if (this.variable) {
-        return this.mode + ' (' + this.variable + '+' +  this.value + ') ' + S(this.expression);
-    } else {
-        return this.mode + ' ' + S(this.expression);
-    }
-};
-Switch.prototype.equals = function _equals(that) {
-    return this.type === that.type &&
-        equals(this.expression, that.expression) &&
-        this.value === that.value &&
-        this.mode === that.mode &&
-        equals(this.branches, that.branches);
-};
 
-constructors.set = Set;
-function Set(variable) {
-    this.type = 'set';
-    this.variable = variable;
-    this.expression = null;
-    this.parameter = false;
+constructors.move = Move;
+function Move() {
+    this.type = 'move';
+    this.source = null;
+    this.target = null;
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
-Set.prototype.tie = tie;
-// istanbul ignore next
-Set.prototype.describe = function describe() {
-    return this.variable + ' ' + S(this.expression);
-};
-Set.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.variable === that.variable &&
-        this.parameter === Boolean(that.parameter) &&
-        this.next === that.next;
-};
+Move.prototype.tie = tie;
 
 constructors.break = Break;
-function Break(variable) {
-    this.type = 'break';
+function Break() {
+    this.type = 'br';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Break.prototype.tie = tie;
-// istanbul ignore next
-Break.prototype.describe = function describe() {
-    return '';
-};
-Break.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
 
 constructors.paragraph = Paragraph;
-function Paragraph(variable) {
-    this.type = 'paragraph';
+function Paragraph() {
+    this.type = 'par';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Paragraph.prototype.tie = tie;
-// istanbul ignore next
-Paragraph.prototype.describe = function describe() {
-    return '';
-};
-Paragraph.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
 
-constructors.startJoin = StartJoin;
-function StartJoin(variable) {
-    this.type = 'startJoin';
-    this.text = '';
-    this.lift = '';
-    this.drop = '';
-    this.delimiter = ',';
+constructors.rule = Rule;
+function Rule() {
+    this.type = 'rule';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
-StartJoin.prototype.tie = tie;
-// istanbul ignore next
-StartJoin.prototype.describe = function describe() {
-    return '';
-};
-StartJoin.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
+Rule.prototype.tie = tie;
 
-constructors.stopJoin = StopJoin;
-function StopJoin(variable) {
-    this.type = 'stopJoin';
-    this.next = null;
+constructors.ask = Ask;
+function Ask(variable) {
+    this.type = 'ask';
+    this.position = null;
     Object.seal(this);
 }
-StopJoin.prototype.tie = tie;
-// istanbul ignore next
-StopJoin.prototype.describe = function describe() {
-    return '';
-};
-StopJoin.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.next === that.next;
-};
-
-constructors.delimit = Delimit;
-function Delimit(variable) {
-    this.type = 'delimit';
-    this.delimiter = ',';
-    this.next = null;
-    Object.seal(this);
-}
-Delimit.prototype.tie = tie;
-// istanbul ignore next
-Delimit.prototype.describe = function describe() {
-    return ',';
-};
-Delimit.prototype.equals = function equals(that) {
-    return this.type === that.type &&
-        this.delimiter === that.delimiter &&
-        this.next === that.next;
-};
-
-constructors.prompt = Prompt;
-function Prompt(variable) {
-    this.type = 'prompt';
-    Object.seal(this);
-}
-Prompt.prototype.tie = tie;
-// istanbul ignore next
-Prompt.prototype.describe = function describe() {
-    return '';
-};
-Prompt.prototype.equals = function equals(that) {
-    return this.type === that.type;
-};
+Ask.prototype.tie = tie;
 
 function tie(end) {
     this.next = end;
 }
 
-// istanbul ignore next
-function S(args) {
-    if (args[0] === 'val' || args[0] === 'get') {
-        return args[1];
-    } else {
-        return '(' + args[0] + ' ' + args.slice(1).map(S).join(' ') + ')';
-    }
-}
+}],["index.js","rezult","index.js",{},function (require, exports, module, __filename, __dirname){
 
-// istanbul ignore next
-function A(label) {
-    if (label == null) {
-        return '<-';
-    } else {
-        return '-> ' + label;
-    }
-}
-
-}],["mini-map.js","mini-map","mini-map.js",{},function (require, exports, module, __filename, __dirname){
-
-// mini-map/mini-map.js
-// --------------------
+// rezult/index.js
+// ---------------
 
 "use strict";
 
-module.exports = MiniMap;
-function MiniMap() {
-    this.keys = [];
-    this.values = [];
+module.exports = Result;
+
+function Result(err, value) {
+    var self = this;
+    self.err = err || null;
+    self.value = value;
 }
 
-MiniMap.prototype.has = function (key) {
-    var index = this.keys.indexOf(key);
-    return index >= 0;
-};
-
-MiniMap.prototype.get = function (key) {
-    var index = this.keys.indexOf(key);
-    if (index >= 0) {
-        return this.values[index];
+Result.prototype.toValue = function toValue() {
+    var self = this;
+    if (self.err) {
+        throw self.err;
+    } else {
+        return self.value;
     }
 };
 
-MiniMap.prototype.set = function (key, value) {
-    var index = this.keys.indexOf(key);
-    if (index < 0) {
-        index = this.keys.length;
-    }
-    this.keys[index] = key;
-    this.values[index] = value;
+Result.prototype.toCallback = function toCallback(callback) {
+    var self = this;
+    callback(self.err, self.value);
 };
 
-MiniMap.prototype["delete"] = function (key) {
-    var index = this.keys.indexOf(key);
-    if (index >= 0) {
-        this.keys.splice(index, 1);
-        this.values.splice(index, 1);
-    }
+Result.just = function just(value) {
+    return new Result(null, value);
 };
 
-MiniMap.prototype.clear = function () {
-    this.keys.length = 0;
-    this.values.length = 0;
+Result.error = function error(err) {
+    return new Result(err, null);
 };
 
-
-}],["pop-equals.js","pop-equals","pop-equals.js",{"mini-map":7},function (require, exports, module, __filename, __dirname){
-
-// pop-equals/pop-equals.js
-// ------------------------
-
-"use strict";
-
-var MiniMap = require("mini-map");
-var getPrototypeOf = Object.getPrototypeOf;
-var objectPrototype = Object.prototype;
-
-/**
-    Performs a polymorphic, type-sensitive deep equivalence comparison of any
-    two values.
-
-    <p>As a basic principle, any value is equivalent to itself (as in
-    identity), any boxed version of itself (as a <code>new Number(10)</code> is
-    to 10), and any deep clone of itself.
-
-    <p>Equivalence has the following properties:
-
-    <ul>
-        <li><strong>polymorphic:</strong>
-            If the given object is an instance of a type that implements a
-            methods named "equals", this function defers to the method.  So,
-            this function can safely compare any values regardless of type,
-            including undefined, null, numbers, strings, any pair of objects
-            where either implements "equals", or object literals that may even
-            contain an "equals" key.
-        <li><strong>type-sensitive:</strong>
-            Incomparable types are not equal.  No object is equivalent to any
-            array.  No string is equal to any other number.
-        <li><strong>deep:</strong>
-            Collections with equivalent content are equivalent, recursively.
-        <li><strong>equivalence:</strong>
-            Identical values and objects are equivalent, but so are collections
-            that contain equivalent content.  Whether order is important varies
-            by type.  For Arrays and lists, order is important.  For Objects,
-            maps, and sets, order is not important.  Boxed objects are mutally
-            equivalent with their unboxed values, by virtue of the standard
-            <code>valueOf</code> method.
-    </ul>
-    @param this
-    @param that
-    @returns {Boolean} whether the values are deeply equivalent
-*/
-module.exports = equals;
-function equals(a, b, equals, memo) {
-    equals = equals || module.exports;
-    // unbox objects
-    if (a && typeof a.valueOf === "function") {
-        a = a.valueOf();
-    }
-    if (b && typeof b.valueOf === "function") {
-        b = b.valueOf();
-    }
-    if (a === b)
-        return true;
-    // NaN !== NaN, but they are equal.
-    // NaNs are the only non-reflexive value, i.e., if x !== x,
-    // then x is a NaN.
-    // isNaN is broken: it converts its argument to number, so
-    // isNaN("foo") => true
-    // We have established that a !== b, but if a !== a && b !== b, they are
-    // both NaN.
-    if (a !== a && b !== b)
-        return true;
-    if (!a || !b)
-        return false;
-    if (typeof a === "object") {
-        memo = memo || new MiniMap();
-        if (memo.has(a)) {
-            return true;
+Result.lift = function lift(func) {
+    return function rezultLifted() {
+        try {
+            return Result.just(func.apply(this, arguments));
+        } catch(err) {
+            return Result.error(err);
         }
-        memo.set(a, true);
-    }
-    if (typeof a.equals === "function") {
-        return a.equals(b, equals, memo);
-    }
-    // commutative
-    if (typeof b.equals === "function") {
-        return b.equals(a, equals, memo);
-    }
-    if ((Array.isArray(a) || Array.isArray(b)) && a.length !== b.length) {
-        return false;
-    }
-    if (typeof a === "object" && typeof b === "object") {
-        if (
-            getPrototypeOf(a) === objectPrototype &&
-            getPrototypeOf(b) === objectPrototype ||
-            Array.isArray(a) ||
-            Array.isArray(b)
-        ) {
-            for (var name in a) {
-                if (!equals(a[name], b[name], equals, memo)) {
-                    return false;
-                }
-            }
-            for (var name in b) {
-                if (!(name in a)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-    return false;
-}
-
-// Because a return value of 0 from a `compare` function  may mean either
-// "equals" or "is incomparable", `equals` cannot be defined in terms of
-// `compare`.  However, `compare` *can* be defined in terms of `equals` and
-// `lessThan`.  Again however, more often it would be desirable to implement
-// all of the comparison functions in terms of compare rather than the other
-// way around.
-
+    };
+};
 
 }]])("inkblot/index.js")

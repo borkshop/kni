@@ -72,4 +72,14 @@ a:visited {
     bottom: 0;
     right: 0;
     margin: 10px;
+    z-index: 100;
+}
+
+.reset {
+    position: absolute;
+    height: 1em;
+    bottom: 0;
+    left: 0;
+    margin: 10px;
+    z-index: 100;
 }
