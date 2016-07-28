@@ -727,7 +727,7 @@ MaybeSetVariable.prototype.next = function next(type, space, text, scanner) {
         return this.set(['val', 1], this.expression, scanner)
             .next(type, space, text, scanner);
     }
-    return expression(this.story, new ExpectSetVariable(this))
+    return expression(this.story, this)
         .next(type, space, text, scanner);
 };
 
@@ -743,12 +743,8 @@ MaybeSetVariable.prototype.set = function set(source, target, scanner) {
     return this.parent.return(Path.next(this.path), [node], [], scanner);
 };
 
-function ExpectSetVariable(parent) {
-    this.parent = parent;
-}
-
-ExpectSetVariable.prototype.return = function _return(target, scanner) {
-    return this.parent.set(this.parent.expression, target, scanner);
+MaybeSetVariable.prototype.return = function _return(target, scanner) {
+    return this.set(this.expression, target, scanner);
 };
 
 function ExpressionBlock(story, path, parent, ends, mode) {
