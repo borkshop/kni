@@ -14,14 +14,15 @@ function Story() {
 
 Story.constructors = constructors;
 
-Story.prototype.create = function create(path, type, text) {
+Story.prototype.create = function create(path, type, arg, position) {
     var name = Path.toName(path);
     var Node = constructors[type];
     // istanbul ignore if
     if (!Node) {
         throw new Error('No node constructor for type: ' + type);
     }
-    var node = new Node(text);
+    var node = new Node(arg);
+    node.position = position;
     this.states[name] = node;
     return node;
 };
@@ -38,6 +39,7 @@ function Text(text) {
     this.lift = ' ';
     this.drop = ' ';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Text.prototype.tie = tie;
@@ -49,6 +51,7 @@ function Echo(expression) {
     this.lift = '';
     this.drop = '';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Echo.prototype.tie = tie;
@@ -59,6 +62,7 @@ function Option(label) {
     this.question = [];
     this.answer = [];
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Option.prototype.tie = tie;
@@ -67,6 +71,7 @@ constructors.goto = Goto;
 function Goto(next) {
     this.type = 'goto';
     this.next = next || null;
+    this.position = null;
     Object.seal(this);
 }
 Goto.prototype.tie = tie;
@@ -77,6 +82,7 @@ function Call(branch) {
     this.branch = branch;
     this.args = null;
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Call.prototype.tie = tie;
@@ -86,6 +92,7 @@ function Args(locals) {
     this.type = 'args';
     this.locals = locals;
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Args.prototype.tie = tie;
@@ -96,6 +103,7 @@ function Jump(condition) {
     this.condition = condition;
     this.branch = null;
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Jump.prototype.tie = tie;
@@ -110,6 +118,7 @@ function Switch(expression) {
     this.branches = [];
     this.weights = [];
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Switch.prototype.tie = tie;
@@ -120,6 +129,7 @@ function Move() {
     this.source = null;
     this.target = null;
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Move.prototype.tie = tie;
@@ -128,6 +138,7 @@ constructors.break = Break;
 function Break() {
     this.type = 'br';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Break.prototype.tie = tie;
@@ -136,6 +147,7 @@ constructors.paragraph = Paragraph;
 function Paragraph() {
     this.type = 'par';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Paragraph.prototype.tie = tie;
@@ -144,6 +156,7 @@ constructors.rule = Rule;
 function Rule() {
     this.type = 'rule';
     this.next = null;
+    this.position = null;
     Object.seal(this);
 }
 Rule.prototype.tie = tie;
@@ -151,6 +164,7 @@ Rule.prototype.tie = tie;
 constructors.ask = Ask;
 function Ask(variable) {
     this.type = 'ask';
+    this.position = null;
     Object.seal(this);
 }
 Ask.prototype.tie = tie;

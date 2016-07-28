@@ -9,7 +9,7 @@ exports.start = start;
 function start(story) {
     var path = Path.start();
     var stop = new Stop(story);
-    var start = story.create(path, 'goto', null);
+    var start = story.create(path, 'goto', null, '1:1');
     return new Thread(story, Path.zerothChild(path), stop, [start], []);
 }
 
@@ -67,11 +67,11 @@ Thread.prototype.next = function next(type, space, text, scanner) {
             // Advance the path so that option thread don't appear empty.
             return new Thread(this.story, Path.next(this.path), this.parent, [], this.jumps);
         } else if (text === '/') {
-            var node = this.story.create(this.path, 'break');
+            var node = this.story.create(this.path, 'break', scanner.position());
             tie(this.ends, this.path);
             return new Thread(this.story, Path.next(this.path), this.parent, [node], this.jumps);
         } else if (text === '//') {
-            var node = this.story.create(this.path, 'paragraph');
+            var node = this.story.create(this.path, 'paragraph', scanner.position());
             tie(this.ends, this.path);
             return new Thread(this.story, Path.next(this.path), this.parent, [node], this.jumps);
         } else if (text === '{"' || text === '{\'' || text === '"}' || text === '\'}') {
@@ -84,7 +84,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '-') {
             return new MaybeThread(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, [], []);
         } else if (text === '>') {
-            var node = this.story.create(this.path, 'ask');
+            var node = this.story.create(this.path, 'ask', null, scanner.position());
             // tie off ends to the prompt.
             tie(this.ends, this.path);
             // promote jumps to ends, tying them off after the prompt.
@@ -95,7 +95,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
             return new Program(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, []);
         }
     } else if (type === 'dash') {
-        var node = this.story.create(this.path, 'rule');
+        var node = this.story.create(this.path, 'rule', scanner.position());
         tie(this.ends, this.path);
         return new Thread(this.story, Path.next(this.path), this.parent, [node], this.jumps);
     } else if (type === 'break') {
@@ -151,7 +151,7 @@ Text.prototype.next = function next(type, space, text, scanner) {
         return this;
     }
     tie(this.ends, this.path);
-    var node = this.story.create(this.path, 'text', this.text);
+    var node = this.story.create(this.path, 'text', this.text, scanner.position());
     node.lift = this.lift;
     node.drop = space;
     return this.parent.return(Path.next(this.path), [node], [], scanner)
@@ -193,8 +193,8 @@ function ThreadCondition(story, path, parent, ends, jumps, skips) {
     Object.freeze(this);
 }
 
-ThreadCondition.prototype.return = function _return(args) {
-    var node = this.story.create(this.path, 'jump', expression.invert(args));
+ThreadCondition.prototype.return = function _return(args, scanner) {
+    var node = this.story.create(this.path, 'jump', expression.invert(args), scanner.position());
     var branch = new Branch(node);
     tie(this.ends, this.path);
     return new MaybeThread(this.story, Path.next(this.path), this.parent, [node], this.jumps, this.skips.concat([branch]));
@@ -221,7 +221,7 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
                 new ThenExpect('token', '}', this.story, this));
         }
     }
-    return this.option().next(type, space, text, scanner);
+    return this.option(scanner).next(type, space, text, scanner);
 };
 
 MaybeOption.prototype.return = function _return(operator, expression, modifier) {
@@ -247,7 +247,7 @@ MaybeOption.prototype.advance = function advance() {
     }
 };
 
-MaybeOption.prototype.option = function option() {
+MaybeOption.prototype.option = function option(scanner) {
     var variable = Path.toName(this.path);
     var ends = [];
 
@@ -255,7 +255,7 @@ MaybeOption.prototype.option = function option() {
 
     if (this.leader === '*') {
         this.consequences.push([['get', variable], ['+', ['get', variable], ['val', 1]]]);
-        var jump = this.story.create(this.at, 'jump', ['<>', ['get', variable], ['val', 0]]);
+        var jump = this.story.create(this.at, 'jump', ['<>', ['get', variable], ['val', 0]], scanner.position());
         var jumpBranch = new Branch(jump);
         ends.push(jumpBranch);
         this.advance();
@@ -264,7 +264,7 @@ MaybeOption.prototype.option = function option() {
 
     for (var i = 0; i < this.conditions.length; i++) {
         var condition = this.conditions[i];
-        var jump = this.story.create(this.at, 'jump', ['==', condition, ['val', 0]]);
+        var jump = this.story.create(this.at, 'jump', ['==', condition, ['val', 0]], scanner.position());
         var jumpBranch = new Branch(jump);
         ends.push(jumpBranch);
         this.advance();
@@ -272,11 +272,11 @@ MaybeOption.prototype.option = function option() {
     }
 
     var option = new Option(this.story, this.path, this.parent, ends, this.jumps, this.leader, this.consequences);
-    option.node = this.story.create(this.at, 'option', null);
+    option.node = this.story.create(this.at, 'option', null, scanner.position());
     this.advance();
 
     option.next = this.at;
-    return option.thread(
+    return option.thread(scanner,
         new OptionThread(this.story, this.at, option, [], option, 'qa', AfterInitialQA));
 };
 
@@ -347,7 +347,7 @@ Option.prototype.return = function _return(path, ends, jumps, scanner) {
     if (this.mode !== 'a') {
         // If the answer is reused in the question, create a dedicated jump and
         // add it to the end of the answer.
-        var jump = this.story.create(path, 'goto', null);
+        var jump = this.story.create(path, 'goto', null, scanner.position());
         this.node.answer.push(Path.toName(path));
         path = Path.next(path);
         ends = [jump];
@@ -361,10 +361,10 @@ Option.prototype.return = function _return(path, ends, jumps, scanner) {
     );
 };
 
-Option.prototype.thread = function thread(parent) {
+Option.prototype.thread = function thread(scanner, parent) {
     // Creat a dummy node, to replace if necessary, for arcs that begin with a
     // goto/divert arrow that otherwise would have loose ends to forward.
-    var placeholder = this.story.create(this.next, 'goto', null);
+    var placeholder = this.story.create(this.next, 'goto', null, scanner.position());
     return new Thread(this.story, this.next, parent, [placeholder], []);
 };
 
@@ -416,7 +416,7 @@ function AfterInitialQA(story, path, parent, ends, option) {
 AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
     // istanbul ignore else
     if (type === 'token' && text === '[') {
-        return this.option.thread(new AfterQorA(this.story, this.path, this, this.ends, this.option));
+        return this.option.thread(scanner, new AfterQorA(this.story, this.path, this, this.ends, this.option));
     } else {
         this.story.error('Expected brackets in option at ' + scanner.position());
         return this.return(this.path, this.ends, this.jumps);
@@ -436,7 +436,7 @@ AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
     }
     for (var i = 0; i < consequences.length; i++) {
         var consequence = consequences[i];
-        var node = this.story.create(path, 'move');
+        var node = this.story.create(path, 'move', scanner.position());
         node.source = consequence[1];
         node.target = consequence[0];
         tie(ends, path);
@@ -445,7 +445,7 @@ AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
     }
 
     this.option.next = path;
-    return this.option.thread(
+    return this.option.thread(scanner,
         new OptionThread(this.story, path, this.parent, ends, this.option, 'a', AfterFinalA));
 };
 
@@ -464,7 +464,7 @@ function DecideQorA(story, path, parent, ends, option) {
 DecideQorA.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token' && text === '[') { // A
         this.option.push(this.path, 'a');
-        return this.option.thread(
+        return this.option.thread(scanner,
             new OptionThread(this.story, this.path, this, this.ends, this.option, 'q', ExpectFinalBracket));
     // istanbul ignore else
     } else if (type === 'token' && text === ']') { // Q
@@ -479,7 +479,7 @@ DecideQorA.prototype.next = function next(type, space, text, scanner) {
 // If the brackets contain a sequence of question thread like [A [Q] QA [Q]
 // QA...], then after each [question], we return here for continuing QA arcs.
 DecideQorA.prototype.return = function _return(path, ends, jumps, scanner) {
-    return this.option.thread(
+    return this.option.thread(scanner,
         new OptionThread(this.story, path, this.parent, ends, this.option, 'qa', AfterQA));
 };
 
@@ -497,7 +497,7 @@ function AfterQA(story, path, parent, ends, option) {
 
 AfterQA.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token' && text === '[') {
-        return this.option.thread(
+        return this.option.thread(scanner,
             new OptionThread(this.story, this.path, this, this.ends, this.option, 'q', ExpectFinalBracket));
     // istanbul ignore else
     } else  if (type === 'token' && text === ']') {
@@ -509,7 +509,7 @@ AfterQA.prototype.next = function next(type, space, text, scanner) {
 };
 
 AfterQA.prototype.return = function _return(path, ends, jumps, scanner) {
-    return this.option.thread(
+    return this.option.thread(scanner,
         new OptionThread(this.story, this.path, this.parent, ends, this.option, 'qa', ExpectFinalBracket));
 };
 
@@ -589,7 +589,7 @@ Label.prototype.return = function _return(expression, scanner) {
         var label = expression[1];
         var path = [label, 0];
         // place-holder goto thunk
-        var node = this.story.create(path, 'goto', null);
+        var node = this.story.create(path, 'goto', null, scanner.position());
         tie(this.ends, path);
         // ends also forwarded so they can be tied off if the goto is replaced.
         return this.parent.return(path, this.ends.concat([node]), [], scanner);
@@ -597,7 +597,7 @@ Label.prototype.return = function _return(expression, scanner) {
     } else if (expression[0] === 'call') {
         var label = expression[1][1];
         var path = [label, 0];
-        var node = this.story.create(path, 'args', null);
+        var node = this.story.create(path, 'args', null, scanner.position());
         var params = [];
         for (var i = 2; i < expression.length; i++) {
             var arg = expression[i];
@@ -646,7 +646,7 @@ Goto.prototype.return = function _return(args, scanner) {
         return this.parent.return(Path.next(this.path), [], [], scanner);
     } else if (args[0] === 'call') {
         var label = args[1][1];
-        var node = this.story.create(this.path, 'call', label);
+        var node = this.story.create(this.path, 'call', label, scanner.position());
         node.args = args.slice(2);
         tie(this.ends, this.path);
         return this.parent.return(Path.next(this.path), [node], [], scanner);
@@ -695,11 +695,11 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return new Program(this.story, this.path, new ThenExpect('token', '}', this.story, this.parent), this.ends, []);
         } else if (switches[text]) {
             return new SwitchBlock(this.story, this.path, this.parent, this.ends)
-                .start(null, Path.toName(this.path), null, switches[text]);
+                .start(scanner, null, Path.toName(this.path), null, switches[text]);
         }
     }
     return new SwitchBlock(this.story, this.path, this.parent, this.ends)
-        .start(null, Path.toName(this.path), 1, 'walk') // with variable and value, waiting for case to start
+        .start(scanner, null, Path.toName(this.path), 1, 'walk') // with variable and value, waiting for case to start
         .next(type, space, text, scanner);
 };
 
@@ -734,7 +734,7 @@ MaybeSetVariable.prototype.next = function next(type, space, text, scanner) {
 };
 
 MaybeSetVariable.prototype.set = function set(source, target, scanner) {
-    var node = this.story.create(this.path, 'move');
+    var node = this.story.create(this.path, 'move', null, scanner.position());
     if (this.op === '=') {
         node.source = source;
     } else {
@@ -774,13 +774,13 @@ function AfterExpressionBlock(story, path, parent, ends, mode, expression) {
 AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) {
     if (text === '|') {
         return new SwitchBlock(this.story, this.path, this.parent, this.ends)
-            .start(this.expression, null, 0, this.mode);
+            .start(scanner, this.expression, null, 0, this.mode);
     } else if (text === '?') {
         return new SwitchBlock(this.story, this.path, this.parent, this.ends)
-            .start(expression.invert(this.expression), null, 0, this.mode, 2);
+            .start(scanner, expression.invert(this.expression), null, 0, this.mode, 2);
     // istanbul ignore else
     } else if (text === '}') {
-        var node = this.story.create(this.path, 'echo', this.expression);
+        var node = this.story.create(this.path, 'echo', this.expression, scanner.position());
         tie(this.ends, this.path);
         return new Thread(this.story, Path.next(this.path), this.parent, [node], []);
     } else {
@@ -799,13 +799,13 @@ function SwitchBlock(story, path, parent, ends) {
     this.weights = [];
 }
 
-SwitchBlock.prototype.start = function start(expression, variable, value, mode, min) {
+SwitchBlock.prototype.start = function start(scanner, expression, variable, value, mode, min) {
     value = value || 0;
     if (mode === 'loop' && !expression) {
         value = 1;
     }
     expression = expression || ['get', Path.toName(this.path)];
-    var node = this.story.create(this.path, 'switch', expression);
+    var node = this.story.create(this.path, 'switch', expression, scanner.position());
     this.node = node;
     node.variable = variable;
     node.value = value;
@@ -840,7 +840,7 @@ Case.prototype.next = function next(type, space, text, scanner) {
     } else {
         var path = this.path;
         while (this.branches.length < this.min) {
-            var node = this.story.create(path, 'goto', null);
+            var node = this.story.create(path, 'goto', null, scanner.position());
             this.ends.push(node);
             this.branches.push(Path.toName(path));
             path = Path.next(path);
@@ -850,10 +850,10 @@ Case.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-Case.prototype.case = function _case(args) {
+Case.prototype.case = function _case(args, scanner) {
     this.parent.weights.push(args || ['val', 1]);
     var path = Path.zerothChild(this.path);
-    var node = this.story.create(path, 'goto', null);
+    var node = this.story.create(path, 'goto', null, scanner.position());
     this.branches.push(Path.toName(path));
     return new Thread(this.story, path, this, [node], []);
 };
@@ -872,13 +872,13 @@ MaybeWeightedCase.prototype.next = function next(type, space, text, scanner) {
         return expression(this.story, this)
             .next(type, space, text, scanner);
     } else {
-        return this.parent.case()
+        return this.parent.case(null, scanner)
             .next(type, space, text, scanner);
     }
 };
 
-MaybeWeightedCase.prototype.return = function _return(args) {
-    return this.parent.case(args);
+MaybeWeightedCase.prototype.return = function _return(args, scanner) {
+    return this.parent.case(args, scanner);
 };
 
 function Program(story, path, parent, ends, jumps) {
@@ -964,7 +964,7 @@ ExpectExpression.prototype.return = function _return(right, scanner) {
     var node;
     // TODO validate this.left as a valid move target
     tie(this.ends, this.path);
-    node = this.story.create(this.path, 'move', null);
+    node = this.story.create(this.path, 'move', null, scanner.position());
     node.target = this.left;
     node.source = right;
     return this.parent.return(Path.next(this.path), [node], this.jumps, scanner);

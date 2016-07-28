@@ -172,7 +172,7 @@ function test(inkscript, typescript) {
 
 function describeStory(states) {
     var keys = Object.keys(states);
-    var cells = [['AT', 'DO', 'S', 'USING', 'S', 'GO']];
+    var cells = [['L:C', 'AT', 'DO', 'S', 'USING', 'S', 'GO']];
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var node = states[key];
@@ -183,6 +183,7 @@ function describeStory(states) {
             next = keys[i + 1];
         }
         cells.push([
+            stripe(i, node.position),
             stripe(i, key),
             stripe(i, node.mode || node.type),
             stripe(i, node.lift ? '-' : ' '),
@@ -198,7 +199,7 @@ function describeStory(states) {
             paddingRight: 2
         },
         columns: {
-            3: {
+            4: {
                 width: 40,
                 wrapWord: true
             }

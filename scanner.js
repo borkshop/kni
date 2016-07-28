@@ -60,10 +60,14 @@ Scanner.prototype.next = function next(text) {
         } else if (this.leading && leaders.indexOf(c) >= 0 && d === '\n') {
             this.leader += c;
             this.indentStart = i;
+            this.columnStart = this.columnNo;
+            this.lineStart = this.lineNo;
             this.indent = this.columnNo + 2;
         } else if (this.leading) {
             this.indent = this.columnNo;
             this.indentStart = i;
+            this.columnStart = this.columnNo;
+            this.lineStart = this.lineNo;
             this.columnNo++;
             this.leading = false;
         }
@@ -92,7 +96,7 @@ Scanner.prototype.return = function _return() {
 
 // istanbul ignore next
 Scanner.prototype.position = function position() {
-    return (this.lineNo + 1) + ':' + (this.columnNo + 1);
+    return (this.lineStart + 1) + ':' + (this.columnStart + 1);
 };
 
 function nextTabStop(columnNo) {

@@ -116,7 +116,7 @@ Close.prototype.next = function next(type, space, text, scanner) {
         return this.parent.return(this.expression, scanner);
     } else {
         this.story.error('Expected parenthetical expression to end with ) or continue with operator, got ' + type + '/' + text + ' at ' + scanner.position());
-        return this.parent.return(this.expression);
+        return this.parent.return(this.expression, scanner);
     }
 };
 
@@ -139,7 +139,8 @@ Value.prototype.next = function next(type, space, text, scanner) {
         return new GetStaticVariable(this.story, new AfterVariable(this.story, this.parent), [], [], text, false);
     } else {
         this.story.error('Expected expression, got ' + type + '/' + text + ' at ' + scanner.position());
-        return this.parent.return(['val', 0]).next(type, space, text, scanner);
+        return this.parent.return(['val', 0], scanner)
+            .next(type, space, text, scanner);
     }
 };
 
@@ -179,7 +180,7 @@ function Arguments(story, parent, expression) {
 
 Arguments.prototype.next = function next(type, space, text, scanner) {
     if (text === ')') {
-        return this.parent.return(this.args);
+        return this.parent.return(this.args, scanner);
     } else {
         return expression(this.story, this)
             .next(type, space, text, scanner);
@@ -234,7 +235,7 @@ function UnaryOperator(story, parent, op) {
 }
 
 UnaryOperator.prototype.return = function _return(expression, scanner) {
-    return this.parent.return([this.op, expression]);
+    return this.parent.return([this.op, expression], scanner);
 };
 
 function MaybeOperator(story, parent, expression, operators) {
@@ -289,7 +290,8 @@ function PartialExpression(story, parent, op, left) {
 }
 
 PartialExpression.prototype.return = function _return(right, scanner) {
-    return this.parent.maybeAnother(this.parent.parent).return([this.op, this.left, right]);
+    return this.parent.maybeAnother(this.parent.parent)
+        .return([this.op, this.left, right], scanner);
 };
 
 function GetDynamicVariable(story, parent, literals, expressions) {
