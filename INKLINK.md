@@ -4,7 +4,9 @@
 Inkblot is an homage, inspired by Inkle’s Ink.
 The languages have several key ideas in common.
 
-- They h[H]ave pithy notation for question/answer narrative for options.
+- They h[H]ave pithy notation for question/answer narrative for options,
+  including * show-once options, + show forever options, and * [] fall through
+  when options are exhausted options.
 - They have {curly|braces|delimited|by|pipes} for meta-narrative.
 - They have the divert or goto arrow ``->``.
 - They collect threads of narrative after nested option groups.
@@ -110,15 +112,6 @@ Inkblot diverges rapidly from its roots in inspiration from Inkle’s Ink.
   different.
 
 Inkblot is missing many things available to Ink.
-
-- Inkblot does not yets support default options.
-
-  ```ink
-  * [You can make this choice once. ]
-  * [] Fall through to this if no other options are collected
-    before the prompt.
-  >
-  ```
 
 - Inkblot does not have enumerations or other typed variable declarations.
   In only supports 32 bit integers.

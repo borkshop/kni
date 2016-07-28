@@ -44,6 +44,7 @@ function main() {
     test('tests/sample.ink', 'tests/sample.1');
     test('tests/steady.ink', 'tests/steady.1');
     test('tests/switch-list.ink', 'tests/switch-list.1');
+    test('tests/no-option.ink', 'tests/no-option.1');
 
 }
 

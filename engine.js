@@ -13,6 +13,7 @@ function Engine(args) {
     var self = this;
     this.story = args.story;
     this.options = [];
+    this.noOption = null;
     this.storage = new Global();
     this.top = this.storage;
     this.stack = [this.top];
@@ -93,8 +94,17 @@ Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
 };
 
 Engine.prototype.ask = function ask() {
-    this.display();
-    this.dialog.ask();
+    if (this.options.length) {
+        this.display();
+        this.dialog.ask();
+    } else if (this.noOption != null) {
+        var answer = this.noOption.answer;
+        this.flush();
+        this.gothrough(answer, null, false);
+        this.continue();
+    } else {
+        return this.goto(this.instruction.next);
+    }
 };
 
 Engine.prototype.answer = function answer(text) {
@@ -123,6 +133,7 @@ Engine.prototype.display = function display() {
 
 Engine.prototype.flush = function flush() {
     this.options.length = 0;
+    this.noOption = null;
 };
 
 Engine.prototype.write = function write(text) {
@@ -130,6 +141,7 @@ Engine.prototype.write = function write(text) {
     return this.goto(this.instruction.next);
 };
 
+// istanbul ignore next
 Engine.prototype.capture = function capture(answer) {
     var stack = [];
     var top = this.top;
@@ -151,6 +163,7 @@ Engine.prototype.capture = function capture(answer) {
     ];
 };
 
+// istanbul ignore next
 Engine.prototype.restore = function restore(state) {
     this.render.clear();
     this.label = state[0];
@@ -181,6 +194,7 @@ Engine.prototype.restore = function restore(state) {
     }
 };
 
+// istanbul ignore next
 Engine.prototype.log = function log() {
     this.top.log();
     console.log('');
@@ -256,9 +270,14 @@ Engine.prototype.$args = function $args() {
 
 Engine.prototype.$opt = function $opt() {
     var option = this.instruction;
-    this.options.push(option);
-    this.render.startOption();
-    return this.gothrough(option.question, this.instruction.next, true);
+    if (option.question.length) {
+        this.options.push(option);
+        this.render.startOption();
+        return this.gothrough(option.question, this.instruction.next, true);
+    } else if (this.noOption == null) {
+        this.noOption = option;
+    }
+    return this.goto(option.next);
 };
 
 Engine.prototype.$move = function $move() {
@@ -369,7 +388,6 @@ Global.prototype.get = function get(name) {
 };
 
 Global.prototype.set = function set(name, value) {
-    if (name == null) throw new Error('Key must have name');
     this.scope[name] = value;
 };
 
@@ -390,6 +408,7 @@ Global.prototype.at = function at() {
     return '';
 };
 
+// istanbul ignore next
 Global.prototype.capture = function capture() {
     var keys = Object.keys(this.scope);
     var values = [];
@@ -452,6 +471,7 @@ Frame.prototype.at = function at() {
     return this.caller.at() + '/' + this.branch;
 };
 
+// istanbul ignore next
 Frame.prototype.capture = function capture() {
     var values = [];
     // var object = {};
@@ -469,6 +489,7 @@ Frame.prototype.capture = function capture() {
     ];
 };
 
+// istanbul ignore next
 Frame.restore = function restore(top, storage, state) {
     var keys = state[0];
     var values = state[1];

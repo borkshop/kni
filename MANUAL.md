@@ -207,6 +207,20 @@ Examples:
 >
 ```
 
+If an option has no question, it is a "non-option".
+If the narrative reaches a prompt without accumulating any options,
+it will fall through and automatically follow the first collected non-option.
+
+```
+* [An option only to be taken once. ]
+* [Another option that disappears. ]
+* [] When all other options have been exhausted,
+  the remaining option, however invisible, must be chosen.
+  <-
+>
+->start
+```
+
 # Directives
 
 A limited number of symbols are significant within a narrative outside braces
