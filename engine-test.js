@@ -36,6 +36,7 @@ function main() {
     test('tests/literals.ink', 'tests/literals.1');
     test('tests/loop.ink', 'tests/loop.1');
     test('tests/math.ink', 'tests/math.1');
+    test('tests/no-option.ink', 'tests/no-option.1');
     test('tests/procedure.ink', 'tests/procedure.1');
     test('tests/program.ink', 'tests/program.1');
     test('tests/program.ink', 'tests/program.1');
@@ -43,8 +44,8 @@ function main() {
     test('tests/rule.ink', 'tests/rule.1');
     test('tests/sample.ink', 'tests/sample.1');
     test('tests/steady.ink', 'tests/steady.1');
+    test('tests/sub-optional.ink', 'tests/sub-optional.1');
     test('tests/switch-list.ink', 'tests/switch-list.1');
-    test('tests/no-option.ink', 'tests/no-option.1');
 
 }
 
