@@ -181,6 +181,11 @@ Engine.prototype.restore = function restore(state) {
     }
 };
 
+Engine.prototype.log = function log() {
+    this.top.log();
+    console.log('');
+};
+
 // Here begin the instructions
 
 Engine.prototype.$text = function $text() {

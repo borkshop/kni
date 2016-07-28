@@ -52,7 +52,8 @@ Play.prototype.answer = function answer(text) {
         engine.dialog.close();
     // istanbul ignore next
     } else if (text === 'bt') {
-        engine.bt();
+        engine.log();
+        engine.ask();
     // istanbul ignore next
     } else if (text === 'save') {
         console.log("");
