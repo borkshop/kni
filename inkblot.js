@@ -123,6 +123,7 @@ function main() {
                     return;
                 }
                 test(inkscript, typescript);
+                process.stdin.pause();
             });
             return;
         }

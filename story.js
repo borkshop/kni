@@ -148,12 +148,12 @@ function Rule() {
 }
 Rule.prototype.tie = tie;
 
-constructors.prompt = Prompt;
-function Prompt(variable) {
+constructors.ask = Ask;
+function Ask(variable) {
     this.type = 'ask';
     Object.seal(this);
 }
-Prompt.prototype.tie = tie;
+Ask.prototype.tie = tie;
 
 function tie(end) {
     this.next = end;

@@ -84,11 +84,13 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '-') {
             return new MaybeThread(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, [], []);
         } else if (text === '>') {
-            var node = this.story.create(this.path, 'prompt');
+            var node = this.story.create(this.path, 'ask');
             // tie off ends to the prompt.
             tie(this.ends, this.path);
             // promote jumps to ends, tying them off after the prompt.
-            return new Thread(this.story, Path.next(this.path), new ThenExpect('stop', '', this.story, this), this.jumps, []);
+            var jumps = this.jumps.slice();
+            this.jumps.length = 0;
+            return new Thread(this.story, Path.next(this.path), new ThenExpect('stop', '', this.story, this), jumps, []);
         } else { // if text === '!') {
             return new Program(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, []);
         }
