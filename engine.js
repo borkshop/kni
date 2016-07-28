@@ -13,7 +13,7 @@ function Engine(args) {
     var self = this;
     this.story = args.story;
     this.options = [];
-    this.storage = args.storage || new Global();
+    this.storage = new Global();
     this.top = this.storage;
     this.stack = [this.top];
     this.label = '';
@@ -27,6 +27,7 @@ function Engine(args) {
     this.randomer = args.randomer || Math;
     this.debug = debug;
     this.end = this.end;
+    this.waypoint = null;
     Object.seal(this);
 }
 
@@ -80,8 +81,10 @@ Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
         // Note that we pass the top frame as both the parent scope and the
         // caller scope so that the entire sequence has the same variable
         // visibility.
-        this.top = new Frame(this.top, this.top, [], next, prev, stopOption);
-        this.stack.push(this.top);
+        if (next) {
+            this.top = new Frame(this.top, this.top, [], next, prev, stopOption);
+            this.stack.push(this.top);
+        }
         prev = next;
         next = sequence[i];
         stopOption = false;
@@ -91,29 +94,18 @@ Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
 
 Engine.prototype.ask = function ask() {
     this.display();
-    // this.continue();
-    this.dialog.question();
+    this.dialog.ask();
 };
 
 Engine.prototype.answer = function answer(text) {
     this.render.flush();
-    if (text === 'quit') {
-        this.dialog.close();
-        return;
-    }
-    // istanbul ignore next
-    if (text === 'bt') {
-        this.render.clear();
-        this.top.log();
-        this.ask();
-        return;
-    }
     var n = +text;
     if (n >= 1 && n <= this.options.length) {
         this.render.clear();
         // There is no known case where gothrough would immediately exit for
         // lack of further instructions, so
         var answer = this.options[n - 1].answer;
+        this.waypoint = this.capture(answer);
         // istanbul ignore else
         if (this.gothrough(answer, null, false)) {
             this.flush();
@@ -137,6 +129,59 @@ Engine.prototype.write = function write(text) {
     this.render.write(this.instruction.lift, text, this.instruction.drop);
     return this.goto(this.instruction.next);
 };
+
+Engine.prototype.capture = function capture(answer) {
+    var stack = [];
+    var top = this.top;
+    while (top !== this.storage) {
+        stack.unshift(top.capture());
+        top = top.parent;
+    }
+    return [
+        this.label || "",
+        answer,
+        stack,
+        this.storage.capture(),
+        [
+            this.randomer._state0U,
+            this.randomer._state0L,
+            this.randomer._state1U,
+            this.randomer._state1L
+        ]
+    ];
+};
+
+Engine.prototype.restore = function restore(state) {
+    this.render.clear();
+    this.label = state[0];
+    var answer = state[1];
+    var stack = state[2];
+    this.storage = new Global();
+    this.top = this.storage;
+    this.stack = [this.top];
+    for (var i = 0; i < stack.length; i++) {
+        this.top = Frame.restore(this.top, this.storage, stack[i]);
+        this.stack.push(this.top);
+    }
+    var storage = state[3];
+    var keys = storage[0];
+    var values = storage[1];
+    for (var i = 0; i < keys.length; i++) {
+        this.storage.set(keys[i], values[i]);
+    }
+    var random = state[4];
+    this.randomer._state0U = random[0];
+    this.randomer._state0L = random[1];
+    this.randomer._state1U = random[2];
+    this.randomer._state1L = random[3];
+    var stack = [];
+    if (this.gothrough(answer, null, false)) {
+        this.flush();
+        this.continue();
+    }
+};
+
+// Here begin the instructions
 
 Engine.prototype.$text = function $text() {
     return this.write(this.instruction.text);
@@ -187,7 +232,9 @@ Engine.prototype.$call = function $call() {
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
     this.top = new Frame(this.top, this.storage, procedure.locals, this.instruction.next, this.label);
-    this.stack.push(this.top);
+    if (this.instruction.next) {
+        this.stack.push(this.top);
+    }
     for (var i = 0; i < this.instruction.args.length; i++) {
         var arg = this.instruction.args[i];
         var value = evaluate(this.top.caller, this.randomer, arg);
@@ -252,7 +299,9 @@ Engine.prototype.$switch = function $switch() {
             }
         } else {
             value = evaluate(this.top, this.randomer, this.instruction.expression);
-            this.top.set(this.instruction.variable, value + this.instruction.value);
+            if (this.instruction.variable != null) {
+                this.top.set(this.instruction.variable, value + this.instruction.value);
+            }
         }
         if (this.instruction.mode === 'loop') {
             // actual modulo, wraps negatives
@@ -315,6 +364,7 @@ Global.prototype.get = function get(name) {
 };
 
 Global.prototype.set = function set(name, value) {
+    if (name == null) throw new Error('Key must have name');
     this.scope[name] = value;
 };
 
@@ -335,6 +385,23 @@ Global.prototype.at = function at() {
     return '';
 };
 
+Global.prototype.capture = function capture() {
+    var keys = Object.keys(this.scope);
+    var values = [];
+    // var object = {};
+    for (var i = 0; i < keys.length; i++) {
+        values[i] = this.scope[keys[i]] || 0;
+        // object[keys[i]] = values[i];
+    }
+    // return object;
+    return [
+        keys,
+        values
+    ];
+};
+
+// TODO names of parent and caller are not right, might be swapped.
+// parent should be the scope parent for upchain lookups.
 function Frame(parent, caller, locals, next, branch, stopOption) {
     this.locals = locals;
     this.scope = Object.create(null);
@@ -345,7 +412,7 @@ function Frame(parent, caller, locals, next, branch, stopOption) {
     this.caller = caller;
     this.next = next;
     this.branch = branch;
-    this.stopOption = stopOption;
+    this.stopOption = stopOption || false;
 }
 
 Frame.prototype.get = function get(name) {
@@ -378,4 +445,42 @@ Frame.prototype.log = function log() {
 // istanbul ignore next
 Frame.prototype.at = function at() {
     return this.caller.at() + '/' + this.branch;
+};
+
+Frame.prototype.capture = function capture() {
+    var values = [];
+    // var object = {};
+    for (var i = 0; i < this.locals.length; i++) {
+        var local = this.locals[i];
+        values.push(this.scope[local] || 0);
+    }
+    return [
+        this.locals,
+        values,
+        this.next || "",
+        this.branch || "",
+        +(this.caller === this.top),
+        +this.stopOption
+    ];
+};
+
+Frame.restore = function restore(top, storage, state) {
+    var keys = state[0];
+    var values = state[1];
+    var next = state[2];
+    var branch = state[3];
+    var dynamic = state[4];
+    var stopOption = state[5];
+    top = new Frame(
+        top,
+        dynamic ? top : storage,
+        keys,
+        next,
+        branch,
+        !!stopOption
+    );
+    for (var i = 0; i < keys.length; i++) {
+        top.set(keys[i], values[i]);
+    }
+    return top;
 };

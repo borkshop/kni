@@ -8,7 +8,6 @@ function main() {
 
     test('examples/archery.ink', 'tests/archery.1');
     test('examples/archery.ink', 'tests/pardon.1');
-    test('examples/archery.ink', 'tests/quit.1');
     test('examples/ascii.ink', 'tests/ascii.1');
     test('examples/bottles.ink', 'tests/bottles.1');
     test('examples/coin.ink', 'tests/coin.1');

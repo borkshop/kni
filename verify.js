@@ -73,13 +73,13 @@ function FakeReadline(writer, answers) {
     this.engine = null;
 }
 
-FakeReadline.prototype.question = function question() {
+FakeReadline.prototype.ask = function ask(question) {
     var answer = this.answers.shift();
     // istanbul ignore if
     if (answer == null) {
         return;
     }
-    this.writer.write('> ' + answer + '\n');
+    this.writer.write((question || '> ') + answer + '\n');
     this.engine.answer(answer);
 };
 

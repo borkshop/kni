@@ -11,7 +11,8 @@
     "[-d]                   Describe instead of running interactively.",
     "[-t <script>] :output  Write a transcript.",
     "[-v <script>] :input   Verify a prior recorded transcript.",
-    "[-r <seed>] :number    Seed the random number generator.",
+    "[-S <seed>] :number    Seed the random number generator.",
+    "[-r <waypoint>] :input Restore a saved waypoint in the story.",
     "[--di]                 Log input file before processing",
     "[--dr]                 Enable runtime debug logging",
     "[--dp]                 Enable parser debug logging",
@@ -134,7 +135,7 @@
     "seed": {
       "flags": [
         {
-          "flag": "-r",
+          "flag": "-S",
           "short": true
         }
       ],
@@ -146,6 +147,22 @@
       "minLength": null,
       "maxLength": null,
       "help": "Seed the random number generator."
+    },
+    "waypoint": {
+      "flags": [
+        {
+          "flag": "-r",
+          "short": true
+        }
+      ],
+      "arg": "waypoint",
+      "command": null,
+      "collectorType": null,
+      "type": "input",
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Restore a saved waypoint in the story."
     },
     "debugInput": {
       "flags": [

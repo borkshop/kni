@@ -142,7 +142,18 @@ function main() {
                 engine.debug = true;
             }
 
-            engine.continue();
+            if (config.waypoint !== process.stdin) {
+                read(config.waypoint, 'utf8', function onWaypoint(err, waypoint) {
+                    if (err) {
+                        console.error(err.message);
+                        process.exit(-1);
+                    }
+                    waypoint = JSON.parse(waypoint);
+                    engine.restore(waypoint);
+                });
+            } else {
+                engine.continue();
+            }
         } else {
             process.stdin.pause();
         }
