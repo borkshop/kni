@@ -93,6 +93,7 @@ function test(inkscript, transcript, handler) {
     // istanbul ignore if
     if (!result.pass) {
         global.fail = true;
+        console.log(inkscript, transcript);
         console.log("FAIL");
         console.log("expected");
         console.log(result.expected);

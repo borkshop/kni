@@ -33,6 +33,18 @@ function verify(ink, trans, handler) {
 
     s.next(ink);
     s.return();
+
+    if (story.errors.length) {
+        for (var i = 0; i < story.errors.length; i++) {
+            console.error(story.errors[i]);
+        }
+        return {
+            pass: false,
+            expected: 'no errors',
+            actual: 'errors'
+        };
+    }
+
     var states = story.states;
 
     // TODO support alternate seeds

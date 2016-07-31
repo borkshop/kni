@@ -56,7 +56,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         return new Text(this.story, this.path, space, text, this, this.ends);
     }  else if (type === 'token') {
         if (text === '{') {
-            return new Block(this.story, this.path, this, this.ends);
+            return new Block(this.story, this.path, new ThenExpect('token', '}', this.story, this), this.ends);
         } else if (text === '@') {
             return expression.label(this.story, new Label(this.story, this.path, this, this.ends));
         } else if (text === '->') {
@@ -688,11 +688,11 @@ Block.prototype.next = function next(type, space, text, scanner) {
             return expression(this.story, new ExpressionBlock(this.story, this.path, this.parent, this.ends, 'walk'))
                 .next(type, space, text, scanner);
         } else if (mutators[text]) {
-            return expression(this.story, new SetBlock(this.story, this.path, new ThenExpect('token', '}', this.story, this.parent), this.ends, text));
+            return expression(this.story, new SetBlock(this.story, this.path, this.parent, this.ends, text));
         } else if (variables[text]) {
             return expression(this.story, new ExpressionBlock(this.story, this.path, this.parent, this.ends, variables[text]));
         } else if (text === '!') {
-            return new Program(this.story, this.path, new ThenExpect('token', '}', this.story, this.parent), this.ends, []);
+            return new Program(this.story, this.path, this.parent, this.ends, []);
         } else if (switches[text]) {
             return new SwitchBlock(this.story, this.path, this.parent, this.ends)
                 .start(scanner, null, Path.toName(this.path), null, switches[text]);
@@ -782,10 +782,12 @@ AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) 
     } else if (text === '}') {
         var node = this.story.create(this.path, 'echo', this.expression, scanner.position());
         tie(this.ends, this.path);
-        return new Thread(this.story, Path.next(this.path), this.parent, [node], []);
+        return this.parent.return(Path.next(this.path), [node], [], scanner)
+            .next(type, space, text, scanner);
     } else {
-        this.story.error('Expected | or } after expression, got ' + type + '/' + text + ' at ' + scanner.position());
-        return new Thread(this.story, this.path, this.parent, this.ends, []);
+        this.story.error('Expected |, ?, or } after expression, got ' + type + '/' + text + ' at ' + scanner.position());
+        return this.parent.return(this.path, [node], [], scanner)
+            .next(type, space, text, scanner);
     }
 };
 
@@ -821,7 +823,7 @@ SwitchBlock.prototype.return = function _return(path, ends, jumps, scanner) {
         ends = [this.node];
         // TODO think about what to do with jumps.
     }
-    return new Expect('token', '}', this.story, Path.next(this.path), this.parent, ends, jumps);
+    return this.parent.return(Path.next(this.path), ends, jumps, scanner);
 };
 
 function Case(story, path, parent, ends, branches, min) {
