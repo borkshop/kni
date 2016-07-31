@@ -1,12 +1,12 @@
 {
-  "name": "inkblot",
+  "name": "kni",
   "description": [
-    "inkblot <script.ink>"
+    "kni <script.kni>"
   ],
   "usage": [
     "<script> :input        Script file name",
     "[-s <start>]           Start script at this label",
-    "[-J]                   Read ink script as compiled JSON",
+    "[-J]                   Read kni script as compiled JSON",
     "[-j|--json]            Dump compiled script as JSON instead of running interactively.",
     "[-d]                   Describe instead of running interactively.",
     "[-t <script>] :output  Write a transcript.",
@@ -62,7 +62,7 @@
       "required": false,
       "minLength": null,
       "maxLength": null,
-      "help": "Read ink script as compiled JSON"
+      "help": "Read kni script as compiled JSON"
     },
     "toJson": {
       "flags": [

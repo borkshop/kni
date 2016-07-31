@@ -41,7 +41,7 @@ Readline.prototype.close = function close() {
 
 function Play(readline, filename) {
     this.readline = readline;
-    this.filename = filename || 'inkblot.save';
+    this.filename = filename || 'kni.waypoint';
 }
 
 Play.prototype.answer = function answer(text) {

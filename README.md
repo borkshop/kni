@@ -1,23 +1,31 @@
 
-# inkblot
+# kni
 
-Inkblot is an interactive dialog graph language inspired by [Ink] by Inkle,
-intended for text adventures or interactive fiction.
+> We are the Knights Who Write Kni.
+> Our first letters are all silent.
+> Our final letters are howerver unbearably loud.
+
+Kni is an interactive story language for multiple-choice text adventures,
+interactive fiction, and phone bots. Press 1 for adventure.
+
+The name is an homage (also silent) to Inkle’s [Ink][] (the same, but
+backwards) and to Monty Python, and like other languages namèd thusly,
+Kni alsø has significant whitespace.
 
 [Ink]: https://github.com/inkle/ink
 
-- [Differences from Ink][INKLINK]
-- [The Ink Tutorial][TUTORIAL] that inspired Inkblot.
+- [Differences between Ink and Kni][INKKNI]
+- [The Ink Tutorial][TUTORIAL] that inspired Kni.
 - [Language Reference Manual][MANUAL]
-- [How to hack Inkblot][HACKINK]
+- [How to hack Kni][HACKNI]
 
-[INKLINK]: INKLINK.md
+[INKKNI]: INKKNI.md
 [TUTORIAL]: https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md
 [MANUAL]: MANUAL.md
-[HACKINK]: HACKINK.md
+[HACKNI]: HACKNI.md
 
-Inkblots consist of descriptive text and options.
-Inkblot runtime engines trace the dialog, entering at the top of the file and
+Kni stories consist of descriptive text and options.
+Kni runtime engines trace the dialog, entering at the top of the file and
 exiting out the bottom.
 The dialog accumulates options and presents a prompt for the interlocutor to
 chose the direction of the narrative.
@@ -35,10 +43,10 @@ Hello, {"World!"}
 The End.
 ```
 
-To run an Inkblot, use the command-line interactive reader:
+To run an Kni, use the command-line interactive reader:
 
 ```
-❯ inkblot hello.ink
+❯ kni hello.kni
 Hello, "World!"
 1. Say, "Hello".
 2. Say, "Farewell."
@@ -54,16 +62,16 @@ You say, "Farewell."
 The End.
 ```
 
-Inkblot scripts can be loaded and bound with scenes in a web page.
+Kni scripts can be loaded and bound with scenes in a web page.
 
 - The [archery][] prototype illustrates a shop and gambling game.
 
-  [![An Archery Shop](https://github.com/kriskowal/inkblot/raw/master/examples/archery.png)][archery]
+  [![An Archery Shop](https://github.com/kriskowal/kni/raw/master/examples/archery.png)][archery]
 
 - The [journey][] prototype illustrates a survival game over a
   procedurally-generated infinite road.
 
-  [![A Journey through Ælfland](https://github.com/kriskowal/inkblot/raw/master/examples/journey.png)][journey]
+  [![A Journey through Ælfland](https://github.com/kriskowal/kni/raw/master/examples/journey.png)][journey]
 
 - The [airship][] prototype illustrates a narrative that includes
   a simulation of the control and behavior of a steampunk airship.
@@ -77,32 +85,32 @@ The command line tool can also:
 - produce a transcript of a interpretation of the story.
 
   ```
-  ❯ inkblot hello.ink -t hello.1
+  ❯ kni hello.kni -t hello.1
   ```
 
 - verify that a transcript continues to produce the same narrative after
-  alterations to the script. The Inkblot test suite uses this mechanism to
+  alterations to the script. The Kni test suite uses this mechanism to
   validate itself against its examples and test scripts.
 
   ```
-  ❯ inkblot hello.ink -v hello.1
+  ❯ kni hello.kni -v hello.1
   ```
 
 - generate a JSON representation of the script. The JSON script can be embedded
-  in a web application as a module and interpreted by the lightweight Inkblot
+  in a web application as a module and interpreted by the lightweight Kni
   engine.
 
   ```
-  ❯ inkblot -j hello.ink
+  ❯ kni -j hello.kni
   ```
 
 - interpret a script from precompiled JSON.
 
   ```
-  ❯ inkblot -J hello.json
+  ❯ kni -J hello.json
   ```
 
-- Inkblot can also produce a diagnostique view of a story. The first column is
+- Kni can also produce a diagnostique view of a story. The first column is
   the thread label, then the instruction type, a description of the
   instruction, and an indicator for the next thread. In the absense of an
   indicator, the engine proceeds to the next instruction. A forward arrow
@@ -111,7 +119,7 @@ The command line tool can also:
   exit.
 
   ```
-  ❯ inkblot hello.ink -d
+  ❯ kni hello.kni -d
   start     text    -Hello, “World!”
   loop      option  (Q loop.0.2 loop.0.3) (A loop.0.1 loop.0.3 loop.0.4)  -> loop.1
   loop.0.1  text    -You s-                                               <-
@@ -127,3 +135,9 @@ The command line tool can also:
   loop.3    text    -The End.
   ```
 
+---
+
+DON’T PANIC
+
+Copyright © 2016 by Kristopher Kowal.
+All rights reserved.

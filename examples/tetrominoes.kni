@@ -1,0 +1,52 @@
+{=0 I}
+{=1 O}
+{=2 T}
+{=3 J}
+{=4 L}
+{=5 S}
+{=6 Z}
+{=0 type}
+{=0 orient}
+{=1 speed}
+{=0 turns}
+
+@next
+{=20 y}
+{=(1~7) type}
+{=(1~4) orient}
+
+@describe
+You have {$type
+| an I
+| an O
+| a T
+| a J
+| an L
+| an S
+| a Z
+} tetromino{(type)
+| oriented {@orient|vertically|horizontally} # I
+| # O
+| pointing {@orient|up|right|down|left} # T
+|{@orient| # J
+  | laying on its back| standing on its head| toe facing downward}|
+{@orient| # L
+  | toe facing downward| standing on its head| laying on its back}
+|{@orient| # S or Z
+  | standing on one foot}
+}{(y)
+| and it lands on the floor. ->next
+| hanging {$y} measures above the floor.
+}
+
+@options
+- {? type != O}
+  + [You r[R]otate clockwise.]
+    {+orient} {-y} ->describe
+  + [You r[R]otate counter-clockwise.]
+    {-orient} {-y} ->describe
++ [You m[M]ove left.] {-x} {-speed y} ->options
++ [You m[M]ove right.] {+x} {-speed y} ->options
++ [You d[D]rop.] {+turns} ->next
++ [You a[A]sk for your description again.] ->describe
+>

@@ -1,8 +1,8 @@
-usage: inkblot <script.ink>
+usage: kni <script.kni>
 
 script:            <script> :input        Script file name
 start:             [-s <start>]           Start script at this label
-fromJson:          [-J]                   Read ink script as compiled JSON
+fromJson:          [-J]                   Read kni script as compiled JSON
 toJson:            [-j|--json]            Dump compiled script as JSON instead of running interactively.
 describe:          [-d]                   Describe instead of running interactively.
 transcript:        [-t <script>] :output  Write a transcript.

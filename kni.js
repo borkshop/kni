@@ -14,7 +14,7 @@ var Story = require('./story');
 var grammar = require('./grammar');
 var verify = require('./verify');
 var exec = require('shon/exec');
-var usage = require('./inkblot.json');
+var usage = require('./kni.json');
 var xorshift = require('xorshift');
 var table = require('table').default;
 var getBorderCharacters = require('table').getBorderCharacters;
@@ -27,9 +27,9 @@ function main() {
         return;
     }
 
-    read(config.script, 'utf8', onInkscript);
+    read(config.script, 'utf8', onKniscript);
 
-    function onInkscript(err, inkscript) {
+    function onKniscript(err, kniscript) {
         if (err) {
             console.error(err.message);
             process.exit(-1);
@@ -37,14 +37,14 @@ function main() {
         }
 
         if (config.debugInput) {
-            console.log(inkscript);
+            console.log(kniscript);
         }
 
         var interactive = true;
 
         var states;
         if (config.fromJson) {
-            states = JSON.parse(inkscript);
+            states = JSON.parse(kniscript);
 
         } else {
             var story = new Story();
@@ -71,7 +71,7 @@ function main() {
                 interactive = false;
             }
 
-            s.next(inkscript);
+            s.next(kniscript);
             s.return();
             states = story.states;
 
@@ -122,7 +122,7 @@ function main() {
                     process.exit(-1);
                     return;
                 }
-                test(inkscript, typescript);
+                test(kniscript, typescript);
                 process.stdin.pause();
             });
             return;
@@ -162,8 +162,8 @@ function main() {
 
 }
 
-function test(inkscript, typescript) {
-    var result = verify(inkscript, typescript);
+function test(kniscript, typescript) {
+    var result = verify(kniscript, typescript);
     if (!result.pass) {
         console.log(result.actual);
         process.exit(1);

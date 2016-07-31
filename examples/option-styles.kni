@@ -1,4 +1,4 @@
-# Inkblot supports a superset of Ink's option styles for the sake of second
+# Kni supports a superset of Kni's option styles for the sake of second
 # person narrative that weaves threads that are alternately used for the
 # "question", "answer", or both. In the following notation, "Q" refers to a
 # thread that will only appear in the question, "A" to a thread that will only
@@ -20,10 +20,10 @@
 #
 # These are concrete examples of each form:
 
-# Ink style option
+# Kni style option
 + Hello [back!] right back to you!
 
-# Abbreviated Ink style option
+# Abbreviated Kni style option
 + [North. ] You head north.
 
 # Second person variant illustrating inner bracket.

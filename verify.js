@@ -12,7 +12,7 @@ var grammar = require('./grammar');
 
 module.exports = verify;
 
-function verify(ink, trans, handler) {
+function verify(kni, trans, handler) {
     var lines = trans.split('\n');
 
     // filter the transcript for given answers
@@ -24,16 +24,17 @@ function verify(ink, trans, handler) {
         }
     }
 
-    // build a story from the ink
+    // build a story from the kni
     var story = new Story();
     var p = new Parser(grammar.start(story));
     var il = new InlineLexer(p);
     var ol = new OutlineLexer(il);
     var s = new Scanner(ol);
 
-    s.next(ink);
+    s.next(kni);
     s.return();
 
+    // istanbul ignore if
     if (story.errors.length) {
         for (var i = 0; i < story.errors.length; i++) {
             console.error(story.errors[i]);
@@ -49,7 +50,7 @@ function verify(ink, trans, handler) {
 
     // TODO support alternate seeds
     var seed = 0;
-    // I rolled 4d64k this morning, for inkblot.js
+    // I rolled 4d64k this morning, for kni.js
     var randomer = new xorshift.constructor([
         37615 ^ seed,
         54552 ^ seed,

@@ -1,10 +1,10 @@
 {
-  "name": "inkblot",
-  "version": "5.1.1",
+  "name": "kni",
+  "version": "0.0.0",
   "description": "A text adventure language and runtime inspired by inkle/ink",
   "main": "index.js",
   "bin": {
-    "inkblot": "./inkblot.js"
+    "kni": "./kni.js"
   },
   "dependencies": {
     "pop-equals": "^1.0.0",
@@ -29,8 +29,8 @@
     "excerpt.js",
     "expression.js",
     "grammar.js",
-    "inkblot.js",
-    "inkblot.json",
+    "kni.js",
+    "kni.json",
     "inline-lexer.js",
     "localstorage.js",
     "outline-lexer.js",
@@ -46,29 +46,29 @@
   "scripts": {
     "test": "npm ls -s && npm run lint && npm run cover -s",
     "lint": "eslint .",
-    "build": "node inkblot.js examples/archery.ink -j > examples/archery.json && bundle index.js > bundle.js",
+    "build": "node kni.js examples/archery.kni -j > examples/archery.json && bundle index.js > bundle.js",
     "cover": "istanbul cover --report html --print node -- test.js && istanbul report text && npm run check-cover -s",
     "check-cover": "istanbul check-coverage",
     "view-cover": "opn ./coverage/index.html",
-    "usage": "usage2json inkblot.usage > inkblot.json"
+    "usage": "usage2json kni.usage > kni.json"
   },
   "translators": {
     "json": "./translate-json.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kriskowal/inkblot.git"
+    "url": "git+https://github.com/kriskowal/kni.git"
   },
   "keywords": [
     "text",
     "adventure",
-    "language",
-    "ink"
+    "interactive",
+    "language"
   ],
   "author": "Kris Kowal <kris@cixar.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kriskowal/inkblot/issues"
+    "url": "https://github.com/kriskowal/kni/issues"
   },
-  "homepage": "https://github.com/kriskowal/inkblot#readme"
+  "homepage": "https://github.com/kriskowal/kni#readme"
 }

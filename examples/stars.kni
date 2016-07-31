@@ -1,0 +1,7 @@
+# sector.$x.$y.explored
+# sector.$x.$y.systems.length
+# sector.$x.$y.systems.$system.stars.length # 0:nilary 1:unary 2:binary
+# sector.$x.$y.systems.$system.stars.$star.orbits.length
+# sector.$x.$y.systems.$system.stars.$star.$orbit.class # 0:ice 1:rock 2:habitable 3:gas
+# sector.$x.$y.systems.$system.stars.$star.$orbit.mass
+# sector.$x.$y.systems.$system.stars.$star.$orbit.orbits.length

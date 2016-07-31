@@ -4,52 +4,52 @@ var fs = require('fs');
 var verify = require('./verify');
 
 function main() {
-    test('hello.ink', 'tests/hello.1');
+    test('hello.kni', 'tests/hello.1');
 
-    test('examples/archery.ink', 'tests/archery.1');
-    test('examples/archery.ink', 'tests/pardon.1');
-    test('examples/ascii.ink', 'tests/ascii.1');
-    test('examples/bottles.ink', 'tests/bottles.1');
-    test('examples/coin.ink', 'tests/coin.1');
-    test('examples/coin.ink', 'tests/coin.2');
-    test('examples/distribution.ink', 'tests/distribution.1');
-    test('examples/door.ink', 'tests/door.1');
-    test('examples/door.ink', 'tests/door.2');
-    test('examples/fish.ink', 'tests/fish.1');
-    test('examples/fish.ink', 'tests/fish.2');
-    test('examples/german.ink', 'tests/german.1');
-    test('examples/hilbert.ink', 'tests/hilbert.1');
-    test('examples/hilo.ink', 'tests/hilo.1');
-    test('examples/liftoff.ink', 'tests/liftoff.1');
-    test('examples/list.ink', 'tests/list.1');
-    test('examples/option-styles.ink', 'tests/option-styles.1');
-    test('examples/paint.ink', 'tests/paint.1');
-    test('examples/plane.ink', 'tests/plane.1');
-    test('examples/tree.ink', 'tests/tree.1');
+    test('examples/archery.kni', 'tests/archery.1');
+    test('examples/archery.kni', 'tests/pardon.1');
+    test('examples/ascii.kni', 'tests/ascii.1');
+    test('examples/bottles.kni', 'tests/bottles.1');
+    test('examples/coin.kni', 'tests/coin.1');
+    test('examples/coin.kni', 'tests/coin.2');
+    test('examples/distribution.kni', 'tests/distribution.1');
+    test('examples/door.kni', 'tests/door.1');
+    test('examples/door.kni', 'tests/door.2');
+    test('examples/fish.kni', 'tests/fish.1');
+    test('examples/fish.kni', 'tests/fish.2');
+    test('examples/german.kni', 'tests/german.1');
+    test('examples/hilbert.kni', 'tests/hilbert.1');
+    test('examples/hilo.kni', 'tests/hilo.1');
+    test('examples/liftoff.kni', 'tests/liftoff.1');
+    test('examples/list.kni', 'tests/list.1');
+    test('examples/option-styles.kni', 'tests/option-styles.1');
+    test('examples/paint.kni', 'tests/paint.1');
+    test('examples/plane.kni', 'tests/plane.1');
+    test('examples/tree.kni', 'tests/tree.1');
 
-    test('tests/brief.ink', 'tests/brief.1');
-    test('tests/choices.ink', 'tests/choices.1');
-    test('tests/functions.ink', 'tests/functions.1');
-    test('tests/gradient.ink', 'tests/gradient.1');
-    test('tests/indirect.ink', 'tests/indirect.1');
-    test('tests/jump-and-ask.ink', 'tests/jump-and-ask.1');
-    test('tests/literals.ink', 'tests/literals.1');
-    test('tests/loop.ink', 'tests/loop.1');
-    test('tests/math.ink', 'tests/math.1');
-    test('tests/no-option.ink', 'tests/no-option.1');
-    test('tests/procedure.ink', 'tests/procedure.1');
-    test('tests/program.ink', 'tests/program.1');
-    test('tests/program.ink', 'tests/program.1');
-    test('tests/random.ink', 'tests/random.1');
-    test('tests/rule.ink', 'tests/rule.1');
-    test('tests/sample.ink', 'tests/sample.1');
-    test('tests/steady.ink', 'tests/steady.1');
-    test('tests/sub-optional.ink', 'tests/sub-optional.1');
-    test('tests/switch-list.ink', 'tests/switch-list.1');
+    test('tests/brief.kni', 'tests/brief.1');
+    test('tests/choices.kni', 'tests/choices.1');
+    test('tests/functions.kni', 'tests/functions.1');
+    test('tests/gradient.kni', 'tests/gradient.1');
+    test('tests/indirect.kni', 'tests/indirect.1');
+    test('tests/jump-and-ask.kni', 'tests/jump-and-ask.1');
+    test('tests/literals.kni', 'tests/literals.1');
+    test('tests/loop.kni', 'tests/loop.1');
+    test('tests/math.kni', 'tests/math.1');
+    test('tests/no-option.kni', 'tests/no-option.1');
+    test('tests/procedure.kni', 'tests/procedure.1');
+    test('tests/program.kni', 'tests/program.1');
+    test('tests/program.kni', 'tests/program.1');
+    test('tests/random.kni', 'tests/random.1');
+    test('tests/rule.kni', 'tests/rule.1');
+    test('tests/sample.kni', 'tests/sample.1');
+    test('tests/steady.kni', 'tests/steady.1');
+    test('tests/sub-optional.kni', 'tests/sub-optional.1');
+    test('tests/switch-list.kni', 'tests/switch-list.1');
 
     var asked = false;
     var ended = false;
-    test('tests/handler.ink', 'tests/handler.1', {
+    test('tests/handler.kni', 'tests/handler.1', {
         moxy: 41,
         has: function has(name) {
             return name === 'moxy';
@@ -85,15 +85,15 @@ function main() {
     global.fail = global.fail || !asked;
 }
 
-function test(inkscript, transcript, handler) {
-    var ink = fs.readFileSync(inkscript, 'utf8');
+function test(kniscript, transcript, handler) {
+    var kni = fs.readFileSync(kniscript, 'utf8');
     var trans = fs.readFileSync(transcript, 'utf8');
-    var result = verify(ink, trans, handler);
+    var result = verify(kni, trans, handler);
 
     // istanbul ignore if
     if (!result.pass) {
         global.fail = true;
-        console.log(inkscript, transcript);
+        console.log(kniscript, transcript);
         console.log("FAIL");
         console.log("expected");
         console.log(result.expected);

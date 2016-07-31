@@ -18,7 +18,7 @@ var engine = new Engine({
         waypoint: function waypoint(waypoint) {
             var json = JSON.stringify(waypoint);
             window.history.pushState(waypoint, '', '#' + btoa(json));
-            localStorage.setItem('archery.ink', json);
+            localStorage.setItem('archery.kni', json);
         },
         goto: function _goto(label) {
             console.log(label);
@@ -41,7 +41,7 @@ if (waypoint = window.location.hash || null) {
         console.error(error);
         waypoint = null;
     }
-} else if (json = localStorage.getItem('archery.ink')) {
+} else if (json = localStorage.getItem('archery.kni')) {
     try {
         waypoint = JSON.parse(json);
     } catch (error) {

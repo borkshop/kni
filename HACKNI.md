@@ -1,12 +1,12 @@
 
-# Hackink
+# Hackni
 
-This document provides a tour of the Inkblot code, intended for an audience of
+This document provides a tour of the Kni code, intended for an audience of
 hackers.
 
 ## The Parser
 
-Inkblot is a four-stage recursive descent parser. It is responsible for
+Kni is a four-stage recursive descent parser. It is responsible for
 incrementally generating a story, which is a directed graph of labeled
 instructions. The runtime engine walks this graph to generate narrative,
 options, and pauses. Where the script may have nesting sub-arcs, the
@@ -85,7 +85,7 @@ The constructor for each grammar state typically takes a `story`, a `path`, a
 `parent` state, loose `ends`, and `jumps`.
 A `story` instance contains `states`, an object mapping state names to state
 structs, suitable for serialization as JSON and direct consumption by the
-Inkblot runtime engine.
+Kni runtime engine.
 The `story` also tracks an array of `errors`, just in case.
 The grammar uses the story’s `create(path, type, arg)` method to create or
 update nodes on the story graph. The `path` is the next path that the parser
@@ -141,10 +141,10 @@ These mostly wrap JavaScript operators, clamping the range to 32 bit integers.
 
 The engine threads the random number generator through all of these functions.
 While naïvely, these use the `Math` object by default, while generating and
-verifying transcripts, Inkblot uses a xorshift128 PRNG to ensure that each
+verifying transcripts, Kni uses a xorshift128 PRNG to ensure that each
 read uses the same sequence of random numbers.
 
-Inkblot provides operators for simple probability distributions.
+Kni provides operators for simple probability distributions.
 The unary random operators (``~n``) provides a number in the half open interval
 from [0, n), excluding n. The binary random operators (``n~m``) provides
 the sum of `n` samples of a variable in the [0, m) interval, effectively
@@ -157,7 +157,7 @@ of samples (2d6 starts at 2). The distribution also composes better.
 2d6-2 produces values in the interval [0, 10], but 2~6 produces values in the
 interval [0, 12), effectively [0, 11].
 
-Two novel "operators" in Inkblot are `hash` and `hilbert`.
+Two novel "operators" in Kni are `hash` and `hilbert`.
 These have varied in implementation version over major version, but they
 serve procedural narrative generation. The unary hash operator (``#x``)
 produces a hash of the given value, handy for generating a seemingly random
@@ -237,7 +237,7 @@ the next lifts none.
 
 - document.js
 
-The Inkblot document serves as both renderer and dialog controller.
+The Kni document serves as both renderer and dialog controller.
 The web dialog is relatively simple, building a DOM on the fly, with certain CSS
 to allow the containing document to govern its position and animation.
 

@@ -48,7 +48,8 @@
     },
     "start.4": {
         "type": "par",
-        "next": "shop"
+        "next": "shop",
+        "position": "7:1"
     },
     "shop": {
         "type": "text",
@@ -285,7 +286,8 @@
             "get",
             "gold"
         ],
-        "next": "shop.6.6"
+        "next": "shop.6.6",
+        "position": "18:5"
     },
     "shop.6.6": {
         "type": "move",
@@ -304,7 +306,8 @@
             "get",
             "arrow"
         ],
-        "next": null
+        "next": null,
+        "position": "18:5"
     },
     "shop.6.7": {
         "type": "goto",
@@ -391,7 +394,8 @@
             "get",
             "gold"
         ],
-        "next": "shop.7.6"
+        "next": "shop.7.6",
+        "position": "20:5"
     },
     "shop.7.6": {
         "type": "move",
@@ -410,7 +414,8 @@
             "get",
             "arrow"
         ],
-        "next": null
+        "next": null,
+        "position": "20:5"
     },
     "shop.7.7": {
         "type": "goto",
@@ -600,7 +605,8 @@
             "get",
             "arrow"
         ],
-        "next": null
+        "next": null,
+        "position": "33:5"
     },
     "range.3.7": {
         "type": "switch",

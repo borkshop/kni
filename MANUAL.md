@@ -1,22 +1,22 @@
-# Inkblot Manual
+# Kni Manual
 
 The following is an undigestable reference because I don’t yet have time to
 write a graduated tutorial.
 
-Inkblot is a parser, compiler, and a runtime, all of which are accessible with
-the `inkblot` command as installed by `npm`.
+Kni is a parser, compiler, and a runtime, all of which are accessible with
+the `kni` command as installed by `npm`.
 
 ```
-npm i -S inkblot
+npm i -S kni
 PATH=$PATH:node_modules/.bin
-inkblot --help
+kni --help
 ```
 
-Be sure to use a project-local installation of inkblot.
+Be sure to use a project-local installation of `kni`.
 While the language evolves, there are likely to be multiple radically different
 major versions of this project in concurrent use.
 
-By default, `inkblot` accepts a `.ink` file (see one of the many examples)
+By default, `kni` accepts a `.kni` file (see one of the many examples)
 and opens up an interactive console for the story.
 The `-j` command line flag bypasses the runtime and dumps the compiled JSON
 state machine for the story.
@@ -26,7 +26,7 @@ state machine for the story.
 
 Stories consist of text and symbols.
 Text appears in the generated narrative, and symbols provide instructions
-to Inkblot.
+to Kni.
 
 Symbols include `>` on stand alone lines indicating a prompt instruction, `-`,
 `*`, and `+` for bullets, sequences of dashes, `/`, `@`, ``->``, ``<-``, ``{``,
@@ -35,7 +35,7 @@ Within an option, `[`, and `]` are also special.
 The first non-space character after a curly brace may be a symbol.
 These symbols include `%`, `~`, `$`, `@`, `#`, `$`, `?`, `!`, `>`, `<`, `<=`,
 `>=`, `==`, and `!=`.
-Furthermore, Inkblot reserves any character that is not a letter or number for
+Furthermore, Kni reserves any character that is not a letter or number for
 special use in that position.
 
 Any number of spaces or newlines between are equivalent to a single space in
@@ -78,7 +78,7 @@ Was bedeudet, „Rindfleische{
 
 ## Indentation and threads
 
-Inkblot is a white-space significant language.
+Kni is a white-space significant language.
 All leading tabs and spaces, as well as bullet symbols, on a line contribute
 determine the initial column number of the line.
 Tabs advance the cursor to the next tab stop, which occur on every fourth
@@ -119,7 +119,7 @@ Failing the condition, the narrative will skip the entire thread.
 
 ## Options
 
-Inkblot will accumulate options until it encounters a prompt, depicted as
+Kni will accumulate options until it encounters a prompt, depicted as
 a right angle bracket, ``>``, alone on a line.
 All loose ends from option branches will resume after the prompt unless
 redirected elsewhere.
@@ -405,7 +405,7 @@ It lands on {(flipped)|heads|tails}.
 You {(called == flipped)|lose|win}.
 ```
 
-Inkblot also support weighted random. Every thread in an alternation block has
+Kni also support weighted random. Every thread in an alternation block has
 a weight of 1 by default, meaning they are equally likely to be chosen.
 An expression (in parentheses) at the beginning of each block can determine an
 alternate weight.
@@ -429,7 +429,7 @@ On the last iteration of the loop, there is a 29:15 chance of choosing "y" over
 {+n} {(n < 30)?-> loop}
 ```
 
-Inkblot also supports "hypergeometric sampling", or rather "sampling without
+Kni also supports "hypergeometric sampling", or rather "sampling without
 replacement".
 With the "^" prefix followed by an expression, you can determine the number
 of threads to sample from the alternation.
@@ -557,7 +557,7 @@ Modifiers all take a concise form: operator, value, variable.
   you have 10 gold now. {=10 gold}
 ```
 
-Inkblot also supports `*` and `/` for multiplying or dividing a variable in
+Kni also supports `*` and `/` for multiplying or dividing a variable in
 place. The quantity is optional and defaults to 1.
 
 ```
@@ -566,7 +566,7 @@ place. The quantity is optional and defaults to 1.
 
 ### Expressions
 
-Inkblot supports limited algebraic expressions.
+Kni supports limited algebraic expressions.
 Expressions may require parentheses to disambiguated precedence.
 There are three tiers of precedence from tightly binding to loosely binding.
 All of these operators produce 32 bit integers.
@@ -632,7 +632,7 @@ along a diagonal. `{#x*y}` produces symmetry across multiple axes about the
 origin.  The Hilbert operator presumes a space with 4 billion unique
 coordinates in a square of height and width 64k centered about the origin.
 
-Inkblot also supports a limited set of functions: `abs(x)`, `acos(t)`,
+Kni also supports a limited set of functions: `abs(x)`, `acos(t)`,
 `asin(t)`, `atan2(x, y)`, `exp(x, y)`, `log(x)` (natural log), `log(x, root)`,
 `max(n...)`, `min(n...)`, `pow(x, y)`, `sin(t)`, `tan(t)`, `sign(x)`,
 `mean(n...)`, `root(x)` (square root), `root(x, root)`, `distance(x1, y1, x2,
@@ -641,8 +641,8 @@ the x or y axes).
 
 ## Variables
 
-Inkblot variable names can consist of words and dots.
-Additionally, Inkblot supports interpolating expressions within variable names,
+Kni variable names can consist of words and dots.
+Additionally, Kni supports interpolating expressions within variable names,
 using braces.
 
 ```
@@ -654,7 +654,7 @@ using braces.
 
 ## Typographic Helpers
 
-Inkblot scripts are UTF-8, but when you have to make do with ASCII, Inkblot
+Kni scripts are UTF-8, but when you have to make do with ASCII, Kni
 supports some operators that assist making common typographical niceties.
 
 - ``{"`` and ``"}`` can stand for “curly quotes”.
