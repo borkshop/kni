@@ -6,13 +6,14 @@
 > Our final letters are however unbearably loud.
 
 Kni is an interactive story language for multiple-choice text adventures,
-interactive fiction, and phone bots. Press 1 for adventure.
+interactive fiction, and phone bots. Press [1][] for adventure.
 
 The name is an homage (also silent) to Inkle’s [Ink][] (the same, but
 backwards) and to Monty Python, and like other languages namèd thusly,
 Kni alsø has significant whitespace.
 
 [Ink]: https://github.com/inkle/ink
+[1]: http://journey.aelf.land
 
 - [Differences between Ink and Kni][INKKNI]
 - [The Ink Tutorial][TUTORIAL] that inspired Kni.
