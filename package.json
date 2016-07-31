@@ -2,7 +2,6 @@
   "name": "kni",
   "version": "0.0.0",
   "description": "A text adventure language and runtime inspired by inkle/ink",
-  "main": "index.js",
   "bin": {
     "kni": "./kni.js"
   },
@@ -32,7 +31,6 @@
     "kni.js",
     "kni.json",
     "inline-lexer.js",
-    "localstorage.js",
     "outline-lexer.js",
     "parser.js",
     "path.js",
