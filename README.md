@@ -3,7 +3,7 @@
 
 > We are the Knights Who Write Kni.
 > Our first letters are all silent.
-> Our final letters are howerver unbearably loud.
+> Our final letters are however unbearably loud.
 
 Kni is an interactive story language for multiple-choice text adventures,
 interactive fiction, and phone bots. Press 1 for adventure.
