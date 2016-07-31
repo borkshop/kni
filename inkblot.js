@@ -150,10 +150,10 @@ function main() {
                         process.exit(-1);
                     }
                     waypoint = JSON.parse(waypoint);
-                    engine.restore(waypoint);
+                    engine.resume(waypoint);
                 });
             } else {
-                engine.continue();
+                engine.resume();
             }
         } else {
             process.stdin.pause();

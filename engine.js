@@ -12,10 +12,11 @@ function Engine(args) {
     // istanbul ignore next
     var self = this;
     this.story = args.story;
+    this.handler = args.handler;
     this.options = [];
     this.noOption = null;
-    this.storage = new Global();
-    this.top = this.storage;
+    this.global = new Global(this.handler);
+    this.top = this.global;
     this.stack = [this.top];
     this.label = '';
     // istanbul ignore next
@@ -27,18 +28,9 @@ function Engine(args) {
     // istanbul ignore next
     this.randomer = args.randomer || Math;
     this.debug = debug;
-    this.end = this.end;
     this.waypoint = null;
-    this.handleWaypoint = this.handleWaypoint;
     Object.seal(this);
 }
-
-Engine.prototype.end = function end() {
-    this.display();
-    this.render.break();
-    this.dialog.close();
-    return false;
-};
 
 Engine.prototype.continue = function _continue() {
     var _continue;
@@ -72,6 +64,9 @@ Engine.prototype.goto = function _goto(label) {
     if (!next) {
         throw new Error('Story missing instruction for label: ' + label);
     }
+    if (this.handler && this.handler.goto) {
+        this.handler.goto(label);
+    }
     this.label = label;
     this.instruction = next;
     return true;
@@ -94,9 +89,21 @@ Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
     return this.goto(next);
 };
 
+Engine.prototype.end = function end() {
+    if (this.handler && this.handler.end) {
+        this.handler.end(this);
+    }
+    this.display();
+    this.dialog.close();
+    return false;
+};
+
 Engine.prototype.ask = function ask() {
     if (this.options.length) {
         this.display();
+        if (this.handler && this.handler.ask) {
+            this.handler.ask();
+        }
         this.dialog.ask();
     } else if (this.noOption != null) {
         var answer = this.noOption.answer;
@@ -109,15 +116,20 @@ Engine.prototype.ask = function ask() {
 };
 
 Engine.prototype.answer = function answer(text) {
+    if (this.handler && this.handler.answer) {
+        this.handler.answer(text);
+    }
     this.render.flush();
-    var n = +text;
-    if (n >= 1 && n <= this.options.length) {
+    var choice = text - 1;
+    if (choice >= 0 && choice < this.options.length) {
         this.render.clear();
+        var answer = this.options[choice].answer;
+        this.waypoint = this.capture(answer);
+        if (this.handler && this.handler.waypoint) {
+            this.handler.waypoint(this.waypoint);
+        }
         // There is no known case where gothrough would immediately exit for
         // lack of further instructions, so
-        var answer = this.options[n - 1].answer;
-        this.waypoint = this.capture(answer);
-        this.handleWaypoint(this.waypoint);
         // istanbul ignore else
         if (this.gothrough(answer, null, false)) {
             this.flush();
@@ -127,9 +139,6 @@ Engine.prototype.answer = function answer(text) {
         this.render.pardon();
         this.ask();
     }
-};
-
-Engine.prototype.handleWaypoint = function handleWaypoint() {
 };
 
 Engine.prototype.display = function display() {
@@ -150,7 +159,7 @@ Engine.prototype.write = function write(text) {
 Engine.prototype.capture = function capture(answer) {
     var stack = [];
     var top = this.top;
-    while (top !== this.storage) {
+    while (top !== this.global) {
         stack.unshift(top.capture());
         top = top.parent;
     }
@@ -158,7 +167,7 @@ Engine.prototype.capture = function capture(answer) {
         this.label || "",
         answer,
         stack,
-        this.storage.capture(),
+        this.global.capture(),
         [
             this.randomer._state0U,
             this.randomer._state0L,
@@ -169,14 +178,17 @@ Engine.prototype.capture = function capture(answer) {
 };
 
 // istanbul ignore next
-Engine.prototype.restore = function restore(state) {
+Engine.prototype.resume = function resume(state) {
     this.render.clear();
     this.flush();
     this.label = '';
-    this.storage = new Global();
-    this.top = this.storage;
+    this.global = new Global();
+    this.top = this.global;
     this.stack = [this.top];
     if (state == null) {
+        if (this.handler && this.handler.waypoint) {
+            this.handler.waypoint(null);
+        }
         this.goto('start');
         this.continue();
         return;
@@ -186,14 +198,14 @@ Engine.prototype.restore = function restore(state) {
     var answer = state[1];
     var stack = state[2];
     for (var i = 0; i < stack.length; i++) {
-        this.top = Frame.restore(this.top, this.storage, stack[i]);
+        this.top = Frame.resume(this.top, this.global, stack[i]);
         this.stack.push(this.top);
     }
-    var storage = state[3];
-    var keys = storage[0];
-    var values = storage[1];
+    var global = state[3];
+    var keys = global[0];
+    var values = global[1];
     for (var i = 0; i < keys.length; i++) {
-        this.storage.set(keys[i], values[i]);
+        this.global.set(keys[i], values[i]);
     }
     var random = state[4];
     this.randomer._state0U = random[0];
@@ -201,7 +213,10 @@ Engine.prototype.restore = function restore(state) {
     this.randomer._state1U = random[2];
     this.randomer._state1L = random[3];
     var stack = [];
-    if (this.gothrough(answer, null, false)) {
+    if (answer == null) {
+        this.flush();
+        this.continue();
+    } else if (this.gothrough(answer, null, false)) {
         this.flush();
         this.continue();
     }
@@ -257,13 +272,13 @@ Engine.prototype.$call = function $call() {
     if (procedure.locals.length !== this.instruction.args.length) {
         throw new Error('argument length mismatch for ' + this.instruction.branch);
     }
-    // TODO replace this.storage with closure scope if scoped procedures become
+    // TODO replace this.global with closure scope if scoped procedures become
     // viable. This will require that the engine create references to closures
     // when entering a new scope (calling a procedure), in addition to
     // capturing locals. As such the parser will need to retain a reference to
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
-    this.top = new Frame(this.top, this.storage, procedure.locals, this.instruction.next, this.label);
+    this.top = new Frame(this.top, this.global, procedure.locals, this.instruction.next, this.label);
     if (this.instruction.next) {
         this.stack.push(this.top);
     }
@@ -391,25 +406,37 @@ Engine.prototype.$ask = function $ask() {
     return false;
 };
 
-function Global() {
+function Global(handler) {
     this.scope = Object.create(null);
+    this.handler = handler;
     Object.seal(this);
 }
 
 Global.prototype.get = function get(name) {
-    return this.scope[name] || 0;
+    if (this.handler && this.handler.has && this.handler.has(name)) {
+        return this.handler.get(name);
+    } else {
+        return this.scope[name] || 0;
+    }
 };
 
 Global.prototype.set = function set(name, value) {
-    this.scope[name] = value;
+    if (this.handler && this.handler.has && this.handler.has(name)) {
+        this.handler.set(name, value);
+    } else {
+        this.scope[name] = value;
+    }
+    if (this.handler && this.handler.changed) {
+        this.handler.changed(name, value);
+    }
 };
 
 // istanbul ignore next
 Global.prototype.log = function log() {
-    var globals = Object.keys(this.scope);
-    globals.sort();
-    for (var i = 0; i < globals.length; i++) {
-        var name = globals[i];
+    var names = Object.keys(this.scope);
+    names.sort();
+    for (var i = 0; i < names.length; i++) {
+        var name = names[i];
         var value = this.scope[name];
         console.log(name + ' = ' + value);
     }
@@ -423,16 +450,13 @@ Global.prototype.at = function at() {
 
 // istanbul ignore next
 Global.prototype.capture = function capture() {
-    var keys = Object.keys(this.scope);
+    var names = Object.keys(this.scope);
     var values = [];
-    // var object = {};
-    for (var i = 0; i < keys.length; i++) {
-        values[i] = this.scope[keys[i]] || 0;
-        // object[keys[i]] = values[i];
+    for (var i = 0; i < names.length; i++) {
+        values[i] = this.scope[names[i]] || 0;
     }
-    // return object;
     return [
-        keys,
+        names,
         values
     ];
 };
@@ -503,7 +527,7 @@ Frame.prototype.capture = function capture() {
 };
 
 // istanbul ignore next
-Frame.restore = function restore(top, storage, state) {
+Frame.resume = function resume(top, global, state) {
     var keys = state[0];
     var values = state[1];
     var next = state[2];
@@ -512,7 +536,7 @@ Frame.restore = function restore(top, storage, state) {
     var stopOption = state[5];
     top = new Frame(
         top,
-        dynamic ? top : storage,
+        dynamic ? top : global,
         keys,
         next,
         branch,

@@ -188,6 +188,7 @@ function flag() {
 }
 
 function breakChild() {
+    // istanbul ignore next
     if (this.children.length === 0) {
         return;
     }

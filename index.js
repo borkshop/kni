@@ -1,60 +1,62 @@
 'use strict';
-var Hash = require('hashbind');
 var Engine = require('./engine');
 var story = require('./examples/archery.json');
 var Story = require('./story');
 var Document = require('./document');
 
-var hash = new Hash(window);
-
-var reset = document.querySelector(".reset")
+var reset = document.querySelector(".reset");
 reset.onclick = function onclick() {
-    engine.restore(null);
+    engine.resume();
 };
 
 var doc = new Document(document.body);
 var engine = new Engine({
     story: story,
     render: doc,
-    dialog: doc
+    dialog: doc,
+    handler: {
+        waypoint: function waypoint(waypoint) {
+            var json = JSON.stringify(waypoint);
+            window.history.pushState(waypoint, '', '#' + btoa(json));
+            localStorage.setItem('archery.ink', json);
+        },
+        goto: function _goto(label) {
+            console.log(label);
+        },
+        answer: function answer(text) {
+            console.log('>', text);
+        }
+    }
 });
-engine.end = function end() {
-    this.options.push({
-        'label': 'Once more from the top…',
-        'branch': 'start'
-    });
-    return this.$ask();
-};
-engine.handleWaypoint = function handleWaypoint(waypoint) {
-    var json = JSON.stringify(waypoint);
-    var encoded = btoa(json);
-    hash.set('waypoint', encoded);
-    localStorage.setItem('archery.ink', json);
-};
+
 doc.clear();
 
 var waypoint;
-if (waypoint = hash.get('waypoint')) {
+var json;
+if (waypoint = window.location.hash || null) {
     try {
-        waypoint = atob(waypoint);
+        waypoint = atob(waypoint.slice(1));
         waypoint = JSON.parse(waypoint);
     } catch (error) {
+        console.error(error);
         waypoint = null;
     }
-} else if (waypoint = localStorage.getItem('archery.ink')) {
-    hash.set('waypoint', btoa(waypoint));
+} else if (json = localStorage.getItem('archery.ink')) {
     try {
-        waypoint = JSON.parse(waypoint);
+        waypoint = JSON.parse(json);
     } catch (error) {
+        console.error(error);
         waypoint = null;
     }
+    window.history.replaceState(waypoint, '', '#' + btoa(json));
 }
 
-if (waypoint) {
-    engine.restore(waypoint);
-} else {
-    engine.continue();
-}
+window.onpopstate = function onpopstate(event) {
+    console.log('> back');
+    engine.resume(event.state);
+};
+
+engine.resume(waypoint);
 
 window.onkeypress = function onkeypress(event) {
     var key = event.code;
@@ -62,6 +64,6 @@ window.onkeypress = function onkeypress(event) {
     if (match) {
         engine.answer(match[1]);
     } else if (key === 'KeyR') {
-        engine.restore(null);
+        engine.resume();
     }
 };

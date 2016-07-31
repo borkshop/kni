@@ -12,7 +12,7 @@ var grammar = require('./grammar');
 
 module.exports = verify;
 
-function verify(ink, trans) {
+function verify(ink, trans, handler) {
     var lines = trans.split('\n');
 
     // filter the transcript for given answers
@@ -51,6 +51,7 @@ function verify(ink, trans) {
     var engine = new Engine({
         story: states,
         start: 'start',
+        handler: handler,
         render: render,
         dialog: readline,
         randomer: randomer

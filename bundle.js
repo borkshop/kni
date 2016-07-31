@@ -58,375 +58,7 @@ global = this;
         main = bundle[filename];
         main._require();
     }
-})([["index.js","hashbind","index.js",{"rezult":9},function (require, exports, module, __filename, __dirname){
-
-// hashbind/index.js
-// -----------------
-
-'use strict';
-
-var Result = require('rezult');
-
-module.exports = Hash;
-
-Hash.decodeUnescape =
-function decodeUnescape(str) {
-    var keyvals = [];
-    var parts = str.split('&');
-    for (var i = 0; i < parts.length; i++) {
-        var keystr = parts[i].split('=');
-        var key = unescape(keystr[0]);
-        var val = unescape(keystr[1]) || '';
-        keyvals.push([key, val]);
-    }
-    return keyvals;
-};
-
-Hash.encodeMinEscape =
-function encodeMinEscape(keyvals) {
-    var parts = [];
-    for (var i = 0; i < keyvals.length; i++) {
-        var key = keyvals[i][0];
-        var val = keyvals[i][1];
-        var part = '' + minEscape(key);
-        if (val !== undefined && val !== '') {
-            part += '=' + minEscape(val);
-        }
-
-        parts.push(part);
-    }
-    return parts.join('&');
-};
-
-Hash.encodeMaxEscape =
-function encodeMaxEscape(keyvals) {
-    var parts = [];
-    for (var i = 0; i < keyvals.length; i++) {
-        var key = keyvals[i][0];
-        var val = keyvals[i][1];
-        var part = '' + escape(key);
-        if (val !== undefined && val !== '') {
-            part += '=' + escape(val);
-        }
-        parts.push(part);
-    }
-    return parts.join('&');
-};
-
-function Hash(window, options) {
-    var self = this;
-    if (!options) {
-        options = {};
-    }
-
-    this.window = window;
-    this.last = '';
-    this.cache = {};
-    this.values = {};
-    this.bound = {};
-    // TODO: do we ever need to escape?
-    this.decode = options.decode || Hash.decodeUnescape;
-    this.encode = options.encode || (options.escape
-        ? Hash.encodeMaxEscape
-        : Hash.encodeMinEscape);
-
-    this.window.addEventListener('hashchange', onHashChange);
-    this.load();
-
-    function onHashChange(e) {
-        self.load();
-    }
-}
-
-Hash.prototype.load =
-function load() {
-    if (this.window.location.hash === this.last) {
-        return;
-    }
-
-    this.last = this.window.location.hash;
-    var keystrs = this.decode(this.last.slice(1));
-
-    var seen = {};
-    for (var i = 0; i < keystrs.length; i++) {
-        var key = keystrs[i][0];
-        var str = keystrs[i][1];
-        if (this.cache[key] !== str) {
-            this.cache[key] = str;
-            if (this.bound[key]) {
-                this.bound[key].onChange();
-            } else {
-                var res = parseValue(str);
-                if (!res.err) {
-                    // intentional ignore parse error; best-effort load
-                    this.values[key] = res.value;
-                }
-            }
-        }
-        seen[key] = true;
-    }
-    this.prune(seen);
-};
-
-Hash.prototype.prune =
-function prune(except) {
-    if (!except) {
-        except = {};
-    }
-    var cacheKeys = Object.keys(this.cache);
-    for (var i = 0; i < cacheKeys.length; i++) {
-        var key = cacheKeys[i];
-        if (!except[key]) {
-            if (this.bound[key]) {
-                this.bound[key].reset();
-            } else {
-                delete this.cache[key];
-                delete this.values[key];
-            }
-        }
-    }
-};
-
-Hash.prototype.save =
-function save() {
-    var keystrs = [];
-    var keys = Object.keys(this.cache);
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        if (!this.bound[key]) {
-            this.cache[key] = valueToString(this.values[key]);
-        }
-        var str = this.cache[key];
-        keystrs.push([key, str]);
-    }
-
-    var hash = this.encode(keystrs);
-    if (hash) {
-        hash = '#' + hash;
-    }
-    this.window.location.hash = this.last = hash;
-};
-
-Hash.prototype.bind =
-function bind(key) {
-    if (this.bound[key]) {
-        throw new Error('key already bound');
-    }
-    var bound = new HashKeyBinding(this, key);
-    this.bound[key] = bound;
-    return bound;
-};
-
-Hash.prototype.getStr =
-function getStr(key) {
-    return this.cache[key];
-};
-
-Hash.prototype.get =
-function get(key) {
-    return this.values[key];
-};
-
-Hash.prototype.set =
-function set(key, val, callback) {
-    var bound = this.bound[key] || this.bind(key);
-    return bound.set(val, callback);
-};
-
-function HashKeyBinding(hash, key) {
-    this.hash = hash;
-    this.key = key;
-    this.def = undefined;
-    this.value = hash.values[key];
-    this.parse = parseValue;
-    this.valToString = valueToString;
-    this.listener = null;
-    this.listeners = [];
-    this.notify = this.notifyNoop;
-}
-
-HashKeyBinding.prototype.load =
-function load() {
-    var str = this.hash.cache[this.key];
-    if (str !== undefined) {
-        var res = this.parse(str);
-        if (res.err) {
-            // intentional ignore parse error; best-effort load
-            return this;
-        }
-        var val = res.value;
-        if (this.value !== val) {
-            this.value = val;
-            this.hash.values[this.key] = this.value;
-            this.notify();
-        }
-    }
-    return this;
-};
-
-HashKeyBinding.prototype.save =
-function save() {
-    this.hash.values[this.key] = this.value;
-    var str = this.valToString(this.value);
-    if (this.hash.cache[this.key] !== str) {
-        this.hash.cache[this.key] = str;
-        this.hash.save();
-    }
-    return this;
-};
-
-HashKeyBinding.prototype.notifyNoop =
-function notifyNoop() {
-    return this;
-};
-
-HashKeyBinding.prototype.notifyOne =
-function notifyOne() {
-    this.listener(this.value);
-    return this;
-};
-
-HashKeyBinding.prototype.notifyAll =
-function notifyAll() {
-    for (var i = 0; i < this.listeners.length; i++) {
-        this.listeners[i].call(this, this.value);
-    }
-    return this;
-};
-
-HashKeyBinding.prototype.setParse =
-function setParse(parse, toString) {
-    this.parse = parse || parseValue;
-    this.load();
-    if (toString) {
-        this.setToString(toString);
-    }
-    return this;
-};
-
-HashKeyBinding.prototype.setToString =
-function setToString(toString) {
-    this.valToString = toString;
-    if (this.value !== undefined) {
-        this.save();
-    }
-    return this;
-};
-
-HashKeyBinding.prototype.addListener =
-function addListener(listener) {
-    if (this.listeners.length) {
-        this.listeners.push(listener);
-    } else if (this.listener) {
-        this.listeners = [this.listener, listener];
-        this.listener = null;
-        this.notify = this.notifyAll;
-    } else {
-        this.listener = listener;
-        this.notify = this.notifyOne;
-    }
-    if (this.value !== undefined) {
-        this.notify();
-    }
-    return this;
-};
-
-HashKeyBinding.prototype.setDefault =
-function setDefault(def) {
-    var value = null;
-    if (typeof def === 'string') {
-        value = this.parse(def).toValue();
-    } else {
-        value = def;
-    }
-
-    this.def = value;
-    if (this.value === undefined) {
-        this.value = this.def;
-        this.save();
-    }
-
-    return this;
-};
-
-HashKeyBinding.prototype.onChange =
-function onChange() {
-    this.load();
-};
-
-HashKeyBinding.prototype.get =
-function get() {
-    return this.value;
-};
-
-HashKeyBinding.prototype.reset =
-function reset() {
-    if (this.value !== this.def) {
-        this.value = this.def;
-        this.save();
-    }
-    return this;
-};
-
-HashKeyBinding.prototype.set =
-function set(val, callback) {
-    var value = null;
-    if (typeof val === 'string') {
-        var res = this.parse(val);
-        if (callback) {
-            callback(res.err, val, res.value);
-            if (res.err) {
-                return undefined;
-            }
-            value = res.value;
-        } else {
-            value = res.toValue();
-        }
-    } else {
-        value = val;
-    }
-
-    if (this.value !== value) {
-        this.value = value;
-        this.notify();
-        this.save();
-    }
-
-    return this.value;
-};
-
-function valueToString(val) {
-    if (val === false) {
-        return undefined;
-    }
-    if (val === true) {
-        return '';
-    }
-    return '' + val;
-}
-
-function parseValue(str) {
-    if (str === '' || str === 'true') {
-        return new Result(null, true);
-    }
-    if (str === 'false') {
-        return new Result(null, false);
-    }
-    if (str === 'null') {
-        return new Result(null, null);
-    }
-    return new Result(null, str);
-}
-
-function minEscape(str) {
-    return str.replace(/[#=&]/g, escapeMatch);
-}
-
-function escapeMatch(part) {
-    return escape(part);
-}
-
-}],["describe.js","inkblot","describe.js",{},function (require, exports, module, __filename, __dirname){
+})([["describe.js","inkblot","describe.js",{},function (require, exports, module, __filename, __dirname){
 
 // inkblot/describe.js
 // -------------------
@@ -685,7 +317,7 @@ Document.prototype.answer = function answer(text) {
 Document.prototype.close = function close() {
 };
 
-}],["engine.js","inkblot","engine.js",{"./story":8,"./evaluate":4,"./describe":1},function (require, exports, module, __filename, __dirname){
+}],["engine.js","inkblot","engine.js",{"./story":7,"./evaluate":3,"./describe":0},function (require, exports, module, __filename, __dirname){
 
 // inkblot/engine.js
 // -----------------
@@ -704,10 +336,11 @@ function Engine(args) {
     // istanbul ignore next
     var self = this;
     this.story = args.story;
+    this.handler = args.handler;
     this.options = [];
     this.noOption = null;
-    this.storage = new Global();
-    this.top = this.storage;
+    this.global = new Global(this.handler);
+    this.top = this.global;
     this.stack = [this.top];
     this.label = '';
     // istanbul ignore next
@@ -719,18 +352,9 @@ function Engine(args) {
     // istanbul ignore next
     this.randomer = args.randomer || Math;
     this.debug = debug;
-    this.end = this.end;
     this.waypoint = null;
-    this.handleWaypoint = this.handleWaypoint;
     Object.seal(this);
 }
-
-Engine.prototype.end = function end() {
-    this.display();
-    this.render.break();
-    this.dialog.close();
-    return false;
-};
 
 Engine.prototype.continue = function _continue() {
     var _continue;
@@ -764,6 +388,9 @@ Engine.prototype.goto = function _goto(label) {
     if (!next) {
         throw new Error('Story missing instruction for label: ' + label);
     }
+    if (this.handler && this.handler.goto) {
+        this.handler.goto(label);
+    }
     this.label = label;
     this.instruction = next;
     return true;
@@ -786,9 +413,21 @@ Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
     return this.goto(next);
 };
 
+Engine.prototype.end = function end() {
+    if (this.handler && this.handler.end) {
+        this.handler.end(this);
+    }
+    this.display();
+    this.dialog.close();
+    return false;
+};
+
 Engine.prototype.ask = function ask() {
     if (this.options.length) {
         this.display();
+        if (this.handler && this.handler.ask) {
+            this.handler.ask();
+        }
         this.dialog.ask();
     } else if (this.noOption != null) {
         var answer = this.noOption.answer;
@@ -801,15 +440,20 @@ Engine.prototype.ask = function ask() {
 };
 
 Engine.prototype.answer = function answer(text) {
+    if (this.handler && this.handler.answer) {
+        this.handler.answer(text);
+    }
     this.render.flush();
-    var n = +text;
-    if (n >= 1 && n <= this.options.length) {
+    var choice = text - 1;
+    if (choice >= 0 && choice < this.options.length) {
         this.render.clear();
+        var answer = this.options[choice].answer;
+        this.waypoint = this.capture(answer);
+        if (this.handler && this.handler.waypoint) {
+            this.handler.waypoint(this.waypoint);
+        }
         // There is no known case where gothrough would immediately exit for
         // lack of further instructions, so
-        var answer = this.options[n - 1].answer;
-        this.waypoint = this.capture(answer);
-        this.handleWaypoint(this.waypoint);
         // istanbul ignore else
         if (this.gothrough(answer, null, false)) {
             this.flush();
@@ -819,9 +463,6 @@ Engine.prototype.answer = function answer(text) {
         this.render.pardon();
         this.ask();
     }
-};
-
-Engine.prototype.handleWaypoint = function handleWaypoint() {
 };
 
 Engine.prototype.display = function display() {
@@ -842,7 +483,7 @@ Engine.prototype.write = function write(text) {
 Engine.prototype.capture = function capture(answer) {
     var stack = [];
     var top = this.top;
-    while (top !== this.storage) {
+    while (top !== this.global) {
         stack.unshift(top.capture());
         top = top.parent;
     }
@@ -850,7 +491,7 @@ Engine.prototype.capture = function capture(answer) {
         this.label || "",
         answer,
         stack,
-        this.storage.capture(),
+        this.global.capture(),
         [
             this.randomer._state0U,
             this.randomer._state0L,
@@ -861,14 +502,17 @@ Engine.prototype.capture = function capture(answer) {
 };
 
 // istanbul ignore next
-Engine.prototype.restore = function restore(state) {
+Engine.prototype.resume = function resume(state) {
     this.render.clear();
     this.flush();
     this.label = '';
-    this.storage = new Global();
-    this.top = this.storage;
+    this.global = new Global();
+    this.top = this.global;
     this.stack = [this.top];
     if (state == null) {
+        if (this.handler && this.handler.waypoint) {
+            this.handler.waypoint(null);
+        }
         this.goto('start');
         this.continue();
         return;
@@ -878,14 +522,14 @@ Engine.prototype.restore = function restore(state) {
     var answer = state[1];
     var stack = state[2];
     for (var i = 0; i < stack.length; i++) {
-        this.top = Frame.restore(this.top, this.storage, stack[i]);
+        this.top = Frame.resume(this.top, this.global, stack[i]);
         this.stack.push(this.top);
     }
-    var storage = state[3];
-    var keys = storage[0];
-    var values = storage[1];
+    var global = state[3];
+    var keys = global[0];
+    var values = global[1];
     for (var i = 0; i < keys.length; i++) {
-        this.storage.set(keys[i], values[i]);
+        this.global.set(keys[i], values[i]);
     }
     var random = state[4];
     this.randomer._state0U = random[0];
@@ -893,7 +537,10 @@ Engine.prototype.restore = function restore(state) {
     this.randomer._state1U = random[2];
     this.randomer._state1L = random[3];
     var stack = [];
-    if (this.gothrough(answer, null, false)) {
+    if (answer == null) {
+        this.flush();
+        this.continue();
+    } else if (this.gothrough(answer, null, false)) {
         this.flush();
         this.continue();
     }
@@ -949,13 +596,13 @@ Engine.prototype.$call = function $call() {
     if (procedure.locals.length !== this.instruction.args.length) {
         throw new Error('argument length mismatch for ' + this.instruction.branch);
     }
-    // TODO replace this.storage with closure scope if scoped procedures become
+    // TODO replace this.global with closure scope if scoped procedures become
     // viable. This will require that the engine create references to closures
     // when entering a new scope (calling a procedure), in addition to
     // capturing locals. As such the parser will need to retain a reference to
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
-    this.top = new Frame(this.top, this.storage, procedure.locals, this.instruction.next, this.label);
+    this.top = new Frame(this.top, this.global, procedure.locals, this.instruction.next, this.label);
     if (this.instruction.next) {
         this.stack.push(this.top);
     }
@@ -1083,25 +730,37 @@ Engine.prototype.$ask = function $ask() {
     return false;
 };
 
-function Global() {
+function Global(handler) {
     this.scope = Object.create(null);
+    this.handler = handler;
     Object.seal(this);
 }
 
 Global.prototype.get = function get(name) {
-    return this.scope[name] || 0;
+    if (this.handler && this.handler.has && this.handler.has(name)) {
+        return this.handler.get(name);
+    } else {
+        return this.scope[name] || 0;
+    }
 };
 
 Global.prototype.set = function set(name, value) {
-    this.scope[name] = value;
+    if (this.handler && this.handler.has && this.handler.has(name)) {
+        this.handler.set(name, value);
+    } else {
+        this.scope[name] = value;
+    }
+    if (this.handler && this.handler.changed) {
+        this.handler.changed(name, value);
+    }
 };
 
 // istanbul ignore next
 Global.prototype.log = function log() {
-    var globals = Object.keys(this.scope);
-    globals.sort();
-    for (var i = 0; i < globals.length; i++) {
-        var name = globals[i];
+    var names = Object.keys(this.scope);
+    names.sort();
+    for (var i = 0; i < names.length; i++) {
+        var name = names[i];
         var value = this.scope[name];
         console.log(name + ' = ' + value);
     }
@@ -1115,16 +774,13 @@ Global.prototype.at = function at() {
 
 // istanbul ignore next
 Global.prototype.capture = function capture() {
-    var keys = Object.keys(this.scope);
+    var names = Object.keys(this.scope);
     var values = [];
-    // var object = {};
-    for (var i = 0; i < keys.length; i++) {
-        values[i] = this.scope[keys[i]] || 0;
-        // object[keys[i]] = values[i];
+    for (var i = 0; i < names.length; i++) {
+        values[i] = this.scope[names[i]] || 0;
     }
-    // return object;
     return [
-        keys,
+        names,
         values
     ];
 };
@@ -1195,7 +851,7 @@ Frame.prototype.capture = function capture() {
 };
 
 // istanbul ignore next
-Frame.restore = function restore(top, storage, state) {
+Frame.resume = function resume(top, global, state) {
     var keys = state[0];
     var values = state[1];
     var next = state[2];
@@ -1204,7 +860,7 @@ Frame.restore = function restore(top, storage, state) {
     var stopOption = state[5];
     top = new Frame(
         top,
-        dynamic ? top : storage,
+        dynamic ? top : global,
         keys,
         next,
         branch,
@@ -2507,68 +2163,70 @@ module.exports = {
     }
 }
 
-}],["index.js","inkblot","index.js",{"hashbind":0,"./engine":3,"./examples/archery.json":5,"./story":8,"./document":2},function (require, exports, module, __filename, __dirname){
+}],["index.js","inkblot","index.js",{"./engine":2,"./examples/archery.json":4,"./story":7,"./document":1},function (require, exports, module, __filename, __dirname){
 
 // inkblot/index.js
 // ----------------
 
 'use strict';
-var Hash = require('hashbind');
 var Engine = require('./engine');
 var story = require('./examples/archery.json');
 var Story = require('./story');
 var Document = require('./document');
 
-var hash = new Hash(window);
-
-var reset = document.querySelector(".reset")
+var reset = document.querySelector(".reset");
 reset.onclick = function onclick() {
-    engine.restore(null);
+    engine.resume();
 };
 
 var doc = new Document(document.body);
 var engine = new Engine({
     story: story,
     render: doc,
-    dialog: doc
+    dialog: doc,
+    handler: {
+        waypoint: function waypoint(waypoint) {
+            var json = JSON.stringify(waypoint);
+            window.history.pushState(waypoint, '', '#' + btoa(json));
+            localStorage.setItem('archery.ink', json);
+        },
+        goto: function _goto(label) {
+            console.log(label);
+        },
+        answer: function answer(text) {
+            console.log('>', text);
+        }
+    }
 });
-engine.end = function end() {
-    this.options.push({
-        'label': 'Once more from the top…',
-        'branch': 'start'
-    });
-    return this.$ask();
-};
-engine.handleWaypoint = function handleWaypoint(waypoint) {
-    var json = JSON.stringify(waypoint);
-    var encoded = btoa(json);
-    hash.set('waypoint', encoded);
-    localStorage.setItem('archery.ink', json);
-};
+
 doc.clear();
 
 var waypoint;
-if (waypoint = hash.get('waypoint')) {
+var json;
+if (waypoint = window.location.hash || null) {
     try {
-        waypoint = atob(waypoint);
+        waypoint = atob(waypoint.slice(1));
         waypoint = JSON.parse(waypoint);
     } catch (error) {
+        console.error(error);
         waypoint = null;
     }
-} else if (waypoint = localStorage.getItem('archery.ink')) {
-    hash.set('waypoint', btoa(waypoint));
+} else if (json = localStorage.getItem('archery.ink')) {
     try {
-        waypoint = JSON.parse(waypoint);
+        waypoint = JSON.parse(json);
     } catch (error) {
+        console.error(error);
         waypoint = null;
     }
+    window.history.replaceState(waypoint, '', '#' + btoa(json));
 }
 
-if (waypoint) {
-    engine.restore(waypoint);
-} else {
-    engine.continue();
-}
+window.onpopstate = function onpopstate(event) {
+    console.log('> back');
+    engine.resume(event.state);
+};
+
+engine.resume(waypoint);
 
 window.onkeypress = function onkeypress(event) {
     var key = event.code;
@@ -2576,7 +2234,7 @@ window.onkeypress = function onkeypress(event) {
     if (match) {
         engine.answer(match[1]);
     } else if (key === 'KeyR') {
-        engine.restore(null);
+        engine.resume();
     }
 };
 
@@ -2632,7 +2290,7 @@ function zerothChildPath(path) {
     return path;
 }
 
-}],["story.js","inkblot","story.js",{"./path":7},function (require, exports, module, __filename, __dirname){
+}],["story.js","inkblot","story.js",{"./path":6},function (require, exports, module, __filename, __dirname){
 
 // inkblot/story.js
 // ----------------
@@ -2811,52 +2469,5 @@ Ask.prototype.tie = tie;
 function tie(end) {
     this.next = end;
 }
-
-}],["index.js","rezult","index.js",{},function (require, exports, module, __filename, __dirname){
-
-// rezult/index.js
-// ---------------
-
-"use strict";
-
-module.exports = Result;
-
-function Result(err, value) {
-    var self = this;
-    self.err = err || null;
-    self.value = value;
-}
-
-Result.prototype.toValue = function toValue() {
-    var self = this;
-    if (self.err) {
-        throw self.err;
-    } else {
-        return self.value;
-    }
-};
-
-Result.prototype.toCallback = function toCallback(callback) {
-    var self = this;
-    callback(self.err, self.value);
-};
-
-Result.just = function just(value) {
-    return new Result(null, value);
-};
-
-Result.error = function error(err) {
-    return new Result(err, null);
-};
-
-Result.lift = function lift(func) {
-    return function rezultLifted() {
-        try {
-            return Result.just(func.apply(this, arguments));
-        } catch(err) {
-            return Result.error(err);
-        }
-    };
-};
 
 }]])("inkblot/index.js")

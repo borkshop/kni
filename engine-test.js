@@ -47,12 +47,48 @@ function main() {
     test('tests/sub-optional.ink', 'tests/sub-optional.1');
     test('tests/switch-list.ink', 'tests/switch-list.1');
 
+    var asked = false;
+    var ended = false;
+    test('tests/handler.ink', 'tests/handler.1', {
+        moxy: 41,
+        has: function has(name) {
+            return name === 'moxy';
+        },
+        get: function get(name) {
+            return this.moxy;
+        },
+        set: function set(name, value) {
+            this.moxy = value;
+        },
+        goto: function _goto(label) {
+        },
+        changed: function changed(name, value) {
+            global.fail = global.fail || name !== 'moxy';
+            global.fail = global.fail || value !== 42;
+        },
+        ask: function ask() {
+            asked = true;
+        },
+        answer: function answer(text) {
+            global.fail = global.fail || text !== '1';
+        },
+        waypoint: function waypoint(state) {
+        },
+        end: function end(engine) {
+            engine.render.paragraph();
+            engine.render.write(' ', 'The End.', ' ');
+            ended = true;
+        }
+    });
+
+    global.fail = global.fail || !ended;
+    global.fail = global.fail || !asked;
 }
 
-function test(inkscript, transcript) {
+function test(inkscript, transcript, handler) {
     var ink = fs.readFileSync(inkscript, 'utf8');
     var trans = fs.readFileSync(transcript, 'utf8');
-    var result = verify(ink, trans);
+    var result = verify(ink, trans, handler);
 
     // istanbul ignore if
     if (!result.pass) {

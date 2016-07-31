@@ -169,23 +169,37 @@ coordinate. The hash and hilbert operators combine (#x#y) to assign a
 pseudorandom number to every position in that space.
 
 
-## Storage
+## Runtime Hooks
 
-The storage interface is just an object with `get` and `set`. It might also
-implement `clear` if you need it for custom behavior.
-This is the same as a JavaScript Map, but short of relying on the existence of
-a Map, the engine implements one backed by an object. You can provide another.
+The Engine constructor accepts a `handler` object that can drive bindings
+with external scene graphs and data sources and targets.
+The handler may implement any of the following methods.
 
-- localstorage.js
-
-Inkblot also has a web storage system backed by LocalStorage in a web browser.
-
-The engine creates stack frames that implement the storage interface and fall
-through to the parent storage scope.
-This is always the global scope, root storage object.
-Inkblot does not support closures.
-Note that local scopes do not persist if you use an alternate storage system.
-This is probably a bug for resuming from stored state.
+- `has(name)` determines whether the engine’s global scope should
+  defer to the handler for reading and writing a variable by name.
+  This can match patterns of names, e.g., names beginning with 'external.',
+  or specific names like 'time'.
+- `get(name)` will receive calls from the engine to get names owned by the
+  handler. At present, this must return synchronously. This is handy
+  for external continuous variables like time as well as live bindings
+  to a database or simulation.
+- `set(name, value)` will receive calls from the engine to set names
+  owned by the handler.
+- `changed(name, value)` will receive notifications from the engine for any
+  global variable change.
+- `waypoint(state)` receives a snapshot of the narrative state, including
+  all global variables, the entire stack, the internal state of the
+  random number generator, the current instruction label, and an array
+  of answer labels, or simply null for the initial waypoint.
+  The engine can `resume(state)` on any waypoint, replaying all of the
+  narrative since the dialog’s last answer.
+- `goto(label)` receives notifications for every instruction that the engine
+  executes, with the label of that instruction.
+  `@label` within a story can trigger external scene changes, like
+  showing and hiding supplementary assets or components.
+- `ask()` receives a notification whenever the story asks for an answer.
+- `answer(text)` receives a notification when the story receives an answer.
+- `end(engine)` receives a notification when a story runs to its conclusion.
 
 
 ## Dialogs
@@ -195,7 +209,7 @@ The web dialog hooks up click and keyboard event handlers to choose options
 and resumes the engine with an answer when the user chooses.
 The command line dialog uses readline.
 
-The engine drives the dialog with the `question` method.
+The engine drives the dialog with the `ask` method.
 THe dialog calls back to the engine with the `answer` method.
 
 
