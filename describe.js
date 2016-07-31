@@ -28,10 +28,6 @@ types.call = function call(node) {
     return node.branch + '(' + node.args.map(S).join(' ') + ')';
 };
 
-types.call = function call(node) {
-    return node.label + ' ' + node.branch + '() -> ' + node.next;
-};
-
 types.args = function args(node) {
     return '(' + node.locals.join(' ') + ')';
 };

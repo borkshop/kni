@@ -71,7 +71,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
             tie(this.ends, this.path);
             return new Thread(this.story, Path.next(this.path), this.parent, [node], this.jumps);
         } else if (text === '//') {
-            var node = this.story.create(this.path, 'paragraph', scanner.position());
+            var node = this.story.create(this.path, 'paragraph', null, scanner.position());
             tie(this.ends, this.path);
             return new Thread(this.story, Path.next(this.path), this.parent, [node], this.jumps);
         } else if (text === '{"' || text === '{\'' || text === '"}' || text === '\'}') {
@@ -436,7 +436,7 @@ AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
     }
     for (var i = 0; i < consequences.length; i++) {
         var consequence = consequences[i];
-        var node = this.story.create(path, 'move', scanner.position());
+        var node = this.story.create(path, 'move', null, scanner.position());
         node.source = consequence[1];
         node.target = consequence[0];
         tie(ends, path);
