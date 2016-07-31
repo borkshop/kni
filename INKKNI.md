@@ -94,7 +94,7 @@ glaring ways, particularly the letters are in the wrong order, and it has
     {~ and hit the target, winning 1 gold piece!
     {+gold} {+score} ->range||}
     and miss.
-  ``
+  ```
 
   And also, Kni supports simple "consequence" notation, like this
   example that echanges gold for arrows. The `+3arrow` consequence does not

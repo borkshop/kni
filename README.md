@@ -47,7 +47,7 @@ The End.
 To run an Kni, use the command-line interactive reader:
 
 ```
-❯ kni hello.kni
+$ kni hello.kni
 Hello, "World!"
 1. Say, "Hello".
 2. Say, "Farewell."
@@ -86,7 +86,7 @@ The command line tool can also:
 - produce a transcript of a interpretation of the story.
 
   ```
-  ❯ kni hello.kni -t hello.1
+  $ kni hello.kni -t hello.1
   ```
 
 - verify that a transcript continues to produce the same narrative after
@@ -94,7 +94,7 @@ The command line tool can also:
   validate itself against its examples and test scripts.
 
   ```
-  ❯ kni hello.kni -v hello.1
+  $ kni hello.kni -v hello.1
   ```
 
 - generate a JSON representation of the script. The JSON script can be embedded
@@ -102,13 +102,13 @@ The command line tool can also:
   engine.
 
   ```
-  ❯ kni -j hello.kni
+  $ kni -j hello.kni
   ```
 
 - interpret a script from precompiled JSON.
 
   ```
-  ❯ kni -J hello.json
+  $ kni -J hello.json
   ```
 
 - Kni can also produce a diagnostique view of a story. The first column is
@@ -120,7 +120,7 @@ The command line tool can also:
   exit.
 
   ```
-  ❯ kni hello.kni -d
+  $ kni hello.kni -d
   start     text    -Hello, “World!”
   loop      option  (Q loop.0.2 loop.0.3) (A loop.0.1 loop.0.3 loop.0.4)  -> loop.1
   loop.0.1  text    -You s-                                               <-
