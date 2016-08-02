@@ -44,17 +44,17 @@ var union = {
     'or': true
 };
 
-var precedence = [
-    exponential,
-    multiplicative,
-    arithmetic,
-    comparison,
+var precedence = [ // from low to high
+    union,
     intersection,
-    union
+    comparison,
+    arithmetic,
+    multiplicative,
+    exponential,
 ];
 
 function expression(story, parent) {
-    for (var i = precedence.length - 1; i >= 0; i--) {
+    for (var i = 0; i < precedence.length; i++) {
         var operators = precedence[i];
         parent = new BinaryExpression(story, operators, parent);
     }
@@ -249,23 +249,38 @@ function MaybeOperator(story, parent, expression, operators) {
 
 MaybeOperator.prototype.next = function next(type, space, text, scanner) {
     if (this.operators[text] === true) {
-        return new Unary(this.story,
-            this.maybeAnother(new PartialExpression(this.story, this, text, this.expression)));
+        var parent = new MaybeExpression(this.story, this.parent, this.operators);
+        parent = new PartialExpression(this.story, parent, text, this.expression);
+        for (var i = precedence.indexOf(this.operators) + 1; i < precedence.length; i++) {
+            parent = new MaybeExpression(this.story, parent, precedence[i]);
+        }
+        return new Unary(this.story, parent);
     } else {
         return this.parent.return(this.expression, scanner)
             .next(type, space, text, scanner);
     }
 };
 
-MaybeOperator.prototype.maybeAnother = function maybeAnother(expression) {
-    for (var i = 0; i < precedence.length; i++) {
-        var operators = precedence[i];
-        expression = new BinaryExpression(this.story, operators, expression);
-        if (operators === this.operators) {
-            break;
-        }
-    }
-    return expression;
+function MaybeExpression(story, parent, operators) {
+    this.story = story;
+    this.parent = parent;
+    this.operators = operators;
+    Object.seal(this);
+}
+
+MaybeExpression.prototype.return = function _return(expression, scanner) {
+    return new MaybeOperator(this.story, this.parent, expression, this.operators);
+};
+
+function PartialExpression(story, parent, operator, expression) {
+    this.story = story;
+    this.parent = parent;
+    this.operator = operator;
+    this.expression = expression;
+}
+
+PartialExpression.prototype.return = function _return(expression, scanner) {
+    return this.parent.return([this.operator, this.expression, expression], scanner);
 };
 
 function BinaryExpression(story, operators, parent) {
@@ -278,20 +293,6 @@ function BinaryExpression(story, operators, parent) {
 
 BinaryExpression.prototype.return = function _return(expression, scanner) {
     return new MaybeOperator(this.story, this.parent, expression, this.operators);
-};
-
-function PartialExpression(story, parent, op, left) {
-    this.type = 'partial-expression';
-    this.story = story;
-    this.parent = parent;
-    this.op = op;
-    this.left = left;
-    Object.seal(this);
-}
-
-PartialExpression.prototype.return = function _return(right, scanner) {
-    return this.parent.maybeAnother(this.parent.parent)
-        .return([this.op, this.left, right], scanner);
 };
 
 function GetDynamicVariable(story, parent, literals, expressions) {
