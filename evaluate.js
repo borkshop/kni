@@ -70,6 +70,10 @@ var functions = {
     sin: Math.sin,
     tan: Math.tan,
 
+    floor: Math.floor,
+    ceil: Math.floor,
+    round: Math.floor,
+
     sign: function (x) {
         if (x < 0) {
             return -1;
