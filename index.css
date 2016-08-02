@@ -1,28 +1,46 @@
+@media handheld {
+    body {
+        font-size: 150%;
+    }
+}
+
 body {
-    font-family: Libre Baskerville, Book Antiqua, serif;
     font-size: 200%;
     background-color: hsla(60, 42.00%, 66.00%, 1);
     color: hsla(240, 42.00%, 25.00%, 1);
+    overflow: none;
 }
 
-.parent {
+.body {
     position: absolute;
-    display: table;
     top: 0;
+    bottom: 1.5em;
     left: 0;
+    right: 0;
+}
+
+.kni-frame {
+    position: absolute;
     height: 100%;
     width: 100%;
-    transition: transform 500ms ease, opacity 500ms ease-out;
+    overflow-y: scroll;
+    transition: transform 1s ease, opacity 1s ease-out;
 }
 
-.child {
+.kni-frame-a {
+    display: table;
+    height: 100%;
+    width: 100%;
+}
+
+.kni-frame-b {
     display: table-cell;
     vertical-align: middle;
     padding: 1em;
     width: 40ex;
 }
 
-.outer {
+.kni-frame-c {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -30,7 +48,7 @@ body {
     align-items: flex-start;
 }
 
-.inner {
+.kni-body {
     display: flex-item;
     flex: 0 1 auto;
     max-width: 40ex;
@@ -39,6 +57,7 @@ body {
 
 th {
     vertical-align: top;
+    padding-right: 1ex;
 }
 
 td {
@@ -51,19 +70,20 @@ li {
 }
 
 a {
-    color: hsla(240, 42.00%, 25.00%, 1);
+    color: inherit;
+    font-family: 200%;
 }
 
 a:link {
-    color: hsla(240, 42.00%, 25.00%, 1);
+    color: inherit;
 }
 
 a:hover {
-    color: hsla(240, 42.00%, 25.00%, 1);
+    color: inherit;
 }
 
 a:visited {
-    color: hsla(240, 42.00%, 25.00%, 1);
+    color: inherit;
 }
 
 .about {
@@ -81,5 +101,4 @@ a:visited {
     bottom: 0;
     left: 0;
     margin: 10px;
-    z-index: 100;
 }
