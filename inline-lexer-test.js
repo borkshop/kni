@@ -261,7 +261,15 @@ test([
 test([
     'Space\\ Lord'
 ], [
-    'Space', ' ', 'Lord',
+    'Space', 'LITERAL', ' ', 'Lord',
+    ' ', 'STOP',
+    ' ', 'STOP'
+]);
+
+test([
+    'Space \\ Lord'
+], [
+    'Space', 'LITERAL', ' ', 'Lord',
     ' ', 'STOP',
     ' ', 'STOP'
 ]);

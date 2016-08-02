@@ -327,7 +327,7 @@ function GetStaticVariable(story, parent, literals, expressions, literal, fresh)
 }
 
 GetStaticVariable.prototype.next = function next(type, space, text, scanner) {
-    if (space === '' || this.fresh) {
+    if (type !== 'literal' && (space === '' || this.fresh)) {
         this.fresh = false;
         if (text === '{') {
             return expression(this.story, new GetDynamicVariable(

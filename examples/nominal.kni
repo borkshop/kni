@@ -1,0 +1,25 @@
+# This example illustrates a procedure that generates the name of any
+# expressible integer.
+
+->nominally(0-2**31).
+
+- @nominally(n)
+  {(n < 0)? minus ->nominally(-n)<-}
+  {(n >= 1000000000)?
+    ->nominally(n / 1000000000) billion{(n % 1000000000)?,
+    ->nominally(n % 1000000000)}<-}
+  {(n >= 1000000)?
+    ->nominally(n / 1000000) million{(n % 1000000)?,
+    ->nominally(n % 1000000)}<-}
+  {(n >= 1000)?
+    ->nominally(n / 1000) thousand{(n % 1000)?,
+    ->nominally(n % 1000)}<-}
+  {(n >= 100)?
+    ->nominally(n / 100) hundred{(n % 100)?
+    \ ->nominally(n % 100)}<-}
+  {(n % 10 == 0)?
+    {(n/10)|zero|ten|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety}<-}
+  {(n)|
+  |one|two|three|four|five|six|seven|eight|nine|
+  |eleven|twelve|thirteen|forteen|fifteen|sixteen|seventeen|eighteen|nineteen|
+  ->nominally(n/10*10)\-->nominally(n%10)}

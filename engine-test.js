@@ -22,6 +22,7 @@ function main() {
     test('examples/hilo.kni', 'tests/hilo.1');
     test('examples/liftoff.kni', 'tests/liftoff.1');
     test('examples/list.kni', 'tests/list.1');
+    test('examples/nominal.kni', 'tests/nominal.1');
     test('examples/option-styles.kni', 'tests/option-styles.1');
     test('examples/paint.kni', 'tests/paint.1');
     test('examples/plane.kni', 'tests/plane.1');

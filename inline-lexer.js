@@ -72,7 +72,8 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             } else {
                 // Otherwise, treat all following space as a single space.
                 this.flush(scanner);
-                this.space = ' ';
+                this.generator.next('literal', '', ' ', scanner);
+                this.space = '';
             }
         } else if (c === '\\') {
             // TODO account for escaped space through to the end of line

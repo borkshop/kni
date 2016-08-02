@@ -182,7 +182,7 @@ Engine.prototype.resume = function resume(state) {
     this.render.clear();
     this.flush();
     this.label = '';
-    this.global = new Global();
+    this.global = new Global(this.handler);
     this.top = this.global;
     this.stack = [this.top];
     if (state == null) {
@@ -284,7 +284,7 @@ Engine.prototype.$call = function $call() {
     }
     for (var i = 0; i < this.instruction.args.length; i++) {
         var arg = this.instruction.args[i];
-        var value = evaluate(this.top.caller, this.randomer, arg);
+        var value = evaluate(this.top.parent, this.randomer, arg);
         this.top.set(procedure.locals[i], value);
     }
     return this.goto(this.instruction.branch);
