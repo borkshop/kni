@@ -41,7 +41,8 @@ Engine.prototype.continue = function _continue() {
         }
         // istanbul ignore if
         if (!this['$' + this.instruction.type]) {
-            throw new Error('Unexpected instruction type: ' + this.instruction.type);
+            console.error('Unexpected instruction type: ' + this.instruction.type, this.instruction);
+            this.resume();
         }
         _continue = this['$' + this.instruction.type](this.instruction);
     } while (_continue);
@@ -62,7 +63,13 @@ Engine.prototype.goto = function _goto(label) {
     var next = this.story[label];
     // istanbul ignore if
     if (!next) {
-        throw new Error('Story missing instruction for label: ' + label);
+        console.error('Story missing label', label);
+        return this.resume();
+    }
+    // istanbul ignore if
+    if (!next) {
+        console.error('Story missing instruction for label: ' + label);
+        return this.resume();
     }
     if (this.handler && this.handler.goto) {
         this.handler.goto(label, next);
@@ -262,15 +269,18 @@ Engine.prototype.$call = function $call() {
     var procedure = this.story[this.instruction.branch];
     // istanbul ignore if
     if (!procedure) {
-        throw new Error('no such procedure ' + this.instruction.branch);
+        console.error('no such procedure ' + this.instruction.branch, this.instruction);
+        return this.resume();
     }
     // istanbul ignore if
     if (procedure.type !== 'args') {
-        throw new Error('can\'t call non-procedure ' + this.instruction.branch);
+        console.error('Can\'t call non-procedure ' + this.instruction.branch, this.instruction);
+        return this.resume();
     }
     // istanbul ignore if
     if (procedure.locals.length !== this.instruction.args.length) {
-        throw new Error('argument length mismatch for ' + this.instruction.branch);
+        console.error('Argument length mismatch for ' + this.instruction.branch, this.instruction, procedure);
+        return this.resume();
     }
     // TODO replace this.global with closure scope if scoped procedures become
     // viable. This will require that the engine create references to closures
