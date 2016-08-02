@@ -193,8 +193,8 @@ The handler may implement any of the following methods.
   of answer labels, or simply null for the initial waypoint.
   The engine can `resume(state)` on any waypoint, replaying all of the
   narrative since the dialog’s last answer.
-- `goto(label)` receives notifications for every instruction that the engine
-  executes, with the label of that instruction.
+- `goto(label, instruction)` receives notifications for every instruction that
+  the engine executes, with the label of that instruction.
   `@label` within a story can trigger external scene changes, like
   showing and hiding supplementary assets or components.
 - `ask()` receives a notification whenever the story asks for an answer.

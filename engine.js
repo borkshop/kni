@@ -65,7 +65,7 @@ Engine.prototype.goto = function _goto(label) {
         throw new Error('Story missing instruction for label: ' + label);
     }
     if (this.handler && this.handler.goto) {
-        this.handler.goto(label);
+        this.handler.goto(label, next);
     }
     this.label = label;
     this.instruction = next;
