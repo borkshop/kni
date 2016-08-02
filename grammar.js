@@ -786,7 +786,7 @@ AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) 
             .next(type, space, text, scanner);
     } else {
         this.story.error('Expected |, ?, or } after expression, got ' + type + '/' + text + ' at ' + scanner.position());
-        return this.parent.return(this.path, [node], [], scanner)
+        return this.parent.return(this.path, [], [], scanner)
             .next(type, space, text, scanner);
     }
 };
