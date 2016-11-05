@@ -224,7 +224,7 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
     return this.option(scanner).next(type, space, text, scanner);
 };
 
-MaybeOption.prototype.return = function _return(operator, expression, modifier) {
+MaybeOption.prototype.return = function _return(operator, expression, modifier, scanner) {
     if (operator === '+' || operator === '-') {
         modifier = modifier || ['val', 1];
         this.consequences.push([expression, [operator, expression, modifier]]);
@@ -308,7 +308,7 @@ function OptionArgument(story, parent, operator) {
 
 OptionArgument.prototype.return = function _return(args, scanner) {
     if (args[0] === 'get' || args[0] === 'var') {
-        return this.parent.return(this.operator, args, this.args);
+        return this.parent.return(this.operator, args, this.args, scanner);
     } else {
         return expression(this.story,
             new OptionArgument2(this.story, this.parent, this.operator, args));
@@ -323,8 +323,8 @@ function OptionArgument2(story, parent, operator, args) {
     Object.freeze(this);
 }
 
-OptionArgument2.prototype.return = function _return(args) {
-    return this.parent.return(this.operator, args, this.args);
+OptionArgument2.prototype.return = function _return(args, scanner) {
+    return this.parent.return(this.operator, args, this.args, scanner);
 };
 
 function Option(story, path, parent, ends, jumps, leader, consequences) {
@@ -397,7 +397,7 @@ function OptionThread(story, path, parent, ends, option, mode, Next) {
     Object.freeze(this);
 }
 
-OptionThread.prototype.return = function _return(path, ends, jumps) {
+OptionThread.prototype.return = function _return(path, ends, jumps, scanner) {
     this.option.push(path, this.mode);
     return new this.Next(this.story, path, this.parent, ends, this.option);
 };
@@ -419,7 +419,7 @@ AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
         return this.option.thread(scanner, new AfterQorA(this.story, this.path, this, this.ends, this.option));
     } else {
         this.story.error('Expected brackets in option at ' + scanner.position());
-        return this.return(this.path, this.ends, this.jumps);
+        return this.return(this.path, this.ends, this.jumps, scanner);
     }
 };
 
@@ -711,7 +711,7 @@ function SetBlock(story, path, parent, ends, op) {
     this.ends = ends;
 }
 
-SetBlock.prototype.return = function _return(expression) {
+SetBlock.prototype.return = function _return(expression, scanner) {
     return new MaybeSetVariable(this.story, this.path, this.parent, this.ends, this.op, expression);
 };
 
@@ -757,7 +757,7 @@ function ExpressionBlock(story, path, parent, ends, mode) {
     this.mode = mode;
 }
 
-ExpressionBlock.prototype.return = function _return(expression) {
+ExpressionBlock.prototype.return = function _return(expression, scanner) {
     return new AfterExpressionBlock(this.story, this.path, this.parent, this.ends, this.mode, expression);
 };
 
@@ -908,7 +908,7 @@ Program.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-Program.prototype.return = function _return(path, ends, jumps) {
+Program.prototype.return = function _return(path, ends, jumps, scanner) {
     return new Program(this.story, path, this.parent, ends, jumps);
 };
 
@@ -927,7 +927,7 @@ Assignment.prototype.return = function _return(expression, scanner) {
         return new ExpectOperator(this.story, this.path, this.parent, this.ends, this.jumps, expression);
     } else {
         this.story.error('Expected variable to assign, got: ' + JSON.stringify(expression) + ' at ' + scanner.position());
-        return this.parent.return(this.path, this.ends, this.jumps)
+        return this.parent.return(this.path, this.ends, this.jumps, scanner)
             .next('error', '', '', scanner);
     }
 };
@@ -948,7 +948,7 @@ ExpectOperator.prototype.next = function next(type, space, text, scanner) {
         return expression(this.story, new ExpectExpression(this.story, this.path, this.parent, this.ends, this.jumps, this.left, text));
     } else {
         this.story.error('Expected = operator, got ' + type + '/' + text + ' at ' + scanner.position());
-        return this.parent.return(this.path, this.ends, this.jumps);
+        return this.parent.return(this.path, this.ends, this.jumps, scanner);
     }
 };
 
