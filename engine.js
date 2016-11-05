@@ -219,7 +219,6 @@ Engine.prototype.resume = function resume(state) {
     this.randomer._state0L = random[1];
     this.randomer._state1U = random[2];
     this.randomer._state1L = random[3];
-    var stack = [];
     if (answer == null) {
         this.flush();
         this.continue();
