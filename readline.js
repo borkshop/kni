@@ -58,7 +58,7 @@ Play.prototype.answer = function answer(text) {
     } else if (text === 'save') {
         console.log("");
         engine.dialog.ask('file name [' + this.filename + ']> ');
-        return new Save(this, engine.waypoint);
+        return new Save(this, engine.waypoint, this.filename);
     } else if (text === 'load') {
         console.log("");
         engine.dialog.ask('file name [' + this.filename + ']> ');
@@ -80,17 +80,19 @@ Play.prototype.saved = function saved(filename) {
 Play.prototype.loaded = function loaded(waypoint) {
     var engine = this.readline.engine;
 
-    engine.restore(waypoint);
+    engine.resume(waypoint);
     return this;
 };
 
-function Save(parent, waypoint) {
+function Save(parent, waypoint, filename) {
     this.parent = parent;
     this.waypoint = waypoint;
+    this.filename = filename;
 }
 
 Save.prototype.answer = function answer(filename) {
     var waypoint = JSON.stringify(this.waypoint);
+    filename = filename || this.filename;
     fs.writeFileSync(filename, waypoint, 'utf8');
 
     console.log("");
