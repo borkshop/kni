@@ -599,7 +599,7 @@ Logical operators return 0 or 1.
 
 `==` is equality.
 
-`!=` is inequality.
+`<>` is inequality.
 
 `and` is logical intersection.
 
