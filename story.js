@@ -61,6 +61,7 @@ function Option(label) {
     this.type = 'opt';
     this.question = [];
     this.answer = [];
+    this.keywords = null;
     this.next = null;
     this.position = null;
     Object.seal(this);

@@ -148,6 +148,29 @@ You are in a red room.
 There is a door and a bell.
 ```
 
+## Formulae
+
+Choices can also have conditions, components, and products.
+The introduction to an option line may include any number of these.
+An expression in braces serves as a condition, without which the option
+is not available.
+
+An expression with the plus `+` prefix denotes a product of the choice.
+Chosing this option increases the variable.
+
+An expression with the minus `-` prefix is a component that gets
+consumed with the option. So, `{-2coal}` would indicate that the option
+would consume two coal, but also indicates that the option is not available
+unless the `coal` variable is at least two.
+
+These primitives enable concise crafting formulae.
+
+```
++ {at==smelter} {bellows} {-coal} {-lyme} {-iron} {+2steel}
+  [You chose[Choose] to work the bellows, to convert coal, lyme, and iron to
+  molten steel. ] The glowing metal emerges from the smelter.
+```
+
 ## Questions and Answers
 
 Options, starting with plus or asterisk, have a special notation and use the
@@ -220,6 +243,42 @@ it will fall through and automatically follow the first collected non-option.
 >
 ->start
 ```
+
+## Keywords
+
+Options can also have keywords. Any term in angle brackets, ``<term>``, denotes
+a keyword name for an option.  With the command line (readline) engine, options
+can be chosen by number or keyword.
+
+```
++ <apple> [You chose[Choose] apple. ]
++ <orange> <lemon> [You chose[Choose] orange or lemon. ]
+```
+
+```
+1.  Choose apple.
+2.  Choose orange or lemon.
+> lemon
+
+You chose orange or lemon.
+```
+
+Invisible options can also be chosen by keyword.
+
+```
++ <apple> [You chose[Choose] apple. ]
++ <orange> <lemon> [You chose[Choose] orange or lemon. ]
++ <grape> [] You chose a grape, which wasn'}t even on the menu.
+```
+
+```
+1.  Choose apple.
+2.  Choose orange or lemon.
+> grape
+
+You chose a grape, which wasn’t even on the menu.
+```
+
 
 # Directives
 
