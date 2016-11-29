@@ -38,6 +38,7 @@ function main() {
     test('tests/keywords.kni', 'tests/keywords.2');
     test('tests/keywords.kni', 'tests/keywords.3');
     test('tests/keywords.kni', 'tests/keywords.4');
+    test('tests/keywords.kni', 'tests/keywords.5');
     test('tests/literals.kni', 'tests/literals.1');
     test('tests/loop.kni', 'tests/loop.1');
     test('tests/math.kni', 'tests/math.1');

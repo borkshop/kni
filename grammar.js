@@ -221,6 +221,9 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
             return new OptionOperator(this.story,
                 new ThenExpect('token', '}', this.story, this));
         }
+        if (text === '<>') {
+            return this.return('keyword', '', null, scanner);
+        }
         if (text === '<') {
             return new Keyword(this);
         }
@@ -297,7 +300,7 @@ function Keyword(parent) {
 
 Keyword.prototype.next = function next(type, space, text, scanner) {
     if (text === '>') {
-        return this.parent.return('keyword', this.keyword, scanner);
+        return this.parent.return('keyword', this.keyword, null, scanner);
     }
     this.keyword += (this.space && space) + text;
     this.space = ' ';
