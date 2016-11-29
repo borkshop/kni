@@ -110,7 +110,7 @@ Engine.prototype.ask = function ask() {
     if (this.options.length) {
         this.display();
         if (this.handler && this.handler.ask) {
-            this.handler.ask();
+            this.handler.ask(this);
         }
         this.dialog.ask();
     } else if (this.noOption != null) {
@@ -125,7 +125,7 @@ Engine.prototype.ask = function ask() {
 
 Engine.prototype.answer = function answer(text) {
     if (this.handler && this.handler.answer) {
-        this.handler.answer(text);
+        this.handler.answer(text, this);
     }
     this.render.flush();
     var choice = text - 1;
@@ -143,7 +143,7 @@ Engine.prototype.choice = function choice(answer) {
     this.render.clear();
     this.waypoint = this.capture(answer);
     if (this.handler && this.handler.waypoint) {
-        this.handler.waypoint(this.waypoint);
+        this.handler.waypoint(this.waypoint, this);
     }
     // There is no known case where gothrough would immediately exit for
     // lack of further instructions, so
@@ -152,7 +152,7 @@ Engine.prototype.choice = function choice(answer) {
         this.flush();
         this.continue();
     }
-}
+};
 
 Engine.prototype.display = function display() {
     this.render.display();
@@ -201,7 +201,7 @@ Engine.prototype.resume = function resume(state) {
     this.stack = [this.top];
     if (state == null) {
         if (this.handler && this.handler.waypoint) {
-            this.handler.waypoint(null);
+            this.handler.waypoint(null, this);
         }
         this.goto('start');
         this.continue();
