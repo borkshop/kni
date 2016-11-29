@@ -1,4 +1,6 @@
 + <apple> [You chose[Choose] apple. ]
-+ <orange> <lemon> [You chose[Choose] orange or lemon. ]
++ <orange> <lemon>
+  <orange or lemon>
+  [You chose[Choose] orange or lemon. ]
 + <grape> [] You chose a grape, which wasn'}t even on the menu.
 >

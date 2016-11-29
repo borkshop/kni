@@ -222,9 +222,7 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
                 new ThenExpect('token', '}', this.story, this));
         }
         if (text === '<') {
-            return expression.label(this.story,
-                new Keyword(
-                    new ThenExpect('token', '>', this.story, this)));
+            return new Keyword(this);
         }
     }
     return this.option(scanner).next(type, space, text, scanner);
@@ -242,7 +240,7 @@ MaybeOption.prototype.return = function _return(operator, expression, modifier, 
         this.conditions.push(expression);
     }
     if (operator === 'keyword') {
-        this.keywords[expression[1]] = true;
+        this.keywords[expression] = true;
     }
     return this;
 };
@@ -293,10 +291,17 @@ MaybeOption.prototype.option = function option(scanner) {
 // Captures <keyword> annotations on options.
 function Keyword(parent) {
     this.parent = parent;
+    this.keyword = '';
+    this.space = '';
 }
 
-Keyword.prototype.return = function _return(keyword, scanner) {
-    return this.parent.return('keyword', keyword, scanner);
+Keyword.prototype.next = function next(type, space, text, scanner) {
+    if (text === '>') {
+        return this.parent.return('keyword', this.keyword, scanner);
+    }
+    this.keyword += (this.space && space) + text;
+    this.space = ' ';
+    return this;
 };
 
 // {+x}, {-x}, or {(x)}
