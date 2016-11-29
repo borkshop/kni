@@ -14,6 +14,7 @@ function Engine(args) {
     this.story = args.story;
     this.handler = args.handler;
     this.options = [];
+    this.keywords = {};
     this.noOption = null;
     this.global = new Global(this.handler);
     this.top = this.global;
@@ -129,24 +130,29 @@ Engine.prototype.answer = function answer(text) {
     this.render.flush();
     var choice = text - 1;
     if (choice >= 0 && choice < this.options.length) {
-        this.render.clear();
-        var answer = this.options[choice].answer;
-        this.waypoint = this.capture(answer);
-        if (this.handler && this.handler.waypoint) {
-            this.handler.waypoint(this.waypoint);
-        }
-        // There is no known case where gothrough would immediately exit for
-        // lack of further instructions, so
-        // istanbul ignore else
-        if (this.gothrough(answer, null, false)) {
-            this.flush();
-            this.continue();
-        }
+        return this.choice(this.options[choice].answer);
+    } else if (this.keywords[text]) {
+        return this.choice(this.keywords[text].answer);
     } else {
         this.render.pardon();
         this.ask();
     }
 };
+
+Engine.prototype.choice = function choice(answer) {
+    this.render.clear();
+    this.waypoint = this.capture(answer);
+    if (this.handler && this.handler.waypoint) {
+        this.handler.waypoint(this.waypoint);
+    }
+    // There is no known case where gothrough would immediately exit for
+    // lack of further instructions, so
+    // istanbul ignore else
+    if (this.gothrough(answer, null, false)) {
+        this.flush();
+        this.continue();
+    }
+}
 
 Engine.prototype.display = function display() {
     this.render.display();
@@ -155,6 +161,7 @@ Engine.prototype.display = function display() {
 Engine.prototype.flush = function flush() {
     this.options.length = 0;
     this.noOption = null;
+    this.keywords = {};
 };
 
 Engine.prototype.write = function write(text) {
@@ -307,6 +314,10 @@ Engine.prototype.$args = function $args() {
 
 Engine.prototype.$opt = function $opt() {
     var option = this.instruction;
+    for (var i = 0; i < option.keywords.length; i++) {
+        var keyword = option.keywords[i];
+        this.keywords[keyword] = option;
+    }
     if (option.question.length) {
         this.options.push(option);
         this.render.startOption();

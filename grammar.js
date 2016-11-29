@@ -209,6 +209,7 @@ function MaybeOption(story, path, parent, ends, jumps, leader) {
     this.leader = leader;
     this.conditions = [];
     this.consequences = [];
+    this.keywords = {};
     this.at = path;
     this.descended = false;
     Object.seal(this);
@@ -219,6 +220,11 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
         if (text === '{') {
             return new OptionOperator(this.story,
                 new ThenExpect('token', '}', this.story, this));
+        }
+        if (text === '<') {
+            return expression.label(this.story,
+                new Keyword(
+                    new ThenExpect('token', '>', this.story, this)));
         }
     }
     return this.option(scanner).next(type, space, text, scanner);
@@ -234,6 +240,9 @@ MaybeOption.prototype.return = function _return(operator, expression, modifier, 
     }
     if (operator === '?') {
         this.conditions.push(expression);
+    }
+    if (operator === 'keyword') {
+        this.keywords[expression[1]] = true;
     }
     return this;
 };
@@ -273,6 +282,7 @@ MaybeOption.prototype.option = function option(scanner) {
 
     var option = new Option(this.story, this.path, this.parent, ends, this.jumps, this.leader, this.consequences);
     option.node = this.story.create(this.at, 'option', null, scanner.position());
+    option.node.keywords = Object.keys(this.keywords).sort();
     this.advance();
 
     option.next = this.at;
@@ -280,7 +290,16 @@ MaybeOption.prototype.option = function option(scanner) {
         new OptionThread(this.story, this.at, option, [], option, 'qa', AfterInitialQA));
 };
 
-// {+x} {-x} or {(x)}
+// Captures <keyword> annotations on options.
+function Keyword(parent) {
+    this.parent = parent;
+}
+
+Keyword.prototype.return = function _return(keyword, scanner) {
+    return this.parent.return('keyword', keyword, scanner);
+};
+
+// {+x}, {-x}, or {(x)}
 function OptionOperator(story, parent) {
     this.story = story;
     this.parent = parent;

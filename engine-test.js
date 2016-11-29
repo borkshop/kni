@@ -34,6 +34,9 @@ function main() {
     test('tests/gradient.kni', 'tests/gradient.1');
     test('tests/indirect.kni', 'tests/indirect.1');
     test('tests/jump-and-ask.kni', 'tests/jump-and-ask.1');
+    test('tests/keywords.kni', 'tests/keywords.1');
+    test('tests/keywords.kni', 'tests/keywords.2');
+    test('tests/keywords.kni', 'tests/keywords.3');
     test('tests/literals.kni', 'tests/literals.1');
     test('tests/loop.kni', 'tests/loop.1');
     test('tests/math.kni', 'tests/math.1');
