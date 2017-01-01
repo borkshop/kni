@@ -19,8 +19,8 @@ function verify(kni, trans, handler) {
     var answers = [];
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
-        if (line.lastIndexOf('> ', 0) === 0) {
-            answers.push(line.slice(2));
+        if (line.lastIndexOf('>', 0) === 0) {
+            answers.push(line.slice(1).trim());
         }
     }
 
@@ -93,7 +93,7 @@ FakeReadline.prototype.ask = function ask(question) {
     if (answer == null) {
         return;
     }
-    this.writer.write((question || '> ') + answer + '\n');
+    this.writer.write(((question || '> ') + answer).trim() + '\n');
     this.engine.answer(answer);
 };
 

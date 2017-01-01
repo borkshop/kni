@@ -316,7 +316,10 @@ Engine.prototype.$opt = function $opt() {
     var option = this.instruction;
     for (var i = 0; i < option.keywords.length; i++) {
         var keyword = option.keywords[i];
-        this.keywords[keyword] = option;
+        // The first option to introduce a keyword wins, not the last.
+        if (!this.keywords[keyword]) {
+            this.keywords[keyword] = option;
+        }
     }
     if (option.question.length) {
         this.options.push(option);
