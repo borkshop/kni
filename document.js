@@ -66,6 +66,7 @@ Document.prototype.startOption = function startOption() {
     var td = document.createElement("td");
     td.number = this.optionIndex;
     td.onclick = this.onclick;
+    td.setAttribute("aria-role", "button");
     tr.appendChild(td);
     this.cursor = td;
     this.p = false;
