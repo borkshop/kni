@@ -1,3 +1,8 @@
+# v2.0.0
+
+This version changes the behavior of keyword options so that the first option
+to introduce a keyword has precedence over all subsequent options.
+
 # v1.1.0
 
 This version adds support for option keywords.
