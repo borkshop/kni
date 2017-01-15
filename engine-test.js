@@ -79,6 +79,9 @@ function main() {
         answer: function answer(text) {
             global.fail = global.fail || text !== '1';
         },
+        choice: function _choice(choice) {
+            global.fail = global.fail || choice.keywords[0] !== 'moxy';
+        },
         waypoint: function waypoint(state) {
         },
         end: function end(engine) {
