@@ -130,25 +130,28 @@ Engine.prototype.answer = function answer(text) {
     this.render.flush();
     var choice = text - 1;
     if (choice >= 0 && choice < this.options.length) {
-        return this.choice(this.options[choice].answer);
+        return this.choice(this.options[choice]);
     } else if (this.keywords[text]) {
-        return this.choice(this.keywords[text].answer);
+        return this.choice(this.keywords[text]);
     } else {
         this.render.pardon();
         this.ask();
     }
 };
 
-Engine.prototype.choice = function choice(answer) {
+Engine.prototype.choice = function _choice(choice) {
+    if (this.handler && this.handler.choice) {
+        this.handler.choice(choice, this);
+    }
     this.render.clear();
-    this.waypoint = this.capture(answer);
+    this.waypoint = this.capture(choice.answer);
     if (this.handler && this.handler.waypoint) {
         this.handler.waypoint(this.waypoint, this);
     }
     // There is no known case where gothrough would immediately exit for
     // lack of further instructions, so
     // istanbul ignore else
-    if (this.gothrough(answer, null, false)) {
+    if (this.gothrough(choice.answer, null, false)) {
         this.flush();
         this.continue();
     }
