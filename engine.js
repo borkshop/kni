@@ -206,7 +206,6 @@ Engine.prototype.resume = function resume(state) {
         if (this.handler && this.handler.waypoint) {
             this.handler.waypoint(null, this);
         }
-        this.goto('start');
         this.continue();
         return;
     }
