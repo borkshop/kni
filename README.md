@@ -75,6 +75,11 @@ The End.
 
 Kni scripts can be loaded and bound with scenes in a web page.
 
+- [Peruácru][peruacru] is an app for iOS and Android using Apache Cordova.
+  A [slice](https://github.com/kriskowal/peruacru.then.land) of the game is open source for illustration.
+
+  [![Peruácru Icon](https://github.com/kriskowal/kni/raw/master/examples/peruacru.png)][peruacru]
+
 - The [archery][] prototype illustrates a shop and gambling game.
 
   [![An Archery Shop](https://github.com/kriskowal/kni/raw/master/examples/archery.png)][archery]
@@ -87,6 +92,7 @@ Kni scripts can be loaded and bound with scenes in a web page.
 - The [airship][] prototype illustrates a narrative that includes
   a simulation of the control and behavior of a steampunk airship.
 
+[peruacru]: http://peruacru.then.land
 [archery]: http://archery.aelf.land
 [journey]: http://journey.aelf.land
 [airship]: http://airship.aelf.land
