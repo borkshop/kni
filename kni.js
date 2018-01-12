@@ -19,6 +19,7 @@ var xorshift = require('xorshift');
 var table = require('table').default;
 var getBorderCharacters = require('table').getBorderCharacters;
 var describe = require('./describe');
+var makeHtml = require('./html');
 
 function main() {
     var config = exec(usage);
@@ -87,6 +88,10 @@ function main() {
 
         } else if (config.toJson) {
             console.log(JSON.stringify(states, null, 4));
+            interactive = false;
+
+        } else if (config.toHtml) {
+            makeHtml(states, config.toHtml);
             interactive = false;
         }
 

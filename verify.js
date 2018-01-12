@@ -70,7 +70,7 @@ function verify(kni, trans, handler) {
         randomer: randomer
     });
     readline.engine = engine;
-    engine.continue();
+    engine.reset();
 
     var expected = trans.trim();
     var actual = writer.string.trim();

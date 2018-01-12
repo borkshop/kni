@@ -4,21 +4,22 @@
     "kni <script.kni>"
   ],
   "usage": [
-    "<script> :input        Script file name",
-    "[-s <start>]           Start script at this label",
-    "[-J]                   Read kni script as compiled JSON",
-    "[-j|--json]            Dump compiled script as JSON instead of running interactively.",
-    "[-d]                   Describe instead of running interactively.",
-    "[-t <script>] :output  Write a transcript.",
-    "[-v <script>] :input   Verify a prior recorded transcript.",
-    "[-S <seed>] :number    Seed the random number generator.",
+    "<script> :input Script file name",
+    "[-s <start>] Start script at this label",
+    "[-J] Read kni script as compiled JSON",
+    "[-j|--json] Write compiled script as JSON.",
+    "[-h|--html <script>] :output Write interactive HTML file.",
+    "[-d] Describe instead of running interactively.",
+    "[-t <script>] :output Write a transcript.",
+    "[-v <script>] :input Verify a prior recorded transcript.",
+    "[-S <seed>] :number Seed the random number generator.",
     "[-r <waypoint>] :input Restore a saved waypoint in the story.",
-    "[--di]                 Log input file before processing",
-    "[--dr]                 Enable runtime debug logging",
-    "[--dp]                 Enable parser debug logging",
-    "[--dil]                Enable inline lexer debug logging",
-    "[--dol]                Enable outline lexer debug logging",
-    "[--ds]                 Enable scanner debug logging"
+    "[--di] Log input file before processing",
+    "[--dr] Enable runtime debug logging",
+    "[--dp] Enable parser debug logging",
+    "[--dil] Enable inline lexer debug logging",
+    "[--dol] Enable outline lexer debug logging",
+    "[--ds] Enable scanner debug logging"
   ],
   "terms": {
     "script": {
@@ -82,7 +83,27 @@
       "required": false,
       "minLength": null,
       "maxLength": null,
-      "help": "Dump compiled script as JSON instead of running interactively."
+      "help": "Write compiled script as JSON."
+    },
+    "toHtml": {
+      "flags": [
+        {
+          "flag": "-h",
+          "short": true
+        },
+        {
+          "flag": "--html",
+          "long": true
+        }
+      ],
+      "arg": "script",
+      "command": null,
+      "collectorType": null,
+      "type": "output",
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Write interactive HTML file."
     },
     "describe": {
       "flags": [

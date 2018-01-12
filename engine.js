@@ -33,6 +33,11 @@ function Engine(args) {
     Object.seal(this);
 }
 
+Engine.prototype.reset = function reset() {
+    Engine.call(this, this);
+    this.resume();
+};
+
 Engine.prototype.continue = function _continue() {
     var _continue;
     do {
