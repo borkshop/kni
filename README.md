@@ -75,6 +75,11 @@ The End.
 
 Kni scripts can be loaded and bound with scenes in a web page.
 
+```
+$ kni hello.kni --html hello.html
+$ open hello.html
+```
+
 - [Peruácru][peruacru] is an app for iOS and Android using Apache Cordova.
   A [slice](https://github.com/kriskowal/peruacru.then.land) of the game is open source for illustration.
 
