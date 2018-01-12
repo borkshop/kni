@@ -19,7 +19,10 @@
     "[--dp] Enable parser debug logging",
     "[--dil] Enable inline lexer debug logging",
     "[--dol] Enable outline lexer debug logging",
-    "[--ds] Enable scanner debug logging"
+    "[--ds] Enable scanner debug logging",
+    "[--html-title <title>] Set the title for the generated page.",
+    "[--html-color <color>] Set the foreground color for the generated page.",
+    "[--html-background-color <color>] Set the background color for the generated page."
   ],
   "terms": {
     "script": {
@@ -280,6 +283,54 @@
       "minLength": null,
       "maxLength": null,
       "help": "Enable scanner debug logging"
+    },
+    "htmlTitle": {
+      "flags": [
+        {
+          "flag": "--html-title",
+          "long": true
+        }
+      ],
+      "arg": "title",
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Set the title for the generated page."
+    },
+    "htmlColor": {
+      "flags": [
+        {
+          "flag": "--html-color",
+          "long": true
+        }
+      ],
+      "arg": "color",
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Set the foreground color for the generated page."
+    },
+    "htmlBackgroundColor": {
+      "flags": [
+        {
+          "flag": "--html-background-color",
+          "long": true
+        }
+      ],
+      "arg": "color",
+      "command": null,
+      "collectorType": null,
+      "type": null,
+      "required": false,
+      "minLength": null,
+      "maxLength": null,
+      "help": "Set the background color for the generated page."
     }
   },
   "parsers": {},

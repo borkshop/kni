@@ -17,3 +17,7 @@ debugParser:       [--dp] Enable parser debug logging
 debugInlineLexer:  [--dil] Enable inline lexer debug logging
 debugOutlineLexer: [--dol] Enable outline lexer debug logging
 debugScanner:      [--ds] Enable scanner debug logging
+
+htmlTitle:           [--html-title <title>] Set the title for the generated page.
+htmlColor:           [--html-color <color>] Set the foreground color for the generated page.
+htmlBackgroundColor: [--html-background-color <color>] Set the background color for the generated page.

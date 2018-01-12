@@ -7,7 +7,7 @@ var Location = require("system/location");
 var Identifier = require("system/identifier");
 
 module.exports = makeHtml;
-function makeHtml(story, output) {
+function makeHtml(story, output, templateArgs) {
     var location = Location.fromDirectory(__dirname);
     var id = "./template";
 
@@ -27,7 +27,9 @@ function makeHtml(story, output) {
             return bundleSystemId(system, id);
         });
     })
-    .then(template)
+    .then(function (script) {
+        return template(script, templateArgs);
+    })
     .then(function (bundle) {
         output.end(bundle);
     })
@@ -37,13 +39,26 @@ function makeHtml(story, output) {
     });
 }
 
-function template(bundle) {
+function template(bundle, args) {
+    var title = '';
+    if (args.title != null) {
+        title = '<title>' + title + '</title>';
+    }
+    var bgcolor = 'hsla(60, 42.00%, 66.00%, 1)';
+    if (args.backgroundColor != null) {
+        bgcolor = args.backgroundColor;
+    }
+    var color = 'hsla(240, 42.00%, 25.00%, 1)';
+    if (args.color != null) {
+        color = args.color;
+    }
     return [
         '<!doctype html>',
         '<html>',
         '    <head>',
         '        <meta charset="utf8">',
         '        <meta name="viewport" content="width=device-width, initial-scale=0.75">',
+        title,
         '        <style>',
         '            @media handheld {',
         '                body {',
@@ -53,8 +68,8 @@ function template(bundle) {
         '',
         '            body {',
         '                font-size: 200%;',
-        '                background-color: hsla(60, 42.00%, 66.00%, 1);',
-        '                color: hsla(240, 42.00%, 25.00%, 1);',
+        '                background-color: ', bgcolor, ';',
+        '                color: ', color, ';',
         '                overflow: none;',
         '            }',
         '',
