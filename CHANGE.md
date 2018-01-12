@@ -1,3 +1,8 @@
+
+# v2.1.0
+
+- Adds a `--html` flag that writes the script as a single interactive page.
+
 # v2.0.0
 
 - This version changes the behavior of keyword options so that the first option
