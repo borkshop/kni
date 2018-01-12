@@ -1,4 +1,8 @@
 
+# v2.2.1
+
+- Fix missing file in package.json
+
 # v2.2.0
 
 - Adds HTML command line flags for color, background color, and title for
