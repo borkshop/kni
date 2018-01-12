@@ -91,7 +91,11 @@ function main() {
             interactive = false;
 
         } else if (config.toHtml) {
-            makeHtml(states, config.toHtml);
+            makeHtml(states, config.toHtml, {
+                title: config.htmlTitle,
+                color: config.htmlColor,
+                backgroundColor: config.htmlBackgroundColor,
+            });
             interactive = false;
         }
 
