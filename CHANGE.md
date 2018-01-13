@@ -1,4 +1,8 @@
 
+# v2.2.2
+
+- Fix command line usage by upgrading the command line argument parser, SHON.
+
 # v2.2.1
 
 - Fix missing file in package.json
