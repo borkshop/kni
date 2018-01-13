@@ -120,10 +120,6 @@ function main() {
             ]);
         }
 
-        if (config.expected === process.stdin) {
-            config.expected = null;
-        }
-
         if (config.expected) {
             read(config.expected, 'utf8', function onTypescript(err, typescript) {
                 if (err) {
@@ -132,7 +128,6 @@ function main() {
                     return;
                 }
                 test(kniscript, typescript);
-                process.stdin.pause();
             });
             return;
         }
@@ -152,7 +147,7 @@ function main() {
                 engine.debug = true;
             }
 
-            if (config.waypoint !== process.stdin) {
+            if (config.waypoint) {
                 read(config.waypoint, 'utf8', function onWaypoint(err, waypoint) {
                     if (err) {
                         console.error(err.message);
@@ -164,8 +159,6 @@ function main() {
             } else {
                 engine.resume();
             }
-        } else {
-            process.stdin.pause();
         }
     }
 
@@ -267,4 +260,3 @@ function dump(errors) {
 }
 
 main();
-
