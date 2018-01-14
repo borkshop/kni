@@ -82,7 +82,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         if (text === '+' || text === '*') {
             return new MaybeOption(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, [], text);
         } else if (text === '-') {
-            return new MaybeThread(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, [], []);
+            return new MaybeThread(this.story, this.path, new ThenExpect('stop', '', this.story, this), this.ends, [], [], ' ');
         } else if (text === '>') {
             var node = this.story.create(this.path, 'ask', null, scanner.position());
             // tie off ends to the prompt.
@@ -158,13 +158,14 @@ Text.prototype.next = function next(type, space, text, scanner) {
         .next(type, space, text, scanner);
 };
 
-function MaybeThread(story, path, parent, ends, jumps, skips) {
+function MaybeThread(story, path, parent, ends, jumps, skips, space) {
     this.story = story;
     this.path = path;
     this.parent = parent;
     this.ends = ends;
     this.jumps = jumps;
     this.skips = skips;
+    this.space = space || '';
 };
 
 MaybeThread.prototype.next = function next(type, space, text, scanner) {
@@ -176,7 +177,7 @@ MaybeThread.prototype.next = function next(type, space, text, scanner) {
         }
     }
     return new Thread(this.story, this.path, this, this.ends, this.jumps)
-        .next(type, space, text, scanner);
+        .next(type, this.space || space, text, scanner);
 };
 
 MaybeThread.prototype.return = function _return(path, ends, jumps, scanner) {
@@ -624,7 +625,7 @@ Label.prototype.return = function _return(expression, scanner) {
     } else if (expression[0] === 'call') {
         var label = expression[1][1];
         var path = [label, 0];
-        var node = this.story.create(path, 'args', null, scanner.position());
+        var node = this.story.create(path, 'def', null, scanner.position());
         var params = [];
         for (var i = 2; i < expression.length; i++) {
             var arg = expression[i];
@@ -655,7 +656,9 @@ function ConcludeProcedure(story, path, parent, ends) {
 
 ConcludeProcedure.prototype.return = function _return(path, ends, jumps, scanner) {
     // After a procedure, connect prior ends.
-    // Leave loose end of procedure dangling.
+    // Dangling jumps go to an escape instruction, to follow the jump path in
+    // the parent scope, determined at run time.
+    tie(jumps, ['ESC']);
     return this.parent.return(this.path, this.ends, [], scanner);
 };
 
@@ -676,7 +679,7 @@ Goto.prototype.return = function _return(args, scanner) {
         var node = this.story.create(this.path, 'call', label, scanner.position());
         node.args = args.slice(2);
         tie(this.ends, this.path);
-        return this.parent.return(Path.next(this.path), [node], [], scanner);
+        return this.parent.return(Path.next(this.path), [node], [new Branch(node)], scanner);
     } else {
         this.story.error('Expected label after goto arrow, got expression ' + JSON.stringify(args) + ' at ' + scanner.position());
         return new Thread(this.story, this.path, this.parent, this.ends, []);

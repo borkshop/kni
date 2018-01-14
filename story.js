@@ -78,25 +78,26 @@ function Goto(next) {
 Goto.prototype.tie = tie;
 
 constructors.call = Call;
-function Call(branch) {
+function Call(label) {
     this.type = 'call';
-    this.branch = branch;
+    this.label = label;
     this.args = null;
     this.next = null;
+    this.branch = null;
     this.position = null;
     Object.seal(this);
 }
 Call.prototype.tie = tie;
 
-constructors.args = Args;
-function Args(locals) {
-    this.type = 'args';
+constructors.def = Def;
+function Def(locals) {
+    this.type = 'def';
     this.locals = locals;
     this.next = null;
     this.position = null;
     Object.seal(this);
 }
-Args.prototype.tie = tie;
+Def.prototype.tie = tie;
 
 constructors.jump = Jump;
 function Jump(condition) {
