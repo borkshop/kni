@@ -38,7 +38,7 @@ function Text(text) {
     this.text = text;
     this.lift = ' ';
     this.drop = ' ';
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -50,7 +50,7 @@ function Echo(expression) {
     this.expression = expression;
     this.lift = '';
     this.drop = '';
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -62,7 +62,7 @@ function Option(label) {
     this.question = [];
     this.answer = [];
     this.keywords = null;
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -82,8 +82,8 @@ function Call(label) {
     this.type = 'call';
     this.label = label;
     this.args = null;
-    this.next = null;
-    this.branch = null;
+    this.next = 'END';
+    this.branch = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -93,7 +93,7 @@ constructors.def = Def;
 function Def(locals) {
     this.type = 'def';
     this.locals = locals;
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -103,8 +103,8 @@ constructors.jump = Jump;
 function Jump(condition) {
     this.type = 'jump';
     this.condition = condition;
-    this.branch = null;
-    this.next = null;
+    this.branch = 'END';
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -119,7 +119,7 @@ function Switch(expression) {
     this.mode = null;
     this.branches = [];
     this.weights = [];
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -130,7 +130,7 @@ function Move() {
     this.type = 'move';
     this.source = null;
     this.target = null;
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -139,7 +139,7 @@ Move.prototype.tie = tie;
 constructors.break = Break;
 function Break() {
     this.type = 'br';
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -148,7 +148,7 @@ Break.prototype.tie = tie;
 constructors.paragraph = Paragraph;
 function Paragraph() {
     this.type = 'par';
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }
@@ -157,7 +157,7 @@ Paragraph.prototype.tie = tie;
 constructors.rule = Rule;
 function Rule() {
     this.type = 'rule';
-    this.next = null;
+    this.next = 'END';
     this.position = null;
     Object.seal(this);
 }

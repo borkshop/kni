@@ -54,10 +54,10 @@ Engine.prototype.continue = function _continue() {
 };
 
 Engine.prototype.goto = function _goto(label) {
-    while ((label == null || label == 'ESC' || label === 'END') && this.top != null) {
+    while (this.top != null && (label == 'ESC' || label === 'END')) {
         // istanbul ignore if
         if (this.debug) {
-            console.log((label || 'END').toLowerCase());
+            console.log(label.toLowerCase());
         }
         if (this.top.stopOption) {
             this.render.stopOption();
@@ -70,8 +70,7 @@ Engine.prototype.goto = function _goto(label) {
         this.top = this.top.parent;
     }
 
-    // TODO remove special case for null
-    if (label == null || label === 'END') {
+    if (label === 'END') {
         return this.end();
     }
 
@@ -97,8 +96,8 @@ Engine.prototype.goto = function _goto(label) {
 Engine.prototype.gothrough = function gothrough(sequence, next) {
     var prev = this.label;
     for (var i = sequence.length - 1; i >= 0; i--) {
-        if (next) {
-            this.top = new Frame(this.top, [], next, null, prev);
+        if (next !== 'END') {
+            this.top = new Frame(this.top, [], next, 'END', prev);
         }
         prev = next;
         next = sequence[i];
@@ -128,10 +127,10 @@ Engine.prototype.ask = function ask() {
         this.top = closure.scope;
         var answer = option.answer;
         this.flush();
-        this.gothrough(answer, null);
+        this.gothrough(answer, 'END');
         this.continue();
     } else {
-        return this.goto(this.instruction.next);
+        return this.goto('END');
     }
 };
 
@@ -166,7 +165,7 @@ Engine.prototype.choice = function _choice(closure) {
     // There is no known case where gothrough would immediately exit for
     // lack of further instructions, so
     // istanbul ignore else
-    if (this.gothrough(option.answer, null)) {
+    if (this.gothrough(option.answer, 'END')) {
         this.flush();
         this.continue();
     }
@@ -189,6 +188,7 @@ Engine.prototype.write = function write(text) {
 
 // istanbul ignore next
 Engine.prototype.capture = function capture(answer) {
+    // TODO recreate with closures
     var stack = [];
     var top = this.top;
     while (top !== this.global) {
@@ -211,6 +211,7 @@ Engine.prototype.capture = function capture(answer) {
 
 // istanbul ignore next
 Engine.prototype.resume = function resume(state) {
+    // TODO recreate with closures
     this.render.clear();
     this.flush();
     this.label = '';
@@ -244,7 +245,7 @@ Engine.prototype.resume = function resume(state) {
     if (answer == null) {
         this.flush();
         this.continue();
-    } else if (this.gothrough(answer, null)) {
+    } else if (this.gothrough(answer, 'END')) {
         this.flush();
         this.continue();
     }
@@ -337,8 +338,8 @@ Engine.prototype.$opt = function $opt() {
     if (this.instruction.question.length > 0) {
         this.options.push(closure);
         this.render.startOption();
-        this.top = new Frame(this.top, [], this.instruction.next, null, this.label, true);
-        return this.gothrough(this.instruction.question, null);
+        this.top = new Frame(this.top, [], this.instruction.next, 'END', this.label, true);
+        return this.gothrough(this.instruction.question, 'END');
     } else if (this.noOption == null) {
         this.noOption = closure;
     }
@@ -446,6 +447,8 @@ Engine.prototype.$ask = function $ask() {
 function Global(handler) {
     this.scope = Object.create(null);
     this.handler = handler;
+    this.next = 'END';
+    this.branch = 'END';
     Object.seal(this);
 }
 

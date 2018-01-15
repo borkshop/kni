@@ -9,7 +9,7 @@ exports.start = start;
 function start(story) {
     var path = Path.start();
     var stop = new Stop(story);
-    var start = story.create(path, 'goto', null, '1:1');
+    var start = story.create(path, 'goto', 'END', '1:1');
     return new Thread(story, Path.zerothChild(path), stop, [start], []);
 }
 
@@ -27,7 +27,9 @@ Stop.prototype.next = function next(type, space, text, scanner) {
     return new End();
 };
 
-Stop.prototype.return = function _return() {
+Stop.prototype.return = function _return(path, ends, jumps, scanner) {
+    tie(ends, ['END']);
+    tie(jumps, ['ESC']);
     return this;
 };
 
@@ -62,7 +64,8 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '->') {
             return expression.label(this.story, new Goto(this.story, this.path, this, this.ends));
         } else if (text === '<-') {
-            // Implicitly tie ends to null by dropping them.
+            // Explicitly tie ends to null by dropping them.
+            tie(this.ends, ['END']);
             // Continue carrying jumps to the next encountered prompt.
             // Advance the path so that option thread don't appear empty.
             return new Thread(this.story, Path.next(this.path), this.parent, [], this.jumps);
@@ -375,10 +378,10 @@ Option.prototype.return = function _return(path, ends, jumps, scanner) {
     if (this.mode !== 'a') {
         // If the answer is reused in the question, create a dedicated jump and
         // add it to the end of the answer.
-        var jump = this.story.create(path, 'goto', null, scanner.position());
+        var jump = this.story.create(path, 'goto', 'END', scanner.position());
         this.node.answer.push(Path.toName(path));
         path = Path.next(path);
-        ends = [jump];
+        ends.push(jump);
     }
 
     return this.parent.return(
@@ -392,7 +395,7 @@ Option.prototype.return = function _return(path, ends, jumps, scanner) {
 Option.prototype.thread = function thread(scanner, parent) {
     // Creat a dummy node, to replace if necessary, for arcs that begin with a
     // goto/divert arrow that otherwise would have loose ends to forward.
-    var placeholder = this.story.create(this.next, 'goto', null, scanner.position());
+    var placeholder = this.story.create(this.next, 'goto', 'END', scanner.position());
     return new Thread(this.story, this.next, parent, [placeholder], []);
 };
 
@@ -427,6 +430,12 @@ function OptionThread(story, path, parent, ends, option, mode, Next) {
 
 OptionThread.prototype.return = function _return(path, ends, jumps, scanner) {
     this.option.push(path, this.mode);
+    // TODO investigate whether we can consistently tie of received ends
+    // instead of passing them forward to OptionThread, which consistently
+    // just terminates them on their behalf.
+    tie(this.ends, ['END']);
+    // TODO no test exercises this kind of jump.
+    tie(jumps, ['ESC']);
     return new this.Next(this.story, path, this.parent, ends, this.option);
 };
 
@@ -455,6 +464,10 @@ AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
 // which anything and everything to the end of the block contributes to the
 // answer.
 AfterInitialQA.prototype.return = function _return(path, ends, jumps, scanner) {
+    tie(ends, ['END']);
+    // TODO no test exercises these jumps.
+    tie(jumps, ['ESC']);
+
     ends = [];
 
     // Thread consequences, including incrementing the option variable name
@@ -507,6 +520,8 @@ DecideQorA.prototype.next = function next(type, space, text, scanner) {
 // If the brackets contain a sequence of question thread like [A [Q] QA [Q]
 // QA...], then after each [question], we return here for continuing QA arcs.
 DecideQorA.prototype.return = function _return(path, ends, jumps, scanner) {
+    // TODO no test exercises these jumps.
+    tie(jumps, ['ESC']);
     return this.option.thread(scanner,
         new OptionThread(this.story, path, this.parent, ends, this.option, 'qa', AfterQA));
 };
@@ -537,6 +552,8 @@ AfterQA.prototype.next = function next(type, space, text, scanner) {
 };
 
 AfterQA.prototype.return = function _return(path, ends, jumps, scanner) {
+    // TODO no test exercises these escapes.
+    tie(jumps, ['ESC']);
     return this.option.thread(scanner,
         new OptionThread(this.story, this.path, this.parent, ends, this.option, 'qa', ExpectFinalBracket));
 };
@@ -555,6 +572,10 @@ function AfterQorA(story, path, parent, ends, option) {
 
 // Just capture the path and proceed.
 AfterQorA.prototype.return = function _return(path, ends, jumps, scanner) {
+    // TODO consider whether this could have been done earlier.
+    tie(this.ends, ['END']);
+    // TODO no test exercises these escapes.
+    tie(jumps, ['ESC']);
     return new DecideQorA(this.story, path, this.parent, ends, this.option);
 };
 
@@ -617,7 +638,7 @@ Label.prototype.return = function _return(expression, scanner) {
         var label = expression[1];
         var path = [label, 0];
         // place-holder goto thunk
-        var node = this.story.create(path, 'goto', null, scanner.position());
+        var node = this.story.create(path, 'goto', 'END', scanner.position());
         tie(this.ends, path);
         // ends also forwarded so they can be tied off if the goto is replaced.
         return this.parent.return(path, this.ends.concat([node]), [], scanner);
@@ -656,6 +677,7 @@ function ConcludeProcedure(story, path, parent, ends) {
 
 ConcludeProcedure.prototype.return = function _return(path, ends, jumps, scanner) {
     // After a procedure, connect prior ends.
+    tie(ends, ['END']);
     // Dangling jumps go to an escape instruction, to follow the jump path in
     // the parent scope, determined at run time.
     tie(jumps, ['ESC']);
@@ -850,8 +872,11 @@ SwitchBlock.prototype.start = function start(scanner, expression, variable, valu
 
 SwitchBlock.prototype.return = function _return(path, ends, jumps, scanner) {
     if (this.node.mode === 'pick') {
+        tie(ends, ['END']);
         ends = [this.node];
         // TODO think about what to do with jumps.
+    } else {
+        this.node.next = 'END';
     }
     return this.parent.return(Path.next(this.path), ends, jumps, scanner);
 };
@@ -872,7 +897,7 @@ Case.prototype.next = function next(type, space, text, scanner) {
     } else {
         var path = this.path;
         while (this.branches.length < this.min) {
-            var node = this.story.create(path, 'goto', null, scanner.position());
+            var node = this.story.create(path, 'goto', 'END', scanner.position());
             this.ends.push(node);
             this.branches.push(Path.toName(path));
             path = Path.next(path);
@@ -885,7 +910,7 @@ Case.prototype.next = function next(type, space, text, scanner) {
 Case.prototype.case = function _case(args, scanner) {
     this.parent.weights.push(args || ['val', 1]);
     var path = Path.zerothChild(this.path);
-    var node = this.story.create(path, 'goto', null, scanner.position());
+    var node = this.story.create(path, 'goto', 'END', scanner.position());
     this.branches.push(Path.toName(path));
     return new Thread(this.story, path, this, [node], []);
 };
