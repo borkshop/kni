@@ -71,7 +71,7 @@ Option.prototype.tie = tie;
 constructors.goto = Goto;
 function Goto(next) {
     this.type = 'goto';
-    this.next = next || null;
+    this.next = next;
     this.position = null;
     Object.seal(this);
 }
