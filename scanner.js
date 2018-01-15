@@ -96,7 +96,7 @@ Scanner.prototype.return = function _return() {
 
 // istanbul ignore next
 Scanner.prototype.position = function position() {
-    return (this.lineStart + 1) + ':' + (this.columnStart + 1);
+    return (this.lineNo + 1) + ':' + (this.columnStart + 1);
 };
 
 function nextTabStop(columnNo) {
