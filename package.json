@@ -1,6 +1,6 @@
 {
   "name": "kni",
-  "version": "2.2.2",
+  "version": "3.0.0",
   "description": "A text adventure language and runtime inspired by inkle/ink",
   "bin": {
     "kni": "./kni.js"
