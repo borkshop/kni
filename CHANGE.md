@@ -3,6 +3,26 @@
 
 This version allows options to be declared in subroutines.
 
+```
+- @common()
+  X is currently {(x)}.
+  + [Increment x. ] {+x}
+  + [Decrement x. ] {-x}
+
+- @menu()
+  Choose an option.
+  + [This is a good option. ]
+  ->common()
+  + [Quit. ] <-
+  >
+
+  # loop back to the menu, even for common options.
+  ->menu
+
+->menu()
+You have exited the menu.
+```
+
 This major version breaks compatibility with previous JSON state machines.
 The new state machine has reserved "RET" and "ESC" labels, instead of
 using null to mean "return". The "escape" label is new, and causes a
