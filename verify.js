@@ -85,6 +85,8 @@ function FakeReadline(writer, answers) {
     this.writer = writer;
     this.answers = answers;
     this.engine = null;
+    this.history = [];
+    Object.seal(this);
 }
 
 FakeReadline.prototype.ask = function ask(question) {
@@ -94,7 +96,19 @@ FakeReadline.prototype.ask = function ask(question) {
         return;
     }
     this.writer.write(((question || '> ') + answer).trim() + '\n');
-    this.engine.answer(answer);
+
+    if (answer === 'quit') {
+    } else if (answer === 'replay') {
+        this.writer.write('\n');
+        this.engine.resume(this.engine.waypoint);
+    } else if (answer === 'back') {
+        this.writer.write('\n');
+        this.engine.waypoint = this.history.pop();
+        this.engine.resume(this.engine.waypoint);
+    } else {
+        this.history.push(this.engine.waypoint);
+        this.engine.answer(answer);
+    }
 };
 
 FakeReadline.prototype.close = function close() {

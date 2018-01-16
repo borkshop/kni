@@ -1,0 +1,11 @@
+
+- @loop(x)
+  {(x)}
+  + [[]Increment. ] {+x}
+  + [[]Decrement. ] {-x}
+  + [[]Fork. ] ->loop(x)
+  + [[]Join. ] <-
+  >
+  ->loop
+
+->loop(0)

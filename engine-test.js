@@ -36,16 +36,17 @@ function main() {
     test('tests/gradient.kni', 'tests/gradient.1');
     test('tests/indirect.kni', 'tests/indirect.1');
     test('tests/jump-and-ask.kni', 'tests/jump-and-ask.1');
+    test('tests/keyword-ambiguity.kni', 'tests/keyword-ambiguity.0');
     test('tests/keywords.kni', 'tests/keywords.1');
     test('tests/keywords.kni', 'tests/keywords.2');
     test('tests/keywords.kni', 'tests/keywords.3');
     test('tests/keywords.kni', 'tests/keywords.4');
     test('tests/keywords.kni', 'tests/keywords.5');
-    test('tests/keyword-ambiguity.kni', 'tests/keyword-ambiguity.0');
     test('tests/literals.kni', 'tests/literals.1');
     test('tests/loop.kni', 'tests/loop.1');
     test('tests/math.kni', 'tests/math.1');
     test('tests/no-option.kni', 'tests/no-option.1');
+    test('tests/number.kni', 'tests/number.1');
     test('tests/procedure.kni', 'tests/procedure.1');
     test('tests/program.kni', 'tests/program.1');
     test('tests/program.kni', 'tests/program.1');

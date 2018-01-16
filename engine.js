@@ -12,23 +12,24 @@ function Engine(args) {
     // istanbul ignore next
     var self = this;
     this.story = args.story;
+    this.labels = Object.keys(this.story);
     this.handler = args.handler;
     this.options = [];
     this.keywords = {};
     this.noOption = null;
     this.global = new Global(this.handler);
     this.top = this.global;
-    this.label = '';
     // istanbul ignore next
-    var start = args.start || 'start';
-    this.instruction = new Story.constructors.goto(start);
+    this.start = args.start || 'start';
+    this.label = this.start;
+    this.instruction = new Story.constructors.goto(this.start);
     this.render = args.render;
     this.dialog = args.dialog;
     this.dialog.engine = this;
     // istanbul ignore next
     this.randomer = args.randomer || Math;
     this.debug = debug;
-    this.waypoint = null;
+    this.waypoint = this.capture();
     Object.seal(this);
 }
 
@@ -156,7 +157,7 @@ Engine.prototype.choice = function _choice(closure) {
         this.handler.choice(option, this);
     }
     this.render.clear();
-    this.waypoint = this.capture(option.answer);
+    this.waypoint = this.capture(closure);
     if (this.handler && this.handler.waypoint) {
         this.handler.waypoint(this.waypoint, this);
     }
@@ -187,17 +188,23 @@ Engine.prototype.write = function write(text) {
 };
 
 // istanbul ignore next
-Engine.prototype.capture = function capture(answer) {
-    // TODO recreate with closures
-    var stack = [];
-    var top = this.top;
-    while (top !== this.global) {
-        stack.unshift(top.capture());
-        top = top.parent;
+Engine.prototype.capture = function capture(closure) {
+    var label, top;
+    if (closure != null) {
+        label = closure.label;
+        top = closure.scope;
+    } else {
+        label = this.label;
+        top = this.top;
     }
+
+    var stack = [];
+    for (; top != this.global; top = top.parent) {
+        stack.push(top.capture(this));
+    }
+
     return [
-        this.label || "",
-        answer,
+        this.indexOfLabel(label),
         stack,
         this.global.capture(),
         [
@@ -205,19 +212,19 @@ Engine.prototype.capture = function capture(answer) {
             this.randomer._state0L,
             this.randomer._state1U,
             this.randomer._state1L
-        ]
+        ],
     ];
 };
 
 // istanbul ignore next
-Engine.prototype.resume = function resume(state) {
-    // TODO recreate with closures
+Engine.prototype.resume = function resume(snapshot) {
     this.render.clear();
     this.flush();
-    this.label = '';
+    this.label = this.start;
+    this.instruction = this.story[this.label];
     this.global = new Global(this.handler);
     this.top = this.global;
-    if (state == null) {
+    if (snapshot == null) {
         if (this.handler && this.handler.waypoint) {
             this.handler.waypoint(null, this);
         }
@@ -225,27 +232,39 @@ Engine.prototype.resume = function resume(state) {
         return;
     }
 
-    this.label = state[0];
-    var answer = state[1];
-    var stack = state[2];
-    for (var i = 0; i < stack.length; i++) {
-        this.top = Frame.resume(this.top, this.global, stack[i]);
-    }
-    var global = state[3];
+    // Destructure snapshot
+    var label = this.labelOfIndex(snapshot[0]);
+    var stack = snapshot[1];
+    var global = snapshot[2];
+    var random = snapshot[3];
+
+    // Restore globals
     var keys = global[0];
     var values = global[1];
     for (var i = 0; i < keys.length; i++) {
         this.global.set(keys[i], values[i]);
     }
-    var random = state[4];
+
+    // Restore stack
+    var engine = this;
+    this.top = stack.reduceRight(function (parent, snapshot) {
+        return Frame.restore(engine, snapshot, parent);
+    }, this.global);
+
+    // Restore prng
     this.randomer._state0U = random[0];
     this.randomer._state0L = random[1];
     this.randomer._state1U = random[2];
     this.randomer._state1L = random[3];
-    if (answer == null) {
-        this.flush();
-        this.continue();
-    } else if (this.gothrough(answer, 'END')) {
+
+    var instruction = this.story[label];
+    if (instruction.type === 'opt') {
+        if (this.gothrough(instruction.answer, 'END')) {
+            this.flush();
+            this.continue();
+        }
+    } else {
+        this.label = label;
         this.flush();
         this.continue();
     }
@@ -488,17 +507,13 @@ Global.prototype.at = function at() {
     return '';
 };
 
-// istanbul ignore next
-Global.prototype.capture = function capture() {
+Global.prototype.capture = function () {
     var names = Object.keys(this.scope);
     var values = [];
     for (var i = 0; i < names.length; i++) {
         values[i] = this.scope[names[i]] || 0;
     }
-    return [
-        names,
-        values
-    ];
+    return [names, values];
 };
 
 function Frame(parent, locals, next, branch, label, stopOption) {
@@ -512,6 +527,7 @@ function Frame(parent, locals, next, branch, label, stopOption) {
     this.branch = branch;
     this.label = label;
     this.stopOption = stopOption || false;
+    Object.seal(this);
 }
 
 Frame.prototype.get = function get(name) {
@@ -546,37 +562,62 @@ Frame.prototype.at = function at() {
     return this.parent.at() + '/' + this.label;
 };
 
-// istanbul ignore next
-Frame.prototype.capture = function capture() {
+Frame.prototype.capture = function capture(engine) {
     var values = [];
-    // var object = {};
     for (var i = 0; i < this.locals.length; i++) {
         var local = this.locals[i];
         values.push(this.scope[local] || 0);
     }
+
     return [
-        this.locals,
+        engine.indexOfLabel(this.label),
+        engine.indexOfLabel(this.next),
+        engine.indexOfLabel(this.branch),
         values,
-        this.next || "",
-        this.branch || "",
-        this.label || "",
-        +this.stopOption
+        +this.stopOption,
     ];
 };
 
-// istanbul ignore next
-Frame.resume = function resume(top, global, state) {
-    var keys = state[0];
-    var values = state[1];
-    var next = state[2];
-    var branch = state[3];
-    var label = state[4];
-    var stopOption = state[6];
-    top = new Frame(top, keys, next, branch, label, !!stopOption);
-    for (var i = 0; i < keys.length; i++) {
-        top.set(keys[i], values[i]);
+Frame.restore = function (engine, snapshot, parent) {
+    var label = engine.labelOfIndex(snapshot[0]);
+    var next = engine.labelOfIndex(snapshot[1]);
+    var branch = engine.labelOfIndex(snapshot[2]);
+    var values = snapshot[3];
+    var stopOption = Boolean(snapshot[4]);
+
+    var frame = new Frame(parent, [], next, branch, label, stopOption);
+
+    // Technically, not all frames correspond to subroutine calls, but all
+    // frames that remain when the engine pauses ought to be.
+    // The exceptions would be interstitial frames generated by gothrough,
+    // but all of these are exhausted before the engine stops to ask a prompt.
+    var call = engine.story[label];
+    var def = engine.story[call.label];
+    frame.locals = def.locals;
+    for (var i = 0; i < values.length; i++) {
+        var name = def.locals[i];
+        frame.scope[name] = values[i];
     }
-    return top;
+
+    return frame;
+};
+
+Engine.prototype.labelOfIndex = function (index) {
+    if (index == -2) {
+        return 'END';
+    } else if (index === -3) {
+        return 'ESC';
+    }
+    return this.labels[index];
+};
+
+Engine.prototype.indexOfLabel = function (label) {
+    if (label === 'END') {
+        return -2;
+    } else if (label === 'ESC') {
+        return -3;
+    }
+    return this.labels.indexOf(label);
 };
 
 function Closure(scope, label) {
