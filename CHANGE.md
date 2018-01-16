@@ -1,4 +1,22 @@
 
+# v3.0.0
+
+This version allows options to be declared in subroutines.
+
+This major version breaks compatibility with previous JSON state machines.
+The new state machine has reserved "RET" and "ESC" labels, instead of
+using null to mean "return". The "escape" label is new, and causes a
+function to return through a call "branch" when it returns, instead of
+following to the "next" of the call site.
+
+This major version also breaks compatibility with previous JSON interactive
+story state objects.  These have a new format that is almost fully
+desymbolicated, which makes them more brittle to story changes but makes the
+URL anchor for HTML stories more compact.
+
+The command line mode now supports "back" and diagnostic commands "capture" and
+"replay".
+
 # v2.2.2
 
 - Fix command line usage by upgrading the command line argument parser, SHON.
