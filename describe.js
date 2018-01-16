@@ -25,10 +25,10 @@ types.goto = function goto(node) {
 };
 
 types.call = function call(node) {
-    return node.branch + '(' + node.args.map(S).join(' ') + ')';
+    return node.label + '(' + node.args.map(S).join(' ') + ') esc ' + node.branch;
 };
 
-types.args = function args(node) {
+types.def = function def(node) {
     return '(' + node.locals.join(' ') + ')';
 };
 

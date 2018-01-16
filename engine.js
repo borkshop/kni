@@ -12,24 +12,24 @@ function Engine(args) {
     // istanbul ignore next
     var self = this;
     this.story = args.story;
+    this.labels = Object.keys(this.story);
     this.handler = args.handler;
     this.options = [];
     this.keywords = {};
     this.noOption = null;
     this.global = new Global(this.handler);
     this.top = this.global;
-    this.stack = [this.top];
-    this.label = '';
     // istanbul ignore next
-    var start = args.start || 'start';
-    this.instruction = new Story.constructors.goto(start);
+    this.start = args.start || 'start';
+    this.label = this.start;
+    this.instruction = new Story.constructors.goto(this.start);
     this.render = args.render;
     this.dialog = args.dialog;
     this.dialog.engine = this;
     // istanbul ignore next
     this.randomer = args.randomer || Math;
     this.debug = debug;
-    this.waypoint = null;
+    this.waypoint = this.capture();
     Object.seal(this);
 }
 
@@ -55,17 +55,26 @@ Engine.prototype.continue = function _continue() {
 };
 
 Engine.prototype.goto = function _goto(label) {
-    while (label == null && this.stack.length > 1) {
-        var top = this.stack.pop();
-        if (top.stopOption) {
+    while (this.top != null && (label == 'ESC' || label === 'RET')) {
+        // istanbul ignore if
+        if (this.debug) {
+            console.log(label.toLowerCase());
+        }
+        if (this.top.stopOption) {
             this.render.stopOption();
         }
-        this.top = this.stack[this.stack.length - 1];
-        label = top.next;
+        if (label === 'ESC') {
+            label = this.top.branch;
+        } else {
+            label = this.top.next;
+        }
+        this.top = this.top.parent;
     }
-    if (label == null) {
+
+    if (label === 'RET') {
         return this.end();
     }
+
     var next = this.story[label];
     // istanbul ignore if
     if (!next) {
@@ -85,19 +94,14 @@ Engine.prototype.goto = function _goto(label) {
     return true;
 };
 
-Engine.prototype.gothrough = function gothrough(sequence, next, stopOption) {
+Engine.prototype.gothrough = function gothrough(sequence, next) {
     var prev = this.label;
-    for (var i = sequence.length -1; i >= 0; i--) {
-        // Note that we pass the top frame as both the parent scope and the
-        // caller scope so that the entire sequence has the same variable
-        // visibility.
-        if (next) {
-            this.top = new Frame(this.top, this.top, [], next, prev, stopOption);
-            this.stack.push(this.top);
+    for (var i = sequence.length - 1; i >= 0; i--) {
+        if (next !== 'RET') {
+            this.top = new Frame(this.top, [], next, 'RET', prev);
         }
         prev = next;
         next = sequence[i];
-        stopOption = false;
     }
     return this.goto(next);
 };
@@ -119,12 +123,15 @@ Engine.prototype.ask = function ask() {
         }
         this.dialog.ask();
     } else if (this.noOption != null) {
-        var answer = this.noOption.answer;
+        var closure = this.noOption;
+        var option = this.story[closure.label];
+        this.top = closure.scope;
+        var answer = option.answer;
         this.flush();
-        this.gothrough(answer, null, false);
+        this.gothrough(answer, 'RET');
         this.continue();
     } else {
-        return this.goto(this.instruction.next);
+        return this.goto('RET');
     }
 };
 
@@ -144,19 +151,22 @@ Engine.prototype.answer = function answer(text) {
     }
 };
 
-Engine.prototype.choice = function _choice(choice) {
+Engine.prototype.choice = function _choice(closure) {
+    var option = this.story[closure.label];
     if (this.handler && this.handler.choice) {
-        this.handler.choice(choice, this);
+        this.handler.choice(option, this);
     }
     this.render.clear();
-    this.waypoint = this.capture(choice.answer);
+    this.waypoint = this.capture(closure);
     if (this.handler && this.handler.waypoint) {
         this.handler.waypoint(this.waypoint, this);
     }
+    // Resume in the option's closure scope.
+    this.top = closure.scope;
     // There is no known case where gothrough would immediately exit for
     // lack of further instructions, so
     // istanbul ignore else
-    if (this.gothrough(choice.answer, null, false)) {
+    if (this.gothrough(option.answer, 'RET')) {
         this.flush();
         this.continue();
     }
@@ -178,16 +188,23 @@ Engine.prototype.write = function write(text) {
 };
 
 // istanbul ignore next
-Engine.prototype.capture = function capture(answer) {
-    var stack = [];
-    var top = this.top;
-    while (top !== this.global) {
-        stack.unshift(top.capture());
-        top = top.parent;
+Engine.prototype.capture = function capture(closure) {
+    var label, top;
+    if (closure != null) {
+        label = closure.label;
+        top = closure.scope;
+    } else {
+        label = this.label;
+        top = this.top;
     }
+
+    var stack = [];
+    for (; top != this.global; top = top.parent) {
+        stack.push(top.capture(this));
+    }
+
     return [
-        this.label || "",
-        answer,
+        this.indexOfLabel(label),
         stack,
         this.global.capture(),
         [
@@ -195,19 +212,19 @@ Engine.prototype.capture = function capture(answer) {
             this.randomer._state0L,
             this.randomer._state1U,
             this.randomer._state1L
-        ]
+        ],
     ];
 };
 
 // istanbul ignore next
-Engine.prototype.resume = function resume(state) {
+Engine.prototype.resume = function resume(snapshot) {
     this.render.clear();
     this.flush();
-    this.label = '';
+    this.label = this.start;
+    this.instruction = this.story[this.label];
     this.global = new Global(this.handler);
     this.top = this.global;
-    this.stack = [this.top];
-    if (state == null) {
+    if (snapshot == null) {
         if (this.handler && this.handler.waypoint) {
             this.handler.waypoint(null, this);
         }
@@ -215,28 +232,39 @@ Engine.prototype.resume = function resume(state) {
         return;
     }
 
-    this.label = state[0];
-    var answer = state[1];
-    var stack = state[2];
-    for (var i = 0; i < stack.length; i++) {
-        this.top = Frame.resume(this.top, this.global, stack[i]);
-        this.stack.push(this.top);
-    }
-    var global = state[3];
+    // Destructure snapshot
+    var label = this.labelOfIndex(snapshot[0]);
+    var stack = snapshot[1];
+    var global = snapshot[2];
+    var random = snapshot[3];
+
+    // Restore globals
     var keys = global[0];
     var values = global[1];
     for (var i = 0; i < keys.length; i++) {
         this.global.set(keys[i], values[i]);
     }
-    var random = state[4];
+
+    // Restore stack
+    var engine = this;
+    this.top = stack.reduceRight(function (parent, snapshot) {
+        return Frame.restore(engine, snapshot, parent);
+    }, this.global);
+
+    // Restore prng
     this.randomer._state0U = random[0];
     this.randomer._state0L = random[1];
     this.randomer._state1U = random[2];
     this.randomer._state1L = random[3];
-    if (answer == null) {
-        this.flush();
-        this.continue();
-    } else if (this.gothrough(answer, null, false)) {
+
+    var instruction = this.story[label];
+    if (instruction.type === 'opt') {
+        if (this.gothrough(instruction.answer, 'RET')) {
+            this.flush();
+            this.continue();
+        }
+    } else {
+        this.label = label;
         this.flush();
         this.continue();
     }
@@ -279,20 +307,21 @@ Engine.prototype.$goto = function $goto() {
 };
 
 Engine.prototype.$call = function $call() {
-    var procedure = this.story[this.instruction.branch];
+    var label = this.instruction.label;
+    var def = this.story[label];
     // istanbul ignore if
-    if (!procedure) {
-        console.error('no such procedure ' + this.instruction.branch, this.instruction);
+    if (!def) {
+        console.error('no such procedure ' + label, this.instruction);
         return this.resume();
     }
     // istanbul ignore if
-    if (procedure.type !== 'args') {
-        console.error('Can\'t call non-procedure ' + this.instruction.branch, this.instruction);
+    if (def.type !== 'def') {
+        console.error('Can\'t call non-procedure ' + label, this.instruction);
         return this.resume();
     }
     // istanbul ignore if
-    if (procedure.locals.length !== this.instruction.args.length) {
-        console.error('Argument length mismatch for ' + this.instruction.branch, this.instruction, procedure);
+    if (def.locals.length !== this.instruction.args.length) {
+        console.error('Argument length mismatch for ' + label, this.instruction, procedure);
         return this.resume();
     }
     // TODO replace this.global with closure scope if scoped procedures become
@@ -301,41 +330,39 @@ Engine.prototype.$call = function $call() {
     // capturing locals. As such the parser will need to retain a reference to
     // the enclosing procedure and note all of the child procedures as they are
     // encountered.
-    this.top = new Frame(this.top, this.global, procedure.locals, this.instruction.next, this.label);
-    if (this.instruction.next) {
-        this.stack.push(this.top);
-    }
+    this.top = new Frame(this.top, def.locals, this.instruction.next, this.instruction.branch, this.label);
     for (var i = 0; i < this.instruction.args.length; i++) {
         var arg = this.instruction.args[i];
         var value = evaluate(this.top.parent, this.randomer, arg);
-        this.top.set(procedure.locals[i], value);
+        this.top.set(def.locals[i], value);
     }
-    return this.goto(this.instruction.branch);
+    return this.goto(label);
 };
 
-Engine.prototype.$args = function $args() {
+Engine.prototype.$def = function $def() {
     // Procedure argument instructions exist as targets for labels as well as
     // for reference to locals in calls.
     return this.goto(this.instruction.next);
 };
 
 Engine.prototype.$opt = function $opt() {
-    var option = this.instruction;
-    for (var i = 0; i < option.keywords.length; i++) {
-        var keyword = option.keywords[i];
+    var closure = new Closure(this.top, this.label);
+    for (var i = 0; i < this.instruction.keywords.length; i++) {
+        var keyword = this.instruction.keywords[i];
         // The first option to introduce a keyword wins, not the last.
         if (!this.keywords[keyword]) {
-            this.keywords[keyword] = option;
+            this.keywords[keyword] = closure;
         }
     }
-    if (option.question.length) {
-        this.options.push(option);
+    if (this.instruction.question.length > 0) {
+        this.options.push(closure);
         this.render.startOption();
-        return this.gothrough(option.question, this.instruction.next, true);
+        this.top = new Frame(this.top, [], this.instruction.next, 'RET', this.label, true);
+        return this.gothrough(this.instruction.question, 'RET');
     } else if (this.noOption == null) {
-        this.noOption = option;
+        this.noOption = closure;
     }
-    return this.goto(option.next);
+    return this.goto(this.instruction.next);
 };
 
 Engine.prototype.$move = function $move() {
@@ -402,7 +429,7 @@ Engine.prototype.$switch = function $switch() {
     if (this.debug) {
         console.log(this.top.at() + '/' + this.label + ' ' + value + ' -> ' + next);
     }
-    return this.gothrough(nexts, this.instruction.next, false);
+    return this.gothrough(nexts, this.instruction.next);
 };
 
 function weigh(scope, randomer, expressions, weights) {
@@ -439,6 +466,8 @@ Engine.prototype.$ask = function $ask() {
 function Global(handler) {
     this.scope = Object.create(null);
     this.handler = handler;
+    this.next = 'RET';
+    this.branch = 'RET';
     Object.seal(this);
 }
 
@@ -478,39 +507,34 @@ Global.prototype.at = function at() {
     return '';
 };
 
-// istanbul ignore next
-Global.prototype.capture = function capture() {
+Global.prototype.capture = function () {
     var names = Object.keys(this.scope);
     var values = [];
     for (var i = 0; i < names.length; i++) {
         values[i] = this.scope[names[i]] || 0;
     }
-    return [
-        names,
-        values
-    ];
+    return [names, values];
 };
 
-// TODO names of parent and caller are not right, might be swapped.
-// parent should be the scope parent for upchain lookups.
-function Frame(parent, caller, locals, next, branch, stopOption) {
+function Frame(parent, locals, next, branch, label, stopOption) {
     this.locals = locals;
     this.scope = Object.create(null);
     for (var i = 0; i < locals.length; i++) {
         this.scope[locals[i]] = 0;
     }
     this.parent = parent;
-    this.caller = caller;
     this.next = next;
     this.branch = branch;
+    this.label = label;
     this.stopOption = stopOption || false;
+    Object.seal(this);
 }
 
 Frame.prototype.get = function get(name) {
     if (this.locals.indexOf(name) >= 0) {
         return this.scope[name];
     }
-    return this.caller.get(name);
+    return this.parent.get(name);
 };
 
 Frame.prototype.set = function set(name, value) {
@@ -519,13 +543,13 @@ Frame.prototype.set = function set(name, value) {
         this.scope[name] = value;
         return;
     }
-    this.caller.set(name, value);
+    this.parent.set(name, value);
 };
 
 // istanbul ignore next
 Frame.prototype.log = function log() {
     this.parent.log();
-    console.log('--- ' + this.branch + ' -> ' + this.next);
+    console.log('--- ' + this.label + ' -> ' + this.next);
     for (var i = 0; i < this.locals.length; i++) {
         var name = this.locals[i];
         var value = this.scope[name];
@@ -535,45 +559,69 @@ Frame.prototype.log = function log() {
 
 // istanbul ignore next
 Frame.prototype.at = function at() {
-    return this.caller.at() + '/' + this.branch;
+    return this.parent.at() + '/' + this.label;
 };
 
-// istanbul ignore next
-Frame.prototype.capture = function capture() {
+Frame.prototype.capture = function capture(engine) {
     var values = [];
-    // var object = {};
     for (var i = 0; i < this.locals.length; i++) {
         var local = this.locals[i];
         values.push(this.scope[local] || 0);
     }
+
     return [
-        this.locals,
+        engine.indexOfLabel(this.label),
+        engine.indexOfLabel(this.next),
+        engine.indexOfLabel(this.branch),
         values,
-        this.next || "",
-        this.branch || "",
-        +(this.caller === this.top),
-        +this.stopOption
+        +this.stopOption,
     ];
 };
 
-// istanbul ignore next
-Frame.resume = function resume(top, global, state) {
-    var keys = state[0];
-    var values = state[1];
-    var next = state[2];
-    var branch = state[3];
-    var dynamic = state[4];
-    var stopOption = state[5];
-    top = new Frame(
-        top,
-        dynamic ? top : global,
-        keys,
-        next,
-        branch,
-        !!stopOption
-    );
-    for (var i = 0; i < keys.length; i++) {
-        top.set(keys[i], values[i]);
+Frame.restore = function (engine, snapshot, parent) {
+    var label = engine.labelOfIndex(snapshot[0]);
+    var next = engine.labelOfIndex(snapshot[1]);
+    var branch = engine.labelOfIndex(snapshot[2]);
+    var values = snapshot[3];
+    var stopOption = Boolean(snapshot[4]);
+
+    var frame = new Frame(parent, [], next, branch, label, stopOption);
+
+    // Technically, not all frames correspond to subroutine calls, but all
+    // frames that remain when the engine pauses ought to be.
+    // The exceptions would be interstitial frames generated by gothrough,
+    // but all of these are exhausted before the engine stops to ask a prompt.
+    var call = engine.story[label];
+    var def = engine.story[call.label];
+    frame.locals = def.locals;
+    for (var i = 0; i < values.length; i++) {
+        var name = def.locals[i];
+        frame.scope[name] = values[i];
     }
-    return top;
+
+    return frame;
 };
+
+Engine.prototype.labelOfIndex = function (index) {
+    if (index == -2) {
+        return 'RET';
+    } else if (index === -3) {
+        return 'ESC';
+    }
+    return this.labels[index];
+};
+
+Engine.prototype.indexOfLabel = function (label) {
+    if (label === 'RET') {
+        return -2;
+    } else if (label === 'ESC') {
+        return -3;
+    }
+    return this.labels.indexOf(label);
+};
+
+function Closure(scope, label) {
+    this.scope = scope;
+    this.label = label;
+    Object.seal(this);
+}

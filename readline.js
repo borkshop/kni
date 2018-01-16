@@ -14,6 +14,7 @@ function Readline(transcript, filename) {
     this.engine = null;
     this.boundAnswer = answer;
     this.transcript = transcript;
+    this.history = [];
     this.state = new Play(this, filename);
     Object.seal(this);
     function answer(text) {
@@ -48,22 +49,44 @@ Play.prototype.answer = function answer(text) {
     var engine = this.readline.engine;
 
     if (text === 'quit') {
-        console.log("");
+        console.log('');
         engine.dialog.close();
     // istanbul ignore next
-    } else if (text === 'bt') {
+    } else if (text === 'bt' || text === 'trace') {
         engine.log();
         engine.ask();
     // istanbul ignore next
+    } else if (text === 'capture' || text === 'cap') {
+        console.log(JSON.stringify(engine.waypoint));
+        console.log('');
+        engine.ask();
+    // istanbul ignore next
     } else if (text === 'save') {
-        console.log("");
+        console.log('');
         engine.dialog.ask('file name [' + this.filename + ']> ');
         return new Save(this, engine.waypoint, this.filename);
     } else if (text === 'load') {
-        console.log("");
+        console.log('');
         engine.dialog.ask('file name [' + this.filename + ']> ');
         return new Load(this, this.filename);
+    } else if (text === 'back') {
+        console.log('');
+        if (this.readline.transcript) {
+            this.readline.transcript.write('\n');
+        }
+        if (this.readline.history.length <= 1) {
+            console.log('Meanwhile, at the beginning of recorded history...');
+        }
+        engine.waypoint = this.readline.history.pop();
+        engine.resume(engine.waypoint);
+    } else if (text === 'replay') {
+        console.log('');
+        if (this.readline.transcript) {
+            this.readline.transcript.write('\n');
+        }
+        engine.resume(engine.waypoint);
     } else {
+        this.readline.history.push(engine.waypoint);
         engine.answer(text);
     }
     return this;
@@ -95,10 +118,10 @@ Save.prototype.answer = function answer(filename) {
     filename = filename || this.filename;
     fs.writeFileSync(filename, waypoint, 'utf8');
 
-    console.log("");
-    console.log("Waypoint written to " + filename);
+    console.log('');
+    console.log('Waypoint written to ' + filename);
     console.log(waypoint);
-    console.log("");
+    console.log('');
     return this.parent.saved(filename);
 };
 
@@ -111,10 +134,10 @@ Load.prototype.answer = function answer(filename) {
     filename = filename || this.filename;
 
     var waypoint = fs.readFileSync(filename, 'utf8');
-    console.log("");
-    console.log("Loaded from " + filename);
+    console.log('');
+    console.log('Loaded from ' + filename);
     console.log(waypoint);
-    console.log("");
+    console.log('');
 
     return this.parent.loaded(JSON.parse(waypoint));
 };
