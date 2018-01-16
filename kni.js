@@ -223,7 +223,7 @@ function describeNext(jump, next) {
         return '';
     } else if (jump === next) {
         return '';
-    } else if (jump == 'END') {
+    } else if (jump == 'RET') {
         return '<-';
     } else if (jump == 'ESC') {
         return '<<';

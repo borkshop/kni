@@ -55,7 +55,7 @@ Engine.prototype.continue = function _continue() {
 };
 
 Engine.prototype.goto = function _goto(label) {
-    while (this.top != null && (label == 'ESC' || label === 'END')) {
+    while (this.top != null && (label == 'ESC' || label === 'RET')) {
         // istanbul ignore if
         if (this.debug) {
             console.log(label.toLowerCase());
@@ -71,7 +71,7 @@ Engine.prototype.goto = function _goto(label) {
         this.top = this.top.parent;
     }
 
-    if (label === 'END') {
+    if (label === 'RET') {
         return this.end();
     }
 
@@ -97,8 +97,8 @@ Engine.prototype.goto = function _goto(label) {
 Engine.prototype.gothrough = function gothrough(sequence, next) {
     var prev = this.label;
     for (var i = sequence.length - 1; i >= 0; i--) {
-        if (next !== 'END') {
-            this.top = new Frame(this.top, [], next, 'END', prev);
+        if (next !== 'RET') {
+            this.top = new Frame(this.top, [], next, 'RET', prev);
         }
         prev = next;
         next = sequence[i];
@@ -128,10 +128,10 @@ Engine.prototype.ask = function ask() {
         this.top = closure.scope;
         var answer = option.answer;
         this.flush();
-        this.gothrough(answer, 'END');
+        this.gothrough(answer, 'RET');
         this.continue();
     } else {
-        return this.goto('END');
+        return this.goto('RET');
     }
 };
 
@@ -166,7 +166,7 @@ Engine.prototype.choice = function _choice(closure) {
     // There is no known case where gothrough would immediately exit for
     // lack of further instructions, so
     // istanbul ignore else
-    if (this.gothrough(option.answer, 'END')) {
+    if (this.gothrough(option.answer, 'RET')) {
         this.flush();
         this.continue();
     }
@@ -259,7 +259,7 @@ Engine.prototype.resume = function resume(snapshot) {
 
     var instruction = this.story[label];
     if (instruction.type === 'opt') {
-        if (this.gothrough(instruction.answer, 'END')) {
+        if (this.gothrough(instruction.answer, 'RET')) {
             this.flush();
             this.continue();
         }
@@ -357,8 +357,8 @@ Engine.prototype.$opt = function $opt() {
     if (this.instruction.question.length > 0) {
         this.options.push(closure);
         this.render.startOption();
-        this.top = new Frame(this.top, [], this.instruction.next, 'END', this.label, true);
-        return this.gothrough(this.instruction.question, 'END');
+        this.top = new Frame(this.top, [], this.instruction.next, 'RET', this.label, true);
+        return this.gothrough(this.instruction.question, 'RET');
     } else if (this.noOption == null) {
         this.noOption = closure;
     }
@@ -466,8 +466,8 @@ Engine.prototype.$ask = function $ask() {
 function Global(handler) {
     this.scope = Object.create(null);
     this.handler = handler;
-    this.next = 'END';
-    this.branch = 'END';
+    this.next = 'RET';
+    this.branch = 'RET';
     Object.seal(this);
 }
 
@@ -604,7 +604,7 @@ Frame.restore = function (engine, snapshot, parent) {
 
 Engine.prototype.labelOfIndex = function (index) {
     if (index == -2) {
-        return 'END';
+        return 'RET';
     } else if (index === -3) {
         return 'ESC';
     }
@@ -612,7 +612,7 @@ Engine.prototype.labelOfIndex = function (index) {
 };
 
 Engine.prototype.indexOfLabel = function (label) {
-    if (label === 'END') {
+    if (label === 'RET') {
         return -2;
     } else if (label === 'ESC') {
         return -3;

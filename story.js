@@ -38,11 +38,10 @@ function Text(text) {
     this.text = text;
     this.lift = ' ';
     this.drop = ' ';
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Text.prototype.tie = tie;
 
 constructors.echo = Echo;
 function Echo(expression) {
@@ -50,11 +49,10 @@ function Echo(expression) {
     this.expression = expression;
     this.lift = '';
     this.drop = '';
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Echo.prototype.tie = tie;
 
 constructors.option = Option;
 function Option(label) {
@@ -62,11 +60,10 @@ function Option(label) {
     this.question = [];
     this.answer = [];
     this.keywords = null;
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Option.prototype.tie = tie;
 
 constructors.goto = Goto;
 function Goto(next) {
@@ -75,40 +72,36 @@ function Goto(next) {
     this.position = null;
     Object.seal(this);
 }
-Goto.prototype.tie = tie;
 
 constructors.call = Call;
 function Call(label) {
     this.type = 'call';
     this.label = label;
     this.args = null;
-    this.next = 'END';
-    this.branch = 'END';
+    this.next = 'RET';
+    this.branch = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Call.prototype.tie = tie;
 
 constructors.def = Def;
 function Def(locals) {
     this.type = 'def';
     this.locals = locals;
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Def.prototype.tie = tie;
 
 constructors.jump = Jump;
 function Jump(condition) {
     this.type = 'jump';
     this.condition = condition;
-    this.branch = 'END';
-    this.next = 'END';
+    this.branch = 'RET';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Jump.prototype.tie = tie;
 
 constructors.switch = Switch;
 function Switch(expression) {
@@ -119,58 +112,48 @@ function Switch(expression) {
     this.mode = null;
     this.branches = [];
     this.weights = [];
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Switch.prototype.tie = tie;
 
 constructors.move = Move;
 function Move() {
     this.type = 'move';
     this.source = null;
     this.target = null;
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Move.prototype.tie = tie;
 
 constructors.break = Break;
 function Break() {
     this.type = 'br';
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Break.prototype.tie = tie;
 
 constructors.paragraph = Paragraph;
 function Paragraph() {
     this.type = 'par';
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Paragraph.prototype.tie = tie;
 
 constructors.rule = Rule;
 function Rule() {
     this.type = 'rule';
-    this.next = 'END';
+    this.next = 'RET';
     this.position = null;
     Object.seal(this);
 }
-Rule.prototype.tie = tie;
 
 constructors.ask = Ask;
 function Ask(variable) {
     this.type = 'ask';
     this.position = null;
     Object.seal(this);
-}
-Ask.prototype.tie = tie;
-
-function tie(end) {
-    this.next = end;
 }
