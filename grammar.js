@@ -7,9 +7,6 @@ var expression = require('./expression');
 exports.start = start;
 
 function start(story, path) {
-    if (path == null) {
-        path = Path.start();
-    }
     var stop = new Stop(story);
     var start = story.create(path, 'goto', 'RET', '1:1');
     return new Thread(story, Path.zerothChild(path), stop, [start], []);

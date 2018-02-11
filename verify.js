@@ -8,6 +8,7 @@ var OutlineLexer = require('./outline-lexer');
 var InlineLexer = require('./inline-lexer');
 var Parser = require('./parser');
 var Story = require('./story');
+var Path = require('./path');
 var grammar = require('./grammar');
 
 module.exports = verify;
@@ -26,7 +27,7 @@ function verify(kni, trans, handler) {
 
     // build a story from the kni
     var story = new Story();
-    var p = new Parser(grammar.start(story));
+    var p = new Parser(grammar.start(story, Path.start()));
     var il = new InlineLexer(p);
     var ol = new OutlineLexer(il);
     var s = new Scanner(ol);

@@ -53,7 +53,7 @@ function main() {
                     console.log(kniscript);
                 }
 
-                var path;
+                var path = Path.start();
                 if (kniscripts.length > 1) {
                     path = kniscripts[i].stream.path;
                     path = [path.split('/').pop().split('.').shift()];
