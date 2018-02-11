@@ -36,7 +36,7 @@
             "score"
         ],
         "next": "start.3",
-        "position": "36:3"
+        "position": "4:3"
     },
     "start.3": {
         "type": "text",
@@ -61,9 +61,10 @@
     },
     "shop.1": {
         "type": "call",
-        "branch": "arrow",
+        "label": "arrow",
         "args": [],
         "next": "shop.2",
+        "branch": "shop",
         "position": "11:3"
     },
     "shop.2": {
@@ -89,7 +90,7 @@
                 1
             ]
         ],
-        "next": null,
+        "next": "RET",
         "position": "12:3"
     },
     "shop.2.1": {
@@ -115,7 +116,7 @@
                 1
             ]
         ],
-        "next": null,
+        "next": "RET",
         "position": "12:3"
     },
     "shop.2.1.0.1": {
@@ -144,9 +145,10 @@
     },
     "shop.3": {
         "type": "call",
-        "branch": "gold",
+        "label": "gold",
         "args": [],
         "next": "shop.4",
+        "branch": "shop",
         "position": "13:3"
     },
     "shop.4": {
@@ -193,7 +195,7 @@
                 1
             ]
         ],
-        "next": null,
+        "next": "RET",
         "position": "15:3"
     },
     "shop.5.1": {
@@ -242,6 +244,7 @@
             "shop.6.5",
             "shop.6.7"
         ],
+        "keywords": [],
         "next": "shop.7",
         "position": "18:5"
     },
@@ -250,7 +253,7 @@
         "text": "You b",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "18:5"
     },
     "shop.6.3": {
@@ -258,7 +261,7 @@
         "text": "B",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "18:5"
     },
     "shop.6.4": {
@@ -266,7 +269,7 @@
         "text": "uy 3 arrows for a gold piece.",
         "lift": "",
         "drop": " ",
-        "next": null,
+        "next": "RET",
         "position": "18:5"
     },
     "shop.6.5": {
@@ -306,7 +309,7 @@
             "get",
             "arrow"
         ],
-        "next": null,
+        "next": "RET",
         "position": "18:5"
     },
     "shop.6.7": {
@@ -350,6 +353,7 @@
             "shop.7.5",
             "shop.7.7"
         ],
+        "keywords": [],
         "next": "shop.8",
         "position": "20:5"
     },
@@ -358,7 +362,7 @@
         "text": "You s",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "20:5"
     },
     "shop.7.3": {
@@ -366,7 +370,7 @@
         "text": "S",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "20:5"
     },
     "shop.7.4": {
@@ -374,7 +378,7 @@
         "text": "ell 4 arrows for a gold piece.",
         "lift": "",
         "drop": " ",
-        "next": null,
+        "next": "RET",
         "position": "20:5"
     },
     "shop.7.5": {
@@ -414,7 +418,7 @@
             "get",
             "arrow"
         ],
-        "next": null,
+        "next": "RET",
         "position": "20:5"
     },
     "shop.7.7": {
@@ -433,6 +437,7 @@
             "shop.8.3",
             "shop.8.4"
         ],
+        "keywords": [],
         "next": "shop.9",
         "position": "21:5"
     },
@@ -441,7 +446,7 @@
         "text": "You walk through the door to",
         "lift": "",
         "drop": " ",
-        "next": null,
+        "next": "RET",
         "position": "21:5"
     },
     "shop.8.2": {
@@ -449,7 +454,7 @@
         "text": "Visit",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "21:5"
     },
     "shop.8.3": {
@@ -457,7 +462,7 @@
         "text": "the archery range.",
         "lift": " ",
         "drop": " ",
-        "next": null,
+        "next": "RET",
         "position": "21:5"
     },
     "shop.8.4": {
@@ -473,6 +478,7 @@
         "answer": [
             "shop.9.2"
         ],
+        "keywords": [],
         "next": "shop.10",
         "position": "23:5"
     },
@@ -481,7 +487,7 @@
         "text": "Leave the store.",
         "lift": "",
         "drop": " ",
-        "next": null,
+        "next": "RET",
         "position": "23:5"
     },
     "shop.9.2": {
@@ -503,9 +509,10 @@
     },
     "range.1": {
         "type": "call",
-        "branch": "arrow",
+        "label": "arrow",
         "args": [],
         "next": "range.2",
+        "branch": "range",
         "position": "30:3"
     },
     "range.2": {
@@ -553,6 +560,7 @@
             "range.3.6",
             "range.3.7"
         ],
+        "keywords": [],
         "next": "range.4",
         "position": "33:5"
     },
@@ -561,7 +569,7 @@
         "text": "You s",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "33:5"
     },
     "range.3.3": {
@@ -569,7 +577,7 @@
         "text": "S",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "33:5"
     },
     "range.3.4": {
@@ -577,7 +585,7 @@
         "text": "hoot an arrow",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "33:5"
     },
     "range.3.5": {
@@ -585,7 +593,7 @@
         "text": ".",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "33:5"
     },
     "range.3.6": {
@@ -605,7 +613,7 @@
             "get",
             "arrow"
         ],
-        "next": null,
+        "next": "RET",
         "position": "33:5"
     },
     "range.3.7": {
@@ -636,7 +644,7 @@
                 1
             ]
         ],
-        "next": null,
+        "next": "RET",
         "position": "34:5"
     },
     "range.3.7.1": {
@@ -716,6 +724,7 @@
             "range.4.3",
             "range.4.4"
         ],
+        "keywords": [],
         "next": "range.5",
         "position": "37:5"
     },
@@ -724,7 +733,7 @@
         "text": "You r",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "37:5"
     },
     "range.4.2": {
@@ -732,7 +741,7 @@
         "text": "R",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "37:5"
     },
     "range.4.3": {
@@ -740,7 +749,7 @@
         "text": "eturn to the archery shop.",
         "lift": "",
         "drop": " ",
-        "next": null,
+        "next": "RET",
         "position": "37:5"
     },
     "range.4.4": {
@@ -753,7 +762,7 @@
         "position": "38:3"
     },
     "arrow": {
-        "type": "args",
+        "type": "def",
         "locals": [],
         "next": "arrow.1",
         "position": "42:3"
@@ -786,7 +795,7 @@
                 1
             ]
         ],
-        "next": null,
+        "next": "RET",
         "position": "43:3"
     },
     "arrow.1.1": {
@@ -794,7 +803,7 @@
         "text": "no arrows",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "43:3"
     },
     "arrow.1.2": {
@@ -802,7 +811,7 @@
         "text": "an arrow",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "43:3"
     },
     "arrow.1.3": {
@@ -821,11 +830,11 @@
         "text": "arrows",
         "lift": " ",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "43:3"
     },
     "gold": {
-        "type": "args",
+        "type": "def",
         "locals": [],
         "next": "gold.1",
         "position": "45:3"
@@ -858,7 +867,7 @@
                 1
             ]
         ],
-        "next": null,
+        "next": "RET",
         "position": "46:3"
     },
     "gold.1.1": {
@@ -866,7 +875,7 @@
         "text": "no gold",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "46:3"
     },
     "gold.1.2": {
@@ -874,7 +883,7 @@
         "text": "a gold piece",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "46:3"
     },
     "gold.1.3": {
@@ -893,7 +902,7 @@
         "text": "gold",
         "lift": " ",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "46:3"
     },
     "exit": {
@@ -906,9 +915,10 @@
     },
     "exit.1": {
         "type": "call",
-        "branch": "gold",
+        "label": "gold",
         "args": [],
         "next": "exit.2",
+        "branch": "ESC",
         "position": "49:3"
     },
     "exit.2": {
@@ -942,12 +952,12 @@
                 1
             ]
         ],
-        "next": null,
+        "next": "RET",
         "position": "50:3"
     },
     "exit.3.1": {
         "type": "goto",
-        "next": null,
+        "next": "RET",
         "position": "50:3"
     },
     "exit.3.2": {
@@ -1005,7 +1015,7 @@
                 1
             ]
         ],
-        "next": null,
+        "next": "RET",
         "position": "50:3"
     },
     "exit.3.2.3.1": {
@@ -1034,7 +1044,7 @@
         "text": ".",
         "lift": "",
         "drop": "",
-        "next": null,
+        "next": "RET",
         "position": "50:3"
     }
 }
