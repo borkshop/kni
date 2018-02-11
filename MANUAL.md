@@ -86,7 +86,7 @@ column.
 
 Bullet symbols include `-`, `*`, and `+`.
 Every time a line starts on a deeper column than the prior, it starts a new
-thread ends ends on the next line that starts on a shallower column.
+thread that ends on the next line that starts on a shallower column.
 
 ```
 * [You s[S]ay, {"Hello."} ]
@@ -196,6 +196,9 @@ This is a breakdown of the possibilities:
 + C [Q] A
   Q: C Q
   A: Q A
++ [[] C] A
+  Q: C
+  A: C A
 + [A1 [Q] C] A2
   Q: Q C
   A: A1 C A2
@@ -215,6 +218,9 @@ Examples:
 
 # Abbreviated Ink style option
 + [North. ] You head north.
+
+# Echo the question. The question is "Quit.", the answer is "Quit.".
++ [[] Quit. ]
 
 # Second person variant illustrating inner bracket.
 # [A    [Q] QA          ]
