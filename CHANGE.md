@@ -1,4 +1,15 @@
 
+# unreleased
+
+This version adds support for compiling stories that span multiple files.
+
+Pass all of these files to the `kni` command and it will weave them into a
+single story.
+Each file will begin with a label that is the name of the file, like `@archery`
+for `path/to/archery.kni`.
+The story can start anywhere you put your `@start` label, or in a file called
+`start.kni`.
+
 # v3.0.0
 
 This version allows options to be declared in subroutines.

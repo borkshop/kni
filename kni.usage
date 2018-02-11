@@ -1,6 +1,6 @@
 usage: kni <script.kni>
 
-script:            <script> :input Script file name
+scripts:           <scripts>{1..} :input Script file name(s)
 start:             [-s <start>] Start script at this label
 fromJson:          [-J] Read kni script as compiled JSON
 toJson:            [-j|--json] Write compiled script as JSON.

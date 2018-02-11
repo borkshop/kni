@@ -4,7 +4,7 @@
     "kni <script.kni>"
   ],
   "usage": [
-    "<script> :input Script file name",
+    "<scripts>{1..} :input Script file name(s)",
     "[-s <start>] Start script at this label",
     "[-J] Read kni script as compiled JSON",
     "[-j|--json] Write compiled script as JSON.",
@@ -25,16 +25,16 @@
     "[--html-background-color <color>] Set the background color for the generated page."
   ],
   "terms": {
-    "script": {
+    "scripts": {
       "flags": [],
-      "arg": "script",
+      "arg": "scripts",
       "command": null,
-      "collectorType": null,
+      "collectorType": "array",
       "type": "input",
       "required": true,
-      "minLength": null,
+      "minLength": 1,
       "maxLength": null,
-      "help": "Script file name"
+      "help": "Script file name(s)"
     },
     "start": {
       "flags": [

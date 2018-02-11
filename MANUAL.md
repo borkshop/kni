@@ -7,17 +7,16 @@ Kni is a parser, compiler, and a runtime, all of which are accessible with
 the `kni` command as installed by `npm`.
 
 ```
-npm i -S kni
-PATH=$PATH:node_modules/.bin
-kni --help
+npm install kni
+node_modules/.bin/kni --help
 ```
 
 Be sure to use a project-local installation of `kni`.
 While the language evolves, there are likely to be multiple radically different
 major versions of this project in concurrent use.
 
-By default, `kni` accepts a `.kni` file (see one of the many examples)
-and opens up an interactive console for the story.
+By default, `kni` accepts one or more `.kni` files (see one of the many
+examples) and opens up an interactive console for the story.
 The `-j` command line flag bypasses the runtime and dumps the compiled JSON
 state machine for the story.
 
@@ -726,3 +725,11 @@ supports some operators that assist making common typographical niceties.
 - ``{'`` and ``'}`` can stand for the equivalent single ‘curly quotes’.
 - ``--`` is good for an en-dash, suitable for use in number ranges like 1–10.
 - ``---`` is good for em-dash—suitable for parenthetical phrases.
+
+## Multiple Files
+
+A Kni story can span multiple files. Pass all of these files to the `kni`
+command and it will weave them into a single story.
+Each file will begin with a label that is the name of the file, like `@archery`
+for `path/to/archery.kni`. The story can start anywhere you put your `@start`
+label, or in a file called `start.kni`.

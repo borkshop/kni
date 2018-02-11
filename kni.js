@@ -28,54 +28,64 @@ function main() {
         return;
     }
 
-    read(config.script, 'utf8', onKniscript);
+    serial(config.scripts, readAndKeep, onKniscripts);
 
-    function onKniscript(err, kniscript) {
+    function onKniscripts(err, kniscripts) {
         if (err) {
             console.error(err.message);
             process.exit(-1);
             return;
         }
 
-        if (config.debugInput) {
-            console.log(kniscript);
-        }
-
         var interactive = true;
 
         var states;
         if (config.fromJson) {
-            states = JSON.parse(kniscript);
+            states = JSON.parse(knicript);
 
         } else {
             var story = new Story();
 
-            var p = new Parser(grammar.start(story));
-            var il = new InlineLexer(p);
-            var ol = new OutlineLexer(il);
-            var s = new Scanner(ol);
+            for (var i = 0; i < kniscripts.length; i++) {
+                var kniscript = kniscripts[i].content;
 
-            if (config.debugParser) {
-                p.debug = true;
-                interactive = false;
-            }
-            if (config.debugInlineLexer) {
-                il.debug = true;
-                interactive = false;
-            }
-            if (config.debugOutlineLexer) {
-                ol.debug = true;
-                interactive = false;
-            }
-            if (config.debugScanner) {
-                s.debug = true;
-                interactive = false;
+                if (config.debugInput) {
+                    console.log(kniscript);
+                }
+
+                var path;
+                if (kniscripts.length > 1) {
+                    path = kniscripts[i].stream.path;
+                    path = [path.split('/').pop().split('.').shift()];
+                }
+
+                var p = new Parser(grammar.start(story, path));
+                var il = new InlineLexer(p);
+                var ol = new OutlineLexer(il);
+                var s = new Scanner(ol);
+
+                if (config.debugParser) {
+                    p.debug = true;
+                    interactive = false;
+                }
+                if (config.debugInlineLexer) {
+                    il.debug = true;
+                    interactive = false;
+                }
+                if (config.debugOutlineLexer) {
+                    ol.debug = true;
+                    interactive = false;
+                }
+                if (config.debugScanner) {
+                    s.debug = true;
+                    interactive = false;
+                }
+
+                s.next(kniscript);
+                s.return();
             }
 
-            s.next(kniscript);
-            s.return();
             states = story.states;
-
             if (story.errors.length) {
                 dump(story.errors);
                 return;
@@ -121,7 +131,7 @@ function main() {
         }
 
         if (config.expected) {
-            read(config.expected, 'utf8', function onTypescript(err, typescript) {
+            read(config.expected, function onTypescript(err, typescript) {
                 if (err) {
                     console.error(err.message);
                     process.exit(-1);
@@ -148,7 +158,7 @@ function main() {
             }
 
             if (config.waypoint) {
-                read(config.waypoint, 'utf8', function onWaypoint(err, waypoint) {
+                read(config.waypoint, function onWaypoint(err, waypoint) {
                     if (err) {
                         console.error(err.message);
                         process.exit(-1);
@@ -236,8 +246,17 @@ function no() {
     return false;
 }
 
-function read(stream, encoding, callback) {
-    stream.setEncoding(encoding);
+function readAndKeep(stream, callback) {
+    read(stream, function onRead(err, content) {
+        if (err != null) {
+            return callback(err);
+        }
+        callback(null, {stream: stream, content: content});
+    });
+}
+
+function read(stream, callback) {
+    stream.setEncoding('utf8');
     var string = '';
     stream.on('data', onData);
     stream.on('end', onEnd);
@@ -251,6 +270,27 @@ function read(stream, encoding, callback) {
             return;
         }
         callback(null, string);
+    }
+}
+
+function serial(array, eachback, callback) {
+    var values = [];
+    next(0);
+
+    function next(i) {
+        if (i >= array.length) {
+            return callback(null, values);
+        }
+
+        eachback(array[i], onEach);
+
+        function onEach(err, value) {
+            if (err != null) {
+                return callback(err, null);
+            }
+            values.push(value);
+            next(i+1);
+        }
     }
 }
 
