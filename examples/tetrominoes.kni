@@ -1,14 +1,14 @@
-{=0 I}
-{=1 O}
-{=2 T}
-{=3 J}
-{=4 L}
-{=5 S}
-{=6 Z}
-{=0 type}
-{=0 orient}
-{=1 speed}
-{=0 turns}
+! I = 0
+  O = 1
+  T = 2
+  J = 3
+  L = 4
+  S = 5
+  Z = 6
+  type = 0
+  orient = 0
+  speed = 1
+  turns = 0
 
 @next
 {=20 y}
@@ -16,7 +16,7 @@
 {=(1~4) orient}
 
 @describe
-You have {$type
+You have {(type)
 | an I
 | an O
 | a T
@@ -36,11 +36,11 @@ You have {$type
   | standing on one foot}
 }{(y)
 | and it lands on the floor. ->next
-| hanging {$y} measures above the floor.
+| hanging {(y)} measures above the floor.
 }
 
 @options
-- {? type != O}
+- {type <> O}
   + [You r[R]otate clockwise.]
     {+orient} {-y} ->describe
   + [You r[R]otate counter-clockwise.]
