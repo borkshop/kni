@@ -26,11 +26,10 @@ Kni alsø has significant whitespace.
 [HACKNI]: HACKNI.md
 
 Use npm to install and run kni. The kni command line requires Node.js version 4
-or greater.
+or greater. Use a major version of kni explicitly.
 
 ```
-$ nvm use 4
-$ npm install kni
+$ npm install kni@3
 $ PATH=$(pwd)/node_modules/.bin:$PATH
 $ kni
 ```
