@@ -71,11 +71,11 @@ Thread.prototype.next = function next(type, space, text, scanner) {
             return new Thread(this.scope.next(), this.parent, [], this.escs);
         } else if (text === '/') {
             var node = this.scope.create('break', null, scanner.position());
-            tiePath(this.rets, this.scope.path);
+            this.scope.tie(this.rets);
             return new Thread(this.scope.next(), this.parent, [node], this.escs);
         } else if (text === '//') {
             var node = this.scope.create('paragraph', null, scanner.position());
-            tiePath(this.rets, this.scope.path);
+            this.scope.tie(this.rets);
             return new Thread(this.scope.next(), this.parent, [node], this.escs);
         } else if (text === '{"' || text === '{\'' || text === '"}' || text === '\'}') {
             return new Text(this.scope, space, '', this, this.rets)
@@ -89,7 +89,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '>') {
             var node = this.scope.create('ask', null, scanner.position());
             // tie off rets to the prompt.
-            tiePath(this.rets, this.scope.path);
+            this.scope.tie(this.rets);
             // promote escs to rets, tying them off after the prompt.
             var escs = this.escs.slice();
             this.escs.length = 0;
@@ -99,7 +99,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         }
     } else if (type === 'dash') {
         var node = this.scope.create('rule', null, scanner.position());
-        tiePath(this.rets, this.scope.path);
+        this.scope.tie(this.rets);
         return new Thread(this.scope.next(), this.parent, [node], this.escs);
     } else if (type === 'break') {
         return this;
@@ -152,7 +152,7 @@ Text.prototype.next = function next(type, space, text, scanner) {
         this.text += space + '—'; // em-dash
         return this;
     }
-    tiePath(this.rets, this.scope.path);
+    this.scope.tie(this.rets);
     var node = this.scope.create('text', this.text, scanner.position());
     node.lift = this.lift;
     node.drop = space;
@@ -198,7 +198,7 @@ function ThreadCondition(scope, parent, rets, escs, skips) {
 ThreadCondition.prototype.return = function _return(args, scanner) {
     var node = this.scope.create('jump', expression.invert(args), scanner.position());
     var branch = new Branch(node);
-    tiePath(this.rets, this.scope.path);
+    this.scope.tie(this.rets);
     return new MaybeThread(this.scope.next(), this.parent, [node], this.escs, this.skips.concat([branch]));
 };
 
@@ -262,7 +262,7 @@ MaybeOption.prototype.option = function option(scanner) {
     var variable = Path.toName(this.scope.path);
     var rets = [];
 
-    tiePath(this.rets, this.at.path);
+    this.at.tie(this.rets);
 
     if (this.leader === '*') {
         this.consequences.push([['get', variable], ['+', ['get', variable], ['val', 1]]]);
@@ -270,7 +270,7 @@ MaybeOption.prototype.option = function option(scanner) {
         var jumpBranch = new Branch(jump);
         rets.push(jumpBranch);
         this.advance();
-        tiePath([jump], this.at.path);
+        this.at.tie([jump]);
     }
 
     for (var i = 0; i < this.conditions.length; i++) {
@@ -279,7 +279,7 @@ MaybeOption.prototype.option = function option(scanner) {
         var jumpBranch = new Branch(jump);
         rets.push(jumpBranch);
         this.advance();
-        tiePath([jump], this.at.path);
+        this.at.tie([jump]);
     }
 
     var option = new Option(this.scope, this.parent, rets, this.escs, this.leader, this.consequences);
@@ -473,7 +473,7 @@ AfterInitialQA.prototype.return = function _return(scope, rets, escs, scanner) {
         var node = scope.create('move', null, scanner.position());
         node.source = consequence[1];
         node.target = consequence[0];
-        tiePath(rets, scope.path);
+        scope.tie(rets);
         scope = scope.next();
         rets = [node];
     }
@@ -626,7 +626,7 @@ Label.prototype.return = function _return(expression, scanner) {
         var scope = this.scope.label(label);
         // place-holder goto thunk
         var node = scope.create('goto', 'RET', scanner.position());
-        tiePath(this.rets, scope.path);
+        this.scope.tie(this.rets);
         // rets also forwarded so they can be tied off if the goto is replaced.
         return this.parent.return(scope, this.rets.concat([node]), [], scanner);
     // istanbul ignore else
@@ -685,7 +685,7 @@ Goto.prototype.return = function _return(args, scanner) {
         var label = args[1][1];
         var node = this.scope.create('call', label, scanner.position());
         node.args = args.slice(2);
-        tiePath(this.rets, this.scope.path);
+        this.scope.tie(this.rets);
         return this.parent.return(this.scope.next(), [node], [new Branch(node)], scanner);
     } else {
         this.scope.error('Expected label after goto arrow, got expression ' + JSON.stringify(args) + ' at ' + scanner.position());
@@ -778,7 +778,7 @@ MaybeSetVariable.prototype.set = function set(source, target, scanner) {
         node.source = [this.op, target, source];
     }
     node.target = target;
-    tiePath(this.rets, this.scope.path);
+    this.scope.tie(this.rets);
     return this.parent.return(this.scope.next(), [node], [], scanner);
 };
 
@@ -817,7 +817,7 @@ AfterExpressionBlock.prototype.next = function next(type, space, text, scanner) 
     // istanbul ignore else
     } else if (text === '}') {
         var node = this.scope.create('echo', this.expression, scanner.position());
-        tiePath(this.rets, this.scope.path);
+        this.scope.tie(this.rets);
         return this.parent.return(this.scope.next(), [node], [], scanner)
             .next(type, space, text, scanner);
     } else {
@@ -848,7 +848,7 @@ SwitchBlock.prototype.start = function start(scanner, expression, variable, valu
     node.variable = variable;
     node.value = value;
     node.mode = mode;
-    tiePath(this.rets, this.scope.path);
+    this.scope.tie(this.rets);
     node.branches = this.branches;
     node.weights = this.weights;
     return new MaybeWeightedCase(this.scope, new Case(this.scope.firstChild(), this, [], this.branches, min || 0));
@@ -1001,7 +1001,7 @@ function ExpectExpression(scope, parent, rets, escs, left, operator) {
 ExpectExpression.prototype.return = function _return(right, scanner) {
     var node;
     // TODO validate this.left as a valid move target
-    tiePath(this.rets, this.scope.path);
+    this.scope.tie(this.rets);
     node = this.scope.create('move', null, scanner.position());
     node.target = this.left;
     node.source = right;
@@ -1037,11 +1037,6 @@ Expect.prototype.next = function next(type, space, text, scanner) {
     return this.parent.return(this.scope, this.rets, this.escs, scanner);
 };
 
-function tiePath(ends, next) {
-    var name = Path.toName(next);
-    tie(ends, name);
-}
-
 function tie(ends, name) {
     for (var i = 0; i < ends.length; i++) {
         var end = ends[i];
@@ -1068,22 +1063,41 @@ Scope.prototype.create = function create(type, arg, position) {
 };
 
 Scope.prototype.next = function next() {
-    return new Scope(this.story, Path.next(this.path));
+    return new Scope(this.story, Path.next(this.path), this.base);
 };
 
 Scope.prototype.zerothChild = function zerothChild() {
-    return new Scope(this.story, Path.zerothChild(this.path));
+    return new Scope(this.story, Path.zerothChild(this.path), this.base);
 };
 
 Scope.prototype.firstChild = function firstChild() {
-    return new Scope(this.story, Path.firstChild(this.path));
+    return new Scope(this.story, Path.firstChild(this.path), this.base);
 };
 
 Scope.prototype.label = function label(label) {
-    return new Scope(this.story, [label, 0]);
+    return new Scope(this.story, this.base.concat([label, 0]), this.base);
+};
+
+Scope.prototype.variable = function variable(variable) {
+    return this.base.concat([variable]).join('.');
+};
+
+Scope.prototype.tie = function _tie(nodes) {
+    tie(nodes, this.name());
 };
 
 // istanbul ignore next
 Scope.prototype.error = function (message) {
     this.story.error(message);
 };
+
+function tie(ends, name) {
+    for (var i = 0; i < ends.length; i++) {
+        var end = ends[i];
+        if (end.type === 'branch') {
+            end.node.branch = name;
+        } else {
+            end.next = name;
+        }
+    }
+}
