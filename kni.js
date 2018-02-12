@@ -55,12 +55,14 @@ function main() {
                 }
 
                 var path = Path.start();
+                var base = [];
                 if (kniscripts.length > 1) {
                     path = kniscripts[i].stream.path;
                     path = [path.split('/').pop().split('.').shift()];
+                    base = path;
                 }
 
-                var p = new Parser(grammar.start(story, path));
+                var p = new Parser(grammar.start(story, path, base));
                 var il = new InlineLexer(p);
                 var ol = new OutlineLexer(il);
                 var s = new Scanner(ol);

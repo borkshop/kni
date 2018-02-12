@@ -6,8 +6,8 @@ var expression = require('./expression');
 
 exports.start = start;
 
-function start(story, path) {
-    var scope = new Scope(story, path);
+function start(story, path, base) {
+    var scope = new Scope(story, path, base);
     var stop = new Stop(scope);
     var start = scope.create('goto', 'RET', '1:1');
     return new Thread(scope.zerothChild(), stop, [start], []);
@@ -1048,9 +1048,10 @@ function tie(ends, name) {
     }
 }
 
-function Scope(story, path) {
+function Scope(story, path, base) {
     this.story = story;
     this.path = path;
+    this.base = base || [];
     Object.seal(this);
 }
 

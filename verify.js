@@ -25,9 +25,12 @@ function verify(kni, trans, handler) {
         }
     }
 
+    var path = Path.start();
+    var base = [];
+
     // build a story from the kni
     var story = new Story();
-    var p = new Parser(grammar.start(story, Path.start()));
+    var p = new Parser(grammar.start(story, path, base));
     var il = new InlineLexer(p);
     var ol = new OutlineLexer(il);
     var s = new Scanner(ol);
