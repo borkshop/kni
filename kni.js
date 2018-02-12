@@ -11,6 +11,7 @@ var OutlineLexer = require('./outline-lexer');
 var InlineLexer = require('./inline-lexer');
 var Parser = require('./parser');
 var Story = require('./story');
+var Path = require('./path');
 var grammar = require('./grammar');
 var verify = require('./verify');
 var exec = require('shon/exec');
