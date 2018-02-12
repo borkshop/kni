@@ -10,6 +10,7 @@ var Parser = require('./parser');
 var Story = require('./story');
 var Path = require('./path');
 var grammar = require('./grammar');
+var link = require('./link');
 
 module.exports = verify;
 
@@ -37,6 +38,8 @@ function verify(kni, trans, handler) {
 
     s.next(kni);
     s.return();
+
+    link(story);
 
     // istanbul ignore if
     if (story.errors.length) {

@@ -13,6 +13,7 @@ var Parser = require('./parser');
 var Story = require('./story');
 var Path = require('./path');
 var grammar = require('./grammar');
+var link = require('./link');
 var verify = require('./verify');
 var exec = require('shon/exec');
 var usage = require('./kni.json');
@@ -87,6 +88,8 @@ function main() {
                 s.next(kniscript);
                 s.return();
             }
+
+            link(story);
 
             states = story.states;
             if (story.errors.length) {
