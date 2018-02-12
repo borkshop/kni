@@ -21,7 +21,7 @@ function test(input, output) {
         process.stderr.write(text);
         console.error('expected', output);
         console.error('actual  ', lister.list);
-        global.fail = true;
+        process.exitCode |= 1;
     }
 }
 

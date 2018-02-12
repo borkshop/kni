@@ -73,17 +73,17 @@ function main() {
         goto: function _goto(label) {
         },
         changed: function changed(name, value) {
-            global.fail = global.fail || name !== 'moxy';
-            global.fail = global.fail || value !== 42;
+            process.exitCode |= name !== 'moxy';
+            process.exitCode |= value != 42;
         },
         ask: function ask() {
             asked = true;
         },
         answer: function answer(text) {
-            global.fail = global.fail || text !== '1';
+            process.exitCode |= text !== '1';
         },
         choice: function _choice(choice) {
-            global.fail = global.fail || choice.keywords[0] !== 'moxy';
+            process.exitCode |= choice.keywords[0] !== 'moxy';
         },
         waypoint: function waypoint(state) {
         },
@@ -94,8 +94,8 @@ function main() {
         }
     });
 
-    global.fail = global.fail || !ended;
-    global.fail = global.fail || !asked;
+    process.exitCode |= !ended;
+    process.exitCode |= !asked;
 }
 
 function test(kniscript, transcript, handler) {
@@ -105,7 +105,7 @@ function test(kniscript, transcript, handler) {
 
     // istanbul ignore if
     if (!result.pass) {
-        global.fail = true;
+        process.exitCode |= 1;
         console.log(kniscript, transcript);
         console.log("FAIL");
         console.log("expected");

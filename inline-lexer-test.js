@@ -23,7 +23,7 @@ function test(input, output) {
         console.error(input);
         console.error('expected', output);
         console.error('actual  ', ll.list);
-        global.fail = true;
+        process.exitCode |= 1;
     }
 }
 

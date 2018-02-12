@@ -32,7 +32,7 @@ function test(text, expected, rule) {
         console.log('input   ', text);
         console.log('expected', expected);
         console.log('actual  ', actual);
-        global.fail = true;
+        process.exitCode |= 1;
     }
 }
 
