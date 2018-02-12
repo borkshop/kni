@@ -45,6 +45,12 @@ Engine.prototype.continue = function _continue() {
         if (this.debug) {
             console.log(this.label + ' ' +  this.instruction.type + ' ' + describe(this.instruction));
         }
+        if (this.instruction == null) {
+            // TODO user error for non-console interaction.
+            console.log('The label ' + JSON.stringify(this.label) + ' does not exist in this story');
+            this.end();
+            return;
+        }
         // istanbul ignore if
         if (!this['$' + this.instruction.type]) {
             console.error('Unexpected instruction type: ' + this.instruction.type, this.instruction);
