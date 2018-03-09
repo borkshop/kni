@@ -2,9 +2,10 @@
 
 @Calc
 Number: {(n)}
-+ {+1n} {n<>0} [Add one. ]
++ {+1n} {n>1} [Add one. ]
 + {-1n} {n<>1} [Sub one. ]
-+ {=0n} [Set zero. ]
-+ {=1n} [Set one. ]
++ {?n} [Set zero. ]
++ {!n} [Set one. ]
++ {=2n} [Set two. ]
 >
 ->Calc

@@ -728,8 +728,9 @@ Some operators imply both.
 Number: {(n)}
 + {+1n} {n<>0} [Add one. ]
 + {-1n} {n<>1} [Sub one. ]
-+ {=0n} [Set zero. ]
-+ {=1n} [Set one. ]
++ {?n} [Set zero. ]
++ {!n} [Set one. ]
++ {=2n} [Set two. ]
 >
 ->Calc
 ```
@@ -743,6 +744,12 @@ also "hide this option if n is zero or less".
 
 The `{-m n}` notation means "subtract m from n if this option is chosen" and
 also "hide this option if n is m or less".
+
+The `{!n}` notation means "set n to one if this option is chosen" and also
+"hide this option if n is already one".
+
+The `{?n}` notation means "set n to zero if this option is chosen" and also
+"hide this option if n is already zero".
 
 The `{=m n}` notation means "set n to m if this option is chosen" and also
 "hide this option if n is already m".

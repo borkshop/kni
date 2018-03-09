@@ -233,17 +233,22 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
 };
 
 MaybeOption.prototype.return = function _return(operator, expression, modifier, scanner) {
-    if (operator === '+' || operator === '-') {
+    if (operator === '+' || operator === '-' || operator === '!') {
         modifier = modifier || ['val', 1];
+    }
+    if (operator === '?') {
+        modifier = modifier || ['val', 0];
+    }
+    if (operator === '+' || operator === '-') {
         this.consequences.push([expression, [operator, expression, modifier]]);
     }
     if (operator === '-') {
         this.conditions.push(['>=', expression, modifier]);
     }
-    if (operator === '?') {
+    if (operator === '') {
         this.conditions.push(expression);
     }
-    if (operator === '=') {
+    if (operator === '=' || operator === '!' || operator === '?') {
         this.conditions.push(['<>', expression, modifier]);
         this.consequences.push([expression, modifier]);
     }
@@ -312,7 +317,7 @@ Keyword.prototype.next = function next(type, space, text, scanner) {
     return this;
 };
 
-// {+x}, {-x}, {+n x}, {-n x}, {=n x} or simply {x}
+// {+x}, {-x}, {!x}, {+n x}, {-n x}, {=n x} or simply {x}
 function OptionOperator(scope, parent) {
     this.scope = scope;
     this.parent = parent;
@@ -320,13 +325,13 @@ function OptionOperator(scope, parent) {
 }
 
 OptionOperator.prototype.next = function next(type, space, text, scanner) {
-    if (text === '+' || text === '-' || text === '=') {
+    if (text === '+' || text === '-' || text === '=' || text === '!' || text === '?') {
         return expression(this.scope,
             new OptionArgument(this.scope, this.parent, text));
     // istanbul ignore else
     } else {
         return expression(this.scope,
-            new OptionArgument2(this.scope, this.parent, '?'))
+            new OptionArgument2(this.scope, this.parent, ''))
                 .next(type, space, text, scanner);
     }
 };
