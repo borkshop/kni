@@ -14,6 +14,7 @@ function main() {
     test('examples/coin.kni', 'tests/coin.1');
     test('examples/coin.kni', 'tests/coin.2');
     test('examples/distribution.kni', 'tests/distribution.1');
+    test('examples/door-lock.kni', 'tests/door-lock.1');
     test('examples/door.kni', 'tests/door.1');
     test('examples/door.kni', 'tests/door.2');
     test('examples/fish.kni', 'tests/fish.1');

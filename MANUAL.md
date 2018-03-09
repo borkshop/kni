@@ -718,45 +718,36 @@ using braces.
 
 ## Options with Conditions and Consequences
 
-Options can have conditions and consequences.
-Some operators imply both.
+This is a fragment of `examples/door-lock.kni`, which has two rooms with a
+locked and closed door between them. Each option has conditions and
+consequences.
 
 ```
-! n = 0
-
-@Calc
-Number: {(n)}
-+ {+1n} {n<>0} [Add one. ]
-+ {-1n} {n<>1} [Sub one. ]
-+ {?n} [Set zero. ]
-+ {!n} [Set one. ]
-+ {=2n} [Set two. ]
->
-->Calc
++ {Open and Unlocked} [You w[W]alk through the open door. ] ->Red
++ {?Open} [You c[C]lose the door. ]
++ {Unlocked} {!Open} [You o[O]pen the door. ]
++ {not Open} {!Unlocked} [You u[U]nlock the door. ]
++ {not Open} {?Unlocked} [You l[L]ock the door. ]
 ```
 
-The `{+n}` notation means "add one to n if this option is chosen".
+There are five operators that have a combination of conditions and
+consequences. "+", "-", "!", "?", and "=".
 
-The `{+m n}` notation means "add m to n if this option is chosen".
-
-The `{-n}` notation means "subtract one from n if this option is chosen" and
-also "hide this option if n is zero or less".
-
-The `{-m n}` notation means "subtract m from n if this option is chosen" and
-also "hide this option if n is m or less".
-
-The `{!n}` notation means "set n to one if this option is chosen" and also
-"hide this option if n is already one".
-
-The `{?n}` notation means "set n to zero if this option is chosen" and also
-"hide this option if n is already zero".
-
-The `{=m n}` notation means "set n to m if this option is chosen" and also
-"hide this option if n is already m".
-
-Other expressions are merely conditions, like `{n <> m}` means "hide this
-option only if n is equal to m", or rather "show this option if n and m
-differ".
+- The `{+n}` notation means "add one to n if this option is chosen".
+- The `{+m n}` notation means "add m to n if this option is chosen".
+- The `{-n}` notation means "subtract one from n if this option is chosen" and
+  also "hide this option if n is zero or less".
+- The `{-m n}` notation means "subtract m from n if this option is chosen" and
+  also "hide this option if n is m or less".
+- The `{!n}` notation means "set n to one if this option is chosen" and also
+  "hide this option if n is already one".
+- The `{?n}` notation means "set n to zero if this option is chosen" and also
+  "hide this option if n is already zero".
+- The `{=m n}` notation means "set n to m if this option is chosen" and also
+  "hide this option if n is already m".
+- Other expressions are merely conditions, like `{n <> m}` means "hide this
+  option only if n is equal to m", or rather "show this option if n and m
+  differ".
 
 ## Typographic Helpers
 

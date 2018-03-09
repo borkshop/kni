@@ -1,0 +1,41 @@
+@Blue
+You are in a blue room.
+
+- @Door()
+  There is a door.
+  {(Open)? The door is ajar.
+  | {(Unlocked)? The door is closed.
+    | The door is locked. }}
+
+@BlueChoices
+->Door()
++ {Open and Unlocked} [You w[W]alk through the open door. ] ->Red
++ {?Open} [You c[C]lose the door. ]
++ {Unlocked} {!Open} [You o[O]pen the door. ]
++ {not Open} {!Unlocked} [You u[U]nlock the door. ]
++ {not Open} {?Unlocked} [You l[L]ock the door. ]
++ [Where am I again? ] ->Blue
+>
+->BlueChoices
+
+@Red
+You are in a red room.
+There is a door and a bell.
+A small sign reads, {"Please lock the door behind you before teleportation."}
+
+@RedChoices
+->Door()
++ [You r[R]ing the bell. ] {(not Open and not Unlocked)? ->Bell }
++ {Open and Unlocked} [You w[W]alk through the open door. ] ->Blue
++ {Unlocked} {!Open} [You o[O]pen the door. ]
++ {?Open} [You c[C]lose the door. ]
++ {not Open} {!Unlocked} [You u[U]nlock the door. ]
++ {not Open} {?Unlocked} [You l[L]ock the door. ]
++ [Where am I again? ] ->Red
+>
+->RedChoices
+
+@Bell
+A dark portal opens and swallows you whole.
+You lose consciousness.
+When you come to, you see…
