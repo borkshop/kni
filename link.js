@@ -8,7 +8,7 @@ function link(story) {
         var label = labels[i];
         var state = story.states[label];
 
-        var link = linker(story, label);
+        var link = linker(story, label, state);
 
         if (state.next != null) {
             state.next = link('next')(state.next);
@@ -25,7 +25,7 @@ function link(story) {
     }
 }
 
-function linker(story, context) {
+function linker(story, context, state) {
     var parts = context.split('.');
     var ancestry = [];
     while (parts.length > 0) {
@@ -46,7 +46,9 @@ function linker(story, context) {
                     return candidate;
                 }
             }
+            // istanbul ignore next
             story.error('Could not link ' + role + ' label ' + JSON.stringify(label) + ' at position ' + state.position);
+            // istanbul ignore next
             return label;
         };
     };

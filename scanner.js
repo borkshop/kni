@@ -21,9 +21,11 @@ function Scanner(generator) {
     this.itemStart = 0;
     this.lineNo = 0;
     this.columnNo = 0;
+    this.columnStart = 0;
     this.leading = true;
     this.leader = '';
     this.debug = debug;
+    Object.seal(this);
 }
 
 Scanner.prototype.next = function next(text) {

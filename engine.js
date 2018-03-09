@@ -45,6 +45,7 @@ Engine.prototype.continue = function _continue() {
         if (this.debug) {
             console.log(this.label + ' ' +  this.instruction.type + ' ' + describe(this.instruction));
         }
+        // istanbul ignore if
         if (this.instruction == null) {
             // TODO user error for non-console interaction.
             console.log('The label ' + JSON.stringify(this.label) + ' does not exist in this story');

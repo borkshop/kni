@@ -58,7 +58,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         return new Text(this.scope, space, text, this, this.rets);
     }  else if (type === 'token') {
         if (text === '{') {
-            return new Block(this.scope, new ThenExpect('token', '}', this), this.rets);
+            return new Block(this.scope, new ThenExpect('token', '}', this.scope, this), this.rets);
         } else if (text === '@') {
             return expression.label(this.scope, new Label(this.scope, this, this.rets));
         } else if (text === '->') {
@@ -83,9 +83,9 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
-            return new MaybeOption(this.scope, new ThenExpect('stop', '', this), this.rets, [], text);
+            return new MaybeOption(this.scope, new ThenExpect('stop', '', this.scope, this), this.rets, [], text);
         } else if (text === '-') {
-            return new MaybeThread(this.scope, new ThenExpect('stop', '', this), this.rets, [], [], ' ');
+            return new MaybeThread(this.scope, new ThenExpect('stop', '', this.scope, this), this.rets, [], [], ' ');
         } else if (text === '>') {
             var node = this.scope.create('ask', null, scanner.position());
             // tie off rets to the prompt.
@@ -93,9 +93,9 @@ Thread.prototype.next = function next(type, space, text, scanner) {
             // promote escs to rets, tying them off after the prompt.
             var escs = this.escs.slice();
             this.escs.length = 0;
-            return new Thread(this.scope.next(), new ThenExpect('stop', '', this), escs, []);
+            return new Thread(this.scope.next(), new ThenExpect('stop', '', this.scope, this), escs, []);
         } else { // if text === '!') {
-            return new Program(this.scope, new ThenExpect('stop', '', this), this.rets, []);
+            return new Program(this.scope, new ThenExpect('stop', '', this.scope, this), this.rets, []);
         }
     } else if (type === 'dash') {
         var node = this.scope.create('rule', null, scanner.position());
@@ -174,7 +174,7 @@ MaybeThread.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token') {
         if (text === '{') {
             return expression(this.scope,
-                new ThenExpect('token', '}',
+                new ThenExpect('token', '}', this.scope,
                     new ThreadCondition(this.scope, this.parent, this.rets, this.escs, this.skips)));
         }
     }
@@ -220,10 +220,10 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
     if (type === 'token') {
         if (text === '{') {
             return new OptionOperator(this.scope,
-                new ThenExpect('token', '}', this));
+                new ThenExpect('token', '}', this.scope, this));
         }
         if (text === '<>') {
-            return this.return('keyword', '', null, scanner);
+            return this.return('keyword', '');
         }
         if (text === '<') {
             return new Keyword(this);
@@ -301,7 +301,7 @@ function Keyword(parent) {
 
 Keyword.prototype.next = function next(type, space, text, scanner) {
     if (text === '>') {
-        return this.parent.return('keyword', this.keyword, null, scanner);
+        return this.parent.return('keyword', this.keyword);
     }
     this.keyword += (this.space && space) + text;
     this.space = ' ';
@@ -449,7 +449,7 @@ AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
         return this.option.thread(scanner, new AfterQorA(this.scope, this, this.rets, this.option));
     } else {
         this.scope.error('Expected brackets in option at ' + scanner.position());
-        return this.return(this.scope, this.rets, this.escs, scanner);
+        return this.return(this.scope, this.rets, [], scanner);
     }
 };
 
@@ -1008,24 +1008,28 @@ ExpectExpression.prototype.return = function _return(right, scanner) {
     return this.parent.return(this.scope.next(), [node], this.escs, scanner);
 };
 
-function ThenExpect(expect, text, parent) {
+function ThenExpect(expect, text, scope, parent) {
     this.expect = expect;
     this.text = text;
     this.parent = parent;
+    this.scope = scope;
     Object.freeze(this);
 }
 
-ThenExpect.prototype.return = function _return(scope, rets, escs, scanner) {
-    return new Expect(this.expect, this.text, scope, this.parent, rets, escs);
+ThenExpect.prototype.return = function _return() {
+    var args = [];
+    for (var i = 0; i < arguments.length; i++) {
+        args.push(arguments[i]);
+    }
+    return new Expect(this.expect, this.text, this.scope, this.parent, args);
 };
 
-function Expect(expect, text, scope, parent, rets, escs) {
+function Expect(expect, text, scope, parent, args) {
     this.expect = expect;
     this.text = text;
     this.scope = scope;
     this.parent = parent;
-    this.rets = rets;
-    this.escs = escs;
+    this.args = args;
     Object.freeze(this);
 }
 
@@ -1034,24 +1038,13 @@ Expect.prototype.next = function next(type, space, text, scanner) {
     if (type !== this.expect || text !== this.text) {
         this.scope.error('Expected ' + this.expect + '/' + this.text + ', got ' + type + '/' + text + ' at ' + scanner.position());
     }
-    return this.parent.return(this.scope, this.rets, this.escs, scanner);
+    return this.parent.return.apply(this.parent, this.args);
 };
-
-function tie(ends, name) {
-    for (var i = 0; i < ends.length; i++) {
-        var end = ends[i];
-        if (end.type === 'branch') {
-            end.node.branch = name;
-        } else {
-            end.next = name;
-        }
-    }
-}
 
 function Scope(story, path, base) {
     this.story = story;
     this.path = path;
-    this.base = base || [];
+    this.base = base;
     Object.seal(this);
 }
 
@@ -1077,10 +1070,6 @@ Scope.prototype.firstChild = function firstChild() {
 
 Scope.prototype.label = function label(label) {
     return new Scope(this.story, this.base.concat([label, 0]), this.base);
-};
-
-Scope.prototype.variable = function variable(variable) {
-    return this.base.concat([variable]).join('.');
 };
 
 Scope.prototype.tie = function _tie(nodes) {

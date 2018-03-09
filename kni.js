@@ -68,6 +68,9 @@ function main() {
                 var ol = new OutlineLexer(il);
                 var s = new Scanner(ol);
 
+                // Kick off each file with a fresh paragraph.
+                p.next('token', '', '//', s);
+
                 if (config.debugParser) {
                     p.debug = true;
                     interactive = false;
