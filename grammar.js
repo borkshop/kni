@@ -243,6 +243,10 @@ MaybeOption.prototype.return = function _return(operator, expression, modifier, 
     if (operator === '?') {
         this.conditions.push(expression);
     }
+    if (operator === '=') {
+        this.conditions.push(['<>', expression, modifier]);
+        this.consequences.push([expression, modifier]);
+    }
     if (operator === 'keyword') {
         this.keywords[expression] = true;
     }
@@ -308,7 +312,7 @@ Keyword.prototype.next = function next(type, space, text, scanner) {
     return this;
 };
 
-// {+x}, {-x}, or {(x)}
+// {+x}, {-x}, {+n x}, {-n x}, {=n x} or simply {x}
 function OptionOperator(scope, parent) {
     this.scope = scope;
     this.parent = parent;
@@ -316,7 +320,7 @@ function OptionOperator(scope, parent) {
 }
 
 OptionOperator.prototype.next = function next(type, space, text, scanner) {
-    if (text === '+' || text === '-') {
+    if (text === '+' || text === '-' || text === '=') {
         return expression(this.scope,
             new OptionArgument(this.scope, this.parent, text));
     // istanbul ignore else

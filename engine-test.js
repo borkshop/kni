@@ -10,6 +10,7 @@ function main() {
     test('examples/archery.kni', 'tests/pardon.1');
     test('examples/ascii.kni', 'tests/ascii.1');
     test('examples/bottles.kni', 'tests/bottles.1');
+    test('examples/calc.kni', 'tests/calc.1');
     test('examples/coin.kni', 'tests/coin.1');
     test('examples/coin.kni', 'tests/coin.2');
     test('examples/distribution.kni', 'tests/distribution.1');
@@ -56,6 +57,7 @@ function main() {
     test('tests/steady.kni', 'tests/steady.1');
     test('tests/sub-optional.kni', 'tests/sub-optional.1');
     test('tests/switch-list.kni', 'tests/switch-list.1');
+    test('tests/toggle.kni', 'tests/toggle.1');
 
     var asked = false;
     var ended = false;

@@ -716,6 +716,41 @@ using braces.
 {(point.{x}.{y})}
 ```
 
+## Options with Conditions and Consequences
+
+Options can have conditions and consequences.
+Some operators imply both.
+
+```
+! n = 0
+
+@Calc
+Number: {(n)}
++ {+1n} {n<>0} [Add one. ]
++ {-1n} {n<>1} [Sub one. ]
++ {=0n} [Set zero. ]
++ {=1n} [Set one. ]
+>
+->Calc
+```
+
+The `{+n}` notation means "add one to n if this option is chosen".
+
+The `{+m n}` notation means "add m to n if this option is chosen".
+
+The `{-n}` notation means "subtract one from n if this option is chosen" and
+also "hide this option if n is zero or less".
+
+The `{-m n}` notation means "subtract m from n if this option is chosen" and
+also "hide this option if n is m or less".
+
+The `{=m n}` notation means "set n to m if this option is chosen" and also
+"hide this option if n is already m".
+
+Other expressions are merely conditions, like `{n <> m}` means "hide this
+option only if n is equal to m", or rather "show this option if n and m
+differ".
+
 ## Typographic Helpers
 
 Kni scripts are UTF-8, but when you have to make do with ASCII, Kni

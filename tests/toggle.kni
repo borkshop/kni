@@ -1,0 +1,4 @@
++ {=1toggle} [Foo ]
++ {=0toggle} [Bar ]
+>
+->start
