@@ -632,12 +632,18 @@ function Label(scope, parent, rets) {
 Label.prototype.return = function _return(expression, scanner) {
     if (expression[0] === 'get') {
         var label = expression[1];
-        var scope = this.scope.label(label);
-        // place-holder goto thunk
-        var node = scope.create('goto', 'RET', scanner.position());
-        this.scope.tie(this.rets);
-        // rets also forwarded so they can be tied off if the goto is replaced.
-        return this.parent.return(scope, this.rets.concat([node]), [], scanner);
+        if (label === '...') {
+            var node = this.scope.create('goto', 'RET', scanner.position());
+            this.scope.tie(this.rets);
+            return new Thread(this.scope, new Loop(this.scope, this.parent), [node], []);
+        } else {
+            var scope = this.scope.label(label);
+            // place-holder goto thunk
+            var node = scope.create('goto', 'RET', scanner.position());
+            this.scope.tie(this.rets);
+            // rets also forwarded so they can be tied off if the goto is replaced.
+            return this.parent.return(scope, this.rets.concat([node]), [], scanner);
+        }
     // istanbul ignore else
     } else if (expression[0] === 'call') {
         var label = expression[1][1];
@@ -661,6 +667,20 @@ Label.prototype.return = function _return(expression, scanner) {
         this.scope.error('Expected label after @, got ' + JSON.stringify(expression) + ' at ' + scanner.position());
         return new Thread(this.scope, this.parent, this.rets, []);
     }
+};
+
+function Loop(scope, parent) {
+    this.scope = scope;
+    this.parent = parent;
+    this.label = scope.name();
+    Object.freeze(this);
+}
+
+Loop.prototype.return = function _return(scope, rets, escs, scanner) {
+    // tie back rets
+    this.scope.tie(rets);
+    // TODO tie back escs
+    return this.parent.return(scope, [], [], scanner);
 };
 
 function ConcludeProcedure(scope, parent, rets) {

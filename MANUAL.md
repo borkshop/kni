@@ -363,6 +363,19 @@ You take one down and pass it around. {-bottle} /
 {(bottle)||->refrain}
 ```
 
+## Loops
+
+The special label `@...` begins a loop. Everything that follows in that level
+of indentation will return to this label after the level ends.
+
+```
+Do a loop: @...
+
++ [You c[C]ontinue... ]
++ [You e[E]xit the loop. ] <-
+>
+```
+
 ## Calling a procedure
 
 A procedure is a label that can be called and returned from.
@@ -437,7 +450,7 @@ The story can read or modify this variable.
 + Tired of cherries. {=0 fruit}
 ```
 
-### Loops
+### Alternation
 
 ```
 When you emerge, {&day|night} greets you, with the {&sun|moon} overhead.

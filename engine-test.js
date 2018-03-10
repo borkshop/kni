@@ -24,6 +24,7 @@ function main() {
     test('examples/hilo.kni', 'tests/hilo.1');
     test('examples/liftoff.kni', 'tests/liftoff.1');
     test('examples/list.kni', 'tests/list.1');
+    test('examples/loop.kni', 'tests/loop.1');
     test('examples/nominal.kni', 'tests/nominal.1');
     test('examples/option-styles.kni', 'tests/option-styles.1');
     test('examples/paint.kni', 'tests/paint.1');
@@ -34,6 +35,7 @@ function main() {
 
     test('tests/brief.kni', 'tests/brief.1');
     test('tests/choices.kni', 'tests/choices.1');
+    test('tests/for-loop.kni', 'tests/for-loop.1');
     test('tests/functions.kni', 'tests/functions.1');
     test('tests/gradient.kni', 'tests/gradient.1');
     test('tests/indirect.kni', 'tests/indirect.1');
@@ -45,7 +47,6 @@ function main() {
     test('tests/keywords.kni', 'tests/keywords.4');
     test('tests/keywords.kni', 'tests/keywords.5');
     test('tests/literals.kni', 'tests/literals.1');
-    test('tests/loop.kni', 'tests/loop.1');
     test('tests/math.kni', 'tests/math.1');
     test('tests/no-option.kni', 'tests/no-option.1');
     test('tests/number.kni', 'tests/number.1');
