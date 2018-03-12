@@ -1,0 +1,1 @@
+tests/errors/dynamic-parameter.kni:1:1: Expected parameter name but got expression.

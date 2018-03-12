@@ -1,0 +1,1 @@
+tests/errors/dynamic-goto.kni:2:1: Expected label after goto arrow but got expression.

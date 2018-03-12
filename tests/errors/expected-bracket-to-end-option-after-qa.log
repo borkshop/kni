@@ -1,0 +1,1 @@
+tests/errors/expected-bracket-to-end-option-after-qa.kni:2:3: Expected "]" to end option but got to the end of the block.

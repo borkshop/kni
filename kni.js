@@ -41,6 +41,14 @@ function main() {
 
         var interactive = true;
 
+        var out = process.stdout;
+        if (config.transcript === process.stdout) {
+            config.transcript = null;
+        }
+        if (config.transcript) {
+            out = tee(config.transcript, out);
+        }
+
         var states;
         if (config.fromJson) {
             states = JSON.parse(knicript);
@@ -66,7 +74,7 @@ function main() {
                 var p = new Parser(grammar.start(story, path, base));
                 var il = new InlineLexer(p);
                 var ol = new OutlineLexer(il);
-                var s = new Scanner(ol);
+                var s = new Scanner(ol, kniscripts[i].stream.path);
 
                 // Kick off each file with a fresh paragraph.
                 p.next('token', '', '//', s);
@@ -96,7 +104,11 @@ function main() {
 
             states = story.states;
             if (story.errors.length) {
-                dump(story.errors);
+                dump(story.errors, process.stderr);
+                if (config.transcript != null) {
+                    dump(story.errors, config.transcript);
+                }
+                process.exitCode = -1;
                 return;
             }
         }
@@ -119,16 +131,7 @@ function main() {
         }
 
         var randomer = xorshift;
-        var out = process.stdout;
-        var transcript;
 
-        if (config.transcript === process.stdout) {
-            config.transcript = null;
-        }
-
-        if (config.transcript) {
-            out = tee(config.transcript, out);
-        }
         if (config.transcript || config.seed) {
             // I rolled 4d64k this morning.
             randomer = new xorshift.constructor([
@@ -143,7 +146,7 @@ function main() {
             read(config.expected, function onTypescript(err, typescript) {
                 if (err) {
                     console.error(err.message);
-                    process.exit(-1);
+                    process.exitCode = -1;
                     return;
                 }
                 test(kniscript, typescript);
@@ -170,7 +173,8 @@ function main() {
                 read(config.waypoint, function onWaypoint(err, waypoint) {
                     if (err) {
                         console.error(err.message);
-                        process.exit(-1);
+                        process.exitCode = -1;
+                        return;
                     }
                     waypoint = JSON.parse(waypoint);
                     engine.resume(waypoint);
@@ -303,11 +307,10 @@ function serial(array, eachback, callback) {
     }
 }
 
-function dump(errors) {
+function dump(errors, writer) {
     for (var i = 0; i < errors.length; i++) {
-        console.error(errors[i]);
+        writer.write(errors[i] + '\n');
     }
-    process.exit(-1);
 }
 
 main();

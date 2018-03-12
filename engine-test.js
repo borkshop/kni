@@ -6,6 +6,7 @@ var verify = require('./verify');
 function main() {
     test('hello.kni', 'tests/hello.1');
 
+    // sorted
     test('examples/archery.kni', 'tests/archery.1');
     test('examples/archery.kni', 'tests/pardon.1');
     test('examples/ascii.kni', 'tests/ascii.1');
@@ -33,8 +34,10 @@ function main() {
     test('examples/subroutine.kni', 'tests/subroutine.2');
     test('examples/tree.kni', 'tests/tree.1');
 
+    // sorted
     test('tests/brief.kni', 'tests/brief.1');
     test('tests/choices.kni', 'tests/choices.1');
+    test('tests/flag.kni', 'tests/flag.1');
     test('tests/for-loop.kni', 'tests/for-loop.1');
     test('tests/functions.kni', 'tests/functions.1');
     test('tests/gradient.kni', 'tests/gradient.1');
@@ -60,6 +63,18 @@ function main() {
     test('tests/sub-optional.kni', 'tests/sub-optional.1');
     test('tests/switch-list.kni', 'tests/switch-list.1');
     test('tests/toggle.kni', 'tests/toggle.1');
+
+    // sorted
+    test('tests/errors/dynamic-goto.kni', 'tests/errors/dynamic-goto.log');
+    test('tests/errors/dynamic-label.kni', 'tests/errors/dynamic-label.log');
+    test('tests/errors/dynamic-parameter.kni', 'tests/errors/dynamic-parameter.log');
+    test('tests/errors/expected-after-brace-paren-expression.kni', 'tests/errors/expected-after-brace-paren-expression.log');
+    test('tests/errors/expected-bracket-to-end-option-after-qa.kni', 'tests/errors/expected-bracket-to-end-option-after-qa.log');
+    test('tests/errors/expected-bracket-to-end-option.kni', 'tests/errors/expected-bracket-to-end-option.log');
+    test('tests/errors/expected-brackets-in-option-but-got-end-of-block.kni', 'tests/errors/expected-brackets-in-option-but-got-end-of-block.log');
+    test('tests/errors/unterminated-brace-indented.kni', 'tests/errors/unterminated-brace-indented.log');
+    test('tests/errors/unterminated-brace.kni', 'tests/errors/unterminated-brace.log');
+    test('tests/errors/unterminated-bracket.kni', 'tests/errors/unterminated-bracket.log');
 
     var asked = false;
     var ended = false;
@@ -105,7 +120,7 @@ function main() {
 function test(kniscript, transcript, handler) {
     var kni = fs.readFileSync(kniscript, 'utf8');
     var trans = fs.readFileSync(transcript, 'utf8');
-    var result = verify(kni, trans, handler);
+    var result = verify(kni, trans, handler, kniscript);
 
     // istanbul ignore if
     if (!result.pass) {

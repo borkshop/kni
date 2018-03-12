@@ -1,0 +1,1 @@
+tests/errors/unterminated-brace.kni:2:1: Expected "}" but got to the end of the block.

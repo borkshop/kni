@@ -13,8 +13,9 @@ var debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
 
 module.exports = Scanner;
 
-function Scanner(generator) {
+function Scanner(generator, fileName) {
     this.generator = generator;
+    this.fileName = fileName || '-';
     this.indent = 0;
     this.lineStart = 0;
     this.indentStart = 0;
@@ -75,6 +76,9 @@ Scanner.prototype.next = function next(text) {
         }
     }
 
+    // TODO To exercise the following block, you need a file with no final
+    // newline.
+    // istanbul ignore if
     if (!this.leading) {
         this.generator.next(text.slice(this.indentStart, i), this);
     }
@@ -98,7 +102,7 @@ Scanner.prototype.return = function _return() {
 
 // istanbul ignore next
 Scanner.prototype.position = function position() {
-    return (this.lineNo + 1) + ':' + (this.columnStart + 1);
+    return this.fileName + ':' + (this.lineNo + 1) + ':' + (this.columnStart + 1);
 };
 
 function nextTabStop(columnNo) {

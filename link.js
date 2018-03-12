@@ -10,6 +10,9 @@ function link(story) {
 
         var link = linker(story, label, state);
 
+        if (state.label != null) {
+            state.label = link('label')(state.label);
+        }
         if (state.next != null) {
             state.next = link('next')(state.next);
         }

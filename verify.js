@@ -14,7 +14,7 @@ var link = require('./link');
 
 module.exports = verify;
 
-function verify(kni, trans, handler) {
+function verify(kni, trans, handler, kniscript) {
     var lines = trans.split('\n');
 
     // filter the transcript for given answers
@@ -34,7 +34,7 @@ function verify(kni, trans, handler) {
     var p = new Parser(grammar.start(story, path, base));
     var il = new InlineLexer(p);
     var ol = new OutlineLexer(il);
-    var s = new Scanner(ol);
+    var s = new Scanner(ol, kniscript);
 
     s.next(kni);
     s.return();
@@ -43,13 +43,26 @@ function verify(kni, trans, handler) {
 
     // istanbul ignore if
     if (story.errors.length) {
+        var errors = '';
+        for (var i = 0; i < story.errors.length; i++) {
+            errors += story.errors[i] + '\n';
+        }
+
+        if (errors === trans) {
+            return {
+                pass: true,
+                expected: 'errors',
+                actual: 'errors',
+            };
+        }
+
         for (var i = 0; i < story.errors.length; i++) {
             console.error(story.errors[i]);
         }
         return {
             pass: false,
-            expected: 'no errors',
-            actual: 'errors'
+            expected: trans,
+            actual: errors,
         };
     }
 

@@ -1,4 +1,4 @@
-+ {=1toggle} [Foo ]
-+ {=0toggle} [Bar ]
++ {!toggle} [Foo ]
++ {?toggle} [Bar ]
 >
 ->start
