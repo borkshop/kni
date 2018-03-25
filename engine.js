@@ -439,6 +439,14 @@ Engine.prototype.$switch = function $switch() {
     return this.gothrough(nexts, this.instruction.next);
 };
 
+Engine.prototype.$cue = function $cue() {
+    if (this.handler != null && this.handler.cue != null) {
+        return this.handler.cue(this.instruction.cue, this.instruction.next, this);
+    } else {
+        return this.goto(this.instruction.next);
+    }
+};
+
 function weigh(scope, randomer, expressions, weights) {
     var weight = 0;
     for (var i = 0; i < expressions.length; i++) {

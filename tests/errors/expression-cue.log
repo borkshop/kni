@@ -1,0 +1,3 @@
+tests/errors/expression-cue.kni:1:1: Expected name but got "?"
+tests/errors/expression-cue.kni:2:1: Expected ">" but got to the end of the block.
+tests/errors/expression-cue.kni:2:1: Expected cue.

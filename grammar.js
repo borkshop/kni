@@ -79,6 +79,8 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '{"' || text === '{\'' || text === '"}' || text === '\'}') {
             return new Text(this.scope, space, '', this, this.rets)
                 .next(type, '', text, scanner);
+        } else if (text === '<') {
+            return label(this.scope, new ThenExpect('token', '>', new Cue(this, this.rets, this.escs)));
         }
     } else if (type === 'start') {
         if (text === '+' || text === '*') {
@@ -220,7 +222,7 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
             return new OptionOperator(this.scope,
                 new ThenExpect('token', '}', this));
         }
-        // Recognize the inequality token as individual tag tokens with an
+        // Recognize the inequality token as individual keyword tokens with an
         // empty string amid them in this context.
         if (text === '<>') {
             return this.return(this.scope, 'keyword', '');
@@ -712,6 +714,25 @@ Goto.prototype.return = function _return(scope, args, scanner) {
     } else {
         scope.error(scanner.position() + ': Expected label after goto arrow but got expression.');
         return new Thread(scope, this.parent, this.rets, []);
+    }
+};
+
+function Cue(parent, rets, escs) {
+    this.parent = parent;
+    this.rets = rets;
+    this.escs = escs;
+    Object.freeze(this);
+}
+
+Cue.prototype.return = function _return(scope, expression, scanner) {
+    if (expression.length === 0 || expression[0] !== 'get') {
+        scope.error(scanner.position() + ': Expected cue.');
+        return this.parent.return(scope, this.rets, this.escs, scanner);
+    } else {
+        var cue = expression[1];
+        var node = scope.create('cue', cue, scanner.position());
+        scope.tie(this.rets);
+        return this.parent.return(scope.next(), [node], this.escs, scanner);
     }
 };
 
@@ -1381,8 +1402,8 @@ GetStaticVariable.prototype.next = function next(type, space, text, scanner) {
     if (this.literals.length === 0 && this.expressions.length === 0) {
         // istanbul ignore if
         if (this.literal === '') {
-            this.scope.error(scanner.position() + ': Expected variable but got ' + tokenName(type, + text));
-            state = this.parent.return(this.scope, [], scanner);
+            this.scope.error(scanner.position() + ': Expected name but got ' + tokenName(type, text));
+            return this.parent.return(this.scope, [], scanner);
         } else {
             state = this.parent.return(this.scope, ['get', this.literal], scanner);
         }

@@ -37,6 +37,7 @@ function main() {
     // sorted
     test('tests/brief.kni', 'tests/brief.1');
     test('tests/choices.kni', 'tests/choices.1');
+    test('tests/cues.kni', 'tests/cues.0'); // Exercises cues without a handler.
     test('tests/flag.kni', 'tests/flag.1');
     test('tests/for-loop.kni', 'tests/for-loop.1');
     test('tests/functions.kni', 'tests/functions.1');
@@ -72,6 +73,8 @@ function main() {
     test('tests/errors/expected-bracket-to-end-option-after-qa.kni', 'tests/errors/expected-bracket-to-end-option-after-qa.log');
     test('tests/errors/expected-bracket-to-end-option.kni', 'tests/errors/expected-bracket-to-end-option.log');
     test('tests/errors/expected-brackets-in-option-but-got-end-of-block.kni', 'tests/errors/expected-brackets-in-option-but-got-end-of-block.log');
+    test('tests/errors/expression-cue.kni', 'tests/errors/expression-cue.log');
+    test('tests/errors/invalid-cue.kni', 'tests/errors/invalid-cue.log');
     test('tests/errors/unterminated-brace-indented.kni', 'tests/errors/unterminated-brace-indented.log');
     test('tests/errors/unterminated-brace.kni', 'tests/errors/unterminated-brace.log');
     test('tests/errors/unterminated-bracket.kni', 'tests/errors/unterminated-bracket.log');
@@ -115,6 +118,29 @@ function main() {
 
     process.exitCode |= !ended;
     process.exitCode |= !asked;
+
+    var cued;
+    test('tests/cues.kni', 'tests/cues.1', {
+        cue: function (cue, next, engine) {
+            cued = cue;
+            return engine.goto(next);
+        },
+    });
+    process.exitCode |= cued !== 'Cue';
+
+    test('tests/cues.kni', 'tests/cues.2', {
+        cue: function (cue, next, engine) {
+            engine.render.paragraph();
+            engine.render.write('', 'Then there was a cue.', '');
+            engine.render.paragraph();
+            return engine.goto(next);
+        },
+    });
+
+    // istanbul ignore if
+    if (process.exitCode) {
+        console.error('Test failed.');
+    }
 }
 
 function test(kniscript, transcript, handler) {

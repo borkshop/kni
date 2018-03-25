@@ -1,0 +1,1 @@
+tests/errors/invalid-cue.kni:1:1: Expected ">" but got "'".

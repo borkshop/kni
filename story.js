@@ -84,6 +84,15 @@ function Call(label) {
     Object.seal(this);
 }
 
+constructors.cue = Cue;
+function Cue(cue) {
+    this.type = 'cue';
+    this.cue = cue;
+    this.next = 'RET';
+    this.position = null;
+    Object.seal(this);
+}
+
 constructors.def = Def;
 function Def(locals) {
     this.type = 'def';

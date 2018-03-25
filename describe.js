@@ -55,6 +55,10 @@ types.move = function move(node) {
     return S(node.source) + ' -> ' + S(node.target);
 };
 
+types.cue = function cue(node) {
+    return node.cue;
+};
+
 types.br = function br(node) {
     return '';
 };
