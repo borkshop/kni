@@ -696,7 +696,7 @@ ConcludeProcedure.prototype.return = function _return(scope, rets, escs, scanner
     return this.parent.return(this.scope, this.rets, [], scanner);
 };
 
-function Goto(parent, rets, escs) {
+function Goto(parent, rets) {
     this.parent = parent;
     this.rets = rets;
 }
