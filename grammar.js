@@ -1186,8 +1186,8 @@ function Value(scope, parent) {
 }
 
 Value.prototype.next = function next(type, space, text, scanner) {
-    if (type === 'number') {
-        return this.parent.return(this.scope, ['val', +text], scanner);
+    if (type === 'number' || type === 'string') {
+        return this.parent.return(this.scope, ['val', type === 'number'? +text : text], scanner);
     } else if (text === '(') {
         return expression(this.scope, new Open(this.parent));
     } else if (text === '{') {

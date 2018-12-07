@@ -61,6 +61,7 @@ function main() {
     test('tests/rule.kni', 'tests/rule.1');
     test('tests/sample.kni', 'tests/sample.1');
     test('tests/steady.kni', 'tests/steady.1');
+    test('tests/string.kni', 'tests/string.1');
     test('tests/sub-optional.kni', 'tests/sub-optional.1');
     test('tests/switch-list.kni', 'tests/switch-list.1');
     test('tests/toggle.kni', 'tests/toggle.1');

@@ -293,3 +293,37 @@ test([
     ' ', 'STOP',
     ' ', 'STOP'
 ]);
+
+test(['! var="a \'hello\' variable"'], [
+  ' ',
+  'START',
+  '!',
+  'var',
+  'SYMBOL',
+  '=',
+  'STRING',
+  'a \'hello\' variable',
+  ' ',
+  'STOP',
+  ' ',
+  'STOP',
+  ' ',
+  'STOP'
+]);
+
+test(['! var=\'a hello \\nvariable\''], [
+  ' ',
+  'START',
+  '!',
+  'var',
+  'SYMBOL',
+  '=',
+  'STRING',
+  'a hello \nvariable',
+  ' ',
+  'STOP',
+  ' ',
+  'STOP',
+  ' ',
+  'STOP'
+]);

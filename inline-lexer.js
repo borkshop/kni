@@ -112,6 +112,26 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             }
             this.accumulator += c;
             this.type = 'alphanum';
+        } else if (scanner.leader === '!' && (c === "'" || c === '"')) {
+            this.type = 'string';
+            i++;
+            while (i < text.length) {
+              d = text[i];
+              if (d === '\\' && ++i < text.length) {
+                d = JSON.parse('"\\'+ text[i]+'"');
+              } else if (d === c) {
+                i++;
+                break;
+              }
+              this.accumulator += d;
+              i++;
+            }
+            // istanbul ignore if
+            if (d !== c) {
+              new TypeError(scanner.position() + ': expected symbol "'+ c + '" for string type');
+            }
+            this.flush(scanner);
+            // return this;
         } else {
             this.flush(scanner);
             this.generator.next(this.type, this.space, c, scanner);

@@ -1,0 +1,3 @@
+! bot.name = "Jack John"
+
+My name is {(bot.name)}
