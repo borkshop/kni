@@ -327,3 +327,20 @@ test(['! var=\'a hello \\nvariable\''], [
   ' ',
   'STOP'
 ]);
+
+test(['! var=\'a \\\'hello\\\' variable\''], [
+  ' ',
+  'START',
+  '!',
+  'var',
+  'SYMBOL',
+  '=',
+  'STRING',
+  'a \'hello\' variable',
+  ' ',
+  'STOP',
+  ' ',
+  'STOP',
+  ' ',
+  'STOP'
+]);

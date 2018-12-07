@@ -118,7 +118,10 @@ InlineLexer.prototype.next = function next(type, text, scanner) {
             while (i < text.length) {
               d = text[i];
               if (d === '\\' && ++i < text.length) {
-                d = JSON.parse('"\\'+ text[i]+'"');
+                d = text[i];
+                if (d !== "'" && d !== '"') {
+                  d = JSON.parse('"\\'+ d+'"');
+                }
               } else if (d === c) {
                 i++;
                 break;
