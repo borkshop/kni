@@ -88,13 +88,12 @@ Thread.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '-') {
             return new MaybeThread(this.scope, new ThenExpect('stop', '', this), this.rets, [], [], ' ');
         } else if (text === '>') {
-            var node = this.scope.create('ask', null, scanner.position());
             // tie off rets to the prompt.
             this.scope.tie(this.rets);
             // promote escs to rets, tying them off after the prompt.
-            var escs = this.escs.slice();
+            var rets = this.escs.slice();
             this.escs.length = 0;
-            return new Thread(this.scope.next(), new ThenExpect('stop', '', this), escs, []);
+            return new Ask(this.scope, new ThenExpect('stop', '', this), rets, []);
         } else { // if text === '!') {
             return new Program(this.scope, new ThenExpect('stop', '', this), this.rets, []);
         }
@@ -985,6 +984,45 @@ MaybeWeightedCase.prototype.next = function next(type, space, text, scanner) {
 
 MaybeWeightedCase.prototype.return = function _return(scope, args, scanner) {
     return this.parent.case(args, scanner);
+};
+
+function Ask(scope, parent, rets, escs) {
+    this.scope = scope;
+    this.parent = parent;
+    this.rets = rets;
+    this.escs = escs;
+    Object.freeze(this);
+}
+
+Ask.prototype.next = function next(type, space, text, scanner) {
+    if (type == 'alphanum') {
+        return new Read(text, this.scope, this.parent, this.rets, this.escs);
+    }
+    var node = this.scope.create('ask', null, scanner.position());
+    return new Thread(this.scope.next(), this.parent, this.rets, this.escs)
+        .next(type, space, text, scanner);
+};
+
+function Read(variable, scope, parent, rets, escs) {
+    this.variable = variable;
+    this.scope = scope;
+    this.parent = parent;
+    this.rets = rets;
+    this.escs = escs;
+    Object.freeze(this);
+}
+
+Read.prototype.next = function next(type, space, text, scanner) {
+    if (type == 'alphanum') {
+        return this.return(text, scanner);
+    }
+    return this.return(null, scanner).next(type, space, text, scanner);
+};
+
+Read.prototype.return = function _return(cue, scanner) {
+    var node = this.scope.create('read', this.variable, scanner.position());
+    node.cue = cue;
+    return new Thread(this.scope.next(), this.parent, this.rets.concat([node]), this.escs);
 };
 
 function Program(scope, parent, rets, escs) {

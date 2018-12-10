@@ -20,10 +20,10 @@ function evaluate(scope, randomer, args) {
     } else if (name === 'val') {
         return args[1];
     } else if (name === 'get') {
-        return +scope.get(args[1]);
+        return scope.get(args[1]);
     // istanbul ignore else
     } else if (name === 'var') {
-        return +scope.get(nominate(scope, randomer, args));
+        return scope.get(nominate(scope, randomer, args));
     } else if (name === 'call') {
         var name = args[1][1];
         var f = functions[name];

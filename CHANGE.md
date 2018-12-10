@@ -1,22 +1,37 @@
 
-# unreleased
+# Unreleased
 
-This version adds support for compiling stories that span multiple files.
+- This version adds support for compiling stories that span multiple files.
 
-Pass all of these files to the `kni` command and it will weave them into a
-single story.
-Each file will begin with a label that is the name of the file, like `@archery`
-for `path/to/archery.kni`.
-The story can start anywhere you put your `@start` label, or in a file called
-`start.kni`.
+  Pass all of these files to the `kni` command and it will weave them into a
+  single story.
+  Each file will begin with a label that is the name of the file, like
+  `@archery` for `path/to/archery.kni`.
+  The story can start anywhere you put your `@start` label, or in a file called
+  `start.kni`.
 
-This version also merges support for hyperlinks, which was introduced in minor
-version 2.3.0 and first appears in the version 3 train here.
-The language allows hyperlinks to be expressed and passes them through as
-unaltered text to the rendering engine.
-This comes with the recommendation that hyperlinks be expressed in stand-alone
-blocks like `{Example https://example.com}` and for the rendering engine to
-appreciate the entire block as a hyperlink instead of a span of text if it can.
+- This version also merges support for hyperlinks, which was introduced in
+  minor version 2.3.0 and first appears in the version 3 train here.
+  The language allows hyperlinks to be expressed and passes them through as
+  unaltered text to the rendering engine.
+  This comes with the recommendation that hyperlinks be expressed in
+  stand-alone blocks like `{Example https://example.com}` and for the rendering
+  engine to appreciate the entire block as a hyperlink instead of a span of
+  text if it can.
+
+- This version adds support for string input.
+
+  To read a string, add a variable name to a prompt line.
+
+  ```
+  What is your name?
+  > Name
+
+  We are very pleased to meet you, {(Name)}.
+  ```
+
+  The terminal implementation is ready.
+  The web implementation is not ready.
 
 # v3.0.0
 

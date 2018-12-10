@@ -31,6 +31,7 @@ function main() {
     test('examples/option-styles.kni', 'tests/option-styles.1');
     test('examples/paint.kni', 'tests/paint.1');
     test('examples/plane.kni', 'tests/plane.1');
+    test('examples/read.kni', 'tests/read.1');
     test('examples/subroutine.kni', 'tests/subroutine.1');
     test('examples/subroutine.kni', 'tests/subroutine.2');
     test('examples/tree.kni', 'tests/tree.1');
