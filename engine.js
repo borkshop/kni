@@ -144,7 +144,7 @@ Engine.prototype.ask = function ask() {
 
 Engine.prototype.read = function read() {
     this.display();
-    if (this.handler && this.handler.read) {
+    if (this.handler && this.handler.ask) {
         this.handler.ask(this);
     }
     this.dialog.ask(this.instruction.cue);
@@ -159,10 +159,9 @@ Engine.prototype.answer = function answer(text) {
         this.top.set(this.instruction.variable, text);
         this.render.clear();
         if (this.goto(this.instruction.next)) {
-            this.flush();
             this.continue();
-            return;
         }
+        return;
     }
     var choice = text - 1;
     if (choice >= 0 && choice < this.options.length) {

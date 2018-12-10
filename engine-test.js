@@ -82,6 +82,7 @@ function main() {
     test('tests/errors/unterminated-bracket.kni', 'tests/errors/unterminated-bracket.log');
 
     var asked = false;
+    var askedWithCue = false;
     var ended = false;
     test('tests/handler.kni', 'tests/handler.1', {
         moxy: 41,
@@ -98,16 +99,28 @@ function main() {
         },
         changed: function changed(name, value) {
             process.exitCode |= name !== 'moxy';
-            process.exitCode |= value != 42;
+            process.exitCode |= value != 42 && value !== 'mox' && value !== 'mux?';
         },
-        ask: function ask() {
-            asked = true;
+        ask: function ask(engine) {
+            if (engine.instruction.cue === 'moxy') {
+                askedWithCue = true;
+            } else {
+                asked = true;
+            }
         },
         answer: function answer(text) {
-            process.exitCode |= text !== '1';
+            // istanbul ignore if
+            if (text !== '1' && text !== 'mox' && text !== 'mux?') {
+                console.error('Handler test failed with unexpected answer: ', text);
+                process.exitCode = 1;
+            }
         },
         choice: function _choice(choice) {
-            process.exitCode |= choice.keywords[0] !== 'moxy';
+            // istanbul ignore if
+            if (choice.keywords[0] !== 'moxy') {
+                console.error('Handler test failed to call choice with moxy keyword');
+                process.exitCode = 1;
+            }
         },
         waypoint: function waypoint(state) {
         },
@@ -118,8 +131,21 @@ function main() {
         }
     });
 
-    process.exitCode |= !ended;
-    process.exitCode |= !asked;
+    // istanbul ignore if
+    if (!ended) {
+        console.error('Handle test failed to call end handler');
+        process.exitCode = 1;
+    }
+    // istanbul ignore if
+    if (!asked) {
+        console.error('Handle test failed to call ask handler without cue');
+        process.exitCode = 1;
+    }
+    // istanbul ignore if
+    if (!askedWithCue) {
+        console.error('Handle test failed to call ask handler with cue');
+        process.exitCode = 1;
+    }
 
     var cued;
     test('tests/cues.kni', 'tests/cues.1', {
@@ -128,7 +154,11 @@ function main() {
             return engine.goto(next);
         },
     });
-    process.exitCode |= cued !== 'Cue';
+    // istanbul ignore if
+    if (!cued) {
+        console.error('Handler test failed to cue');
+        process.exitCode = 1;
+    }
 
     test('tests/cues.kni', 'tests/cues.2', {
         cue: function (cue, next, engine) {
