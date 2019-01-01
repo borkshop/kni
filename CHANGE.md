@@ -10,6 +10,14 @@ for `path/to/archery.kni`.
 The story can start anywhere you put your `@start` label, or in a file called
 `start.kni`.
 
+This version also merges support for hyperlinks, which was introduced in minor
+version 2.3.0 and first appears in the version 3 train here.
+The language allows hyperlinks to be expressed and passes them through as
+unaltered text to the rendering engine.
+This comes with the recommendation that hyperlinks be expressed in stand-alone
+blocks like `{Example https://example.com}` and for the rendering engine to
+appreciate the entire block as a hyperlink instead of a span of text if it can.
+
 # v3.0.0
 
 This version allows options to be declared in subroutines.
@@ -47,6 +55,11 @@ URL anchor for HTML stories more compact.
 
 The command line mode now supports "back" and diagnostic commands "capture" and
 "replay".
+
+# v2.3.0 - 2018-01-01
+
+- Alter the language so hyperlinks to be expressed in scripts.
+  Paragraphs and line breaks must be padded with white space.
 
 # v2.2.2
 

@@ -23,6 +23,7 @@ function main() {
     test('examples/german.kni', 'tests/german.1');
     test('examples/hilbert.kni', 'tests/hilbert.1');
     test('examples/hilo.kni', 'tests/hilo.1');
+    test('examples/hyperlinks.kni', 'tests/hyperlinks.1');
     test('examples/liftoff.kni', 'tests/liftoff.1');
     test('examples/list.kni', 'tests/list.1');
     test('examples/loop.kni', 'tests/loop.1');
