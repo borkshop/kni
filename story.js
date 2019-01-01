@@ -161,8 +161,18 @@ function Rule() {
 }
 
 constructors.ask = Ask;
-function Ask(variable) {
+function Ask() {
     this.type = 'ask';
+    this.position = null;
+    Object.seal(this);
+}
+
+constructors.read = Read;
+function Read(variable) {
+    this.type = 'read';
+    this.next = 'RET';
+    this.variable = variable;
+    this.cue = null;
     this.position = null;
     Object.seal(this);
 }

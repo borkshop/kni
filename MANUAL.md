@@ -147,6 +147,35 @@ You are in a red room.
 There is a door and a bell.
 ```
 
+## Input
+
+A prompt with a variable name will fill a variable name with input from the user.
+
+```
+What is your name?
+> Name
+
+We are very pleased to meet you, {(Name)}.
+```
+
+The prompt may also indicate an input cue.
+Custom dialog implementations may use the cue to validate or convert the user text.
+
+```
+What is your name?
+> Name Name
+
+We are very pleased to meet you, {(Name)}.
+```
+
+Kni reserves the right to introduce builtin cues with any lowercase name for
+the default terminal and web modes.
+Some likely cues include "name" and "number".
+Kni may also add support for fallback cues, so cues would need to be ordered
+from first to last precedence.
+This would allow a script to use custom behavior while still functioning in an
+input mode that only supports "number", for example.
+
 ## Formulae
 
 Choices can also have conditions, components, and products.

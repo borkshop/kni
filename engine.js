@@ -142,11 +142,27 @@ Engine.prototype.ask = function ask() {
     }
 };
 
+Engine.prototype.read = function read() {
+    this.display();
+    if (this.handler && this.handler.ask) {
+        this.handler.ask(this);
+    }
+    this.dialog.ask(this.instruction.cue);
+};
+
 Engine.prototype.answer = function answer(text) {
     if (this.handler && this.handler.answer) {
         this.handler.answer(text, this);
     }
     this.render.flush();
+    if (this.instruction.type === 'read') {
+        this.top.set(this.instruction.variable, text);
+        this.render.clear();
+        if (this.goto(this.instruction.next)) {
+            this.continue();
+        }
+        return;
+    }
     var choice = text - 1;
     if (choice >= 0 && choice < this.options.length) {
         return this.choice(this.options[choice]);
@@ -475,6 +491,11 @@ function pop(array, index) {
 
 Engine.prototype.$ask = function $ask() {
     this.ask();
+    return false;
+};
+
+Engine.prototype.$read = function $read() {
+    this.read();
     return false;
 };
 

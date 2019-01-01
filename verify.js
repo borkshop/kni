@@ -115,7 +115,7 @@ FakeReadline.prototype.ask = function ask(question) {
     if (answer == null) {
         return;
     }
-    this.writer.write(((question || '> ') + answer).trim() + '\n');
+    this.writer.write(('> ' + answer).trim() + '\n');
 
     if (answer === 'quit') {
     } else if (answer === 'replay') {

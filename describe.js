@@ -87,6 +87,14 @@ types.ask = function ask(node) {
     return '';
 };
 
+types.read = function ask(node) {
+    var label = node.variable;
+    if (node.cue != null) {
+        label += ' ' + node.cue;
+    }
+    return label;
+};
+
 function S(args) {
     if (args[0] === 'val' || args[0] === 'get') {
         return args[1];

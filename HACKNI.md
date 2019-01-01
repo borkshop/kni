@@ -210,7 +210,12 @@ and resumes the engine with an answer when the user chooses.
 The command line dialog uses readline.
 
 The engine drives the dialog with the `ask` method.
-THe dialog calls back to the engine with the `answer` method.
+The `ask` method may receive a `cue` argument, indicating that the engine has
+requested an arbitrary string.
+The minimum implementation of a dialog should facilitate a text input and
+custom dialogs may provide different input modes depending on the cue.
+
+The dialog calls back to the engine with the `answer` method.
 
 
 ## Renderers

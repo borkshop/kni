@@ -22,8 +22,8 @@ function Readline(transcript, filename) {
     }
 }
 
-Readline.prototype.ask = function ask(question) {
-    this.readline.question(question || '> ', this.boundAnswer);
+Readline.prototype.ask = function ask(cue) {
+    this.readline.question((cue || '') + '> ', this.boundAnswer);
 };
 
 Readline.prototype.answer = function answer(text) {

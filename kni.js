@@ -177,10 +177,10 @@ function main() {
                         return;
                     }
                     waypoint = JSON.parse(waypoint);
-                    engine.resume(waypoint);
+                    engine.continue(waypoint);
                 });
             } else {
-                engine.resume();
+                engine.continue();
             }
         }
     }
