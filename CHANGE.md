@@ -1,4 +1,9 @@
 
+# v2.3.0
+
+- Alter the language so hyperlinks to be expressed in scripts.
+  Paragraphs and line breaks must be padded with white space.
+
 # v2.2.1
 
 - Fix missing file in package.json

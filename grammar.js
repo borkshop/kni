@@ -142,6 +142,12 @@ Text.prototype.next = function next(type, space, text, scanner) {
         } else if (text === '\'}') {
             this.text += space + '’';
             return this;
+        } else if ((text === '/' || text === '//') && space === '') {
+            // This is an exception to accommodate hyperlinks.
+            // Paragraphs and line breaks must be expressed by the / and //
+            // tokens and must be preceded by space.
+            this.text += text;
+            return this;
         }
     } else if (text === '--') {
         this.text += space + '–'; // en-dash
