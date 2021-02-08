@@ -1,5 +1,5 @@
 
-# v4.0.0-alpha2
+# v4.0.0
 
 - This version adds support for compiling stories that span multiple files.
 
