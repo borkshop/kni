@@ -29,6 +29,7 @@
     "expression.js",
     "grammar.js",
     "html.js",
+    "index.js",
     "inline-lexer.js",
     "kni.js",
     "kni.json",
