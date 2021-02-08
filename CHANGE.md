@@ -33,6 +33,16 @@
   The terminal implementation is ready.
   The web implementation is not ready.
 
+# v3.0.2
+
+Fixes the HTML generator by including the necessary missing files in the
+published package.
+
+# v3.0.1
+
+Attempts to fix a bug in the HTML generator, but fails.
+See version v3.0.2 or newer.
+
 # v3.0.0
 
 This version allows options to be declared in subroutines.
