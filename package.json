@@ -29,7 +29,6 @@
     "expression.js",
     "grammar.js",
     "html.js",
-    "index.js",
     "inline-lexer.js",
     "kni.js",
     "kni.json",
@@ -39,6 +38,8 @@
     "readline.js",
     "scanner.js",
     "story.js",
+    "template.js",
+    "translate-json.js",
     "variable.js",
     "verify.js",
     "wrapper.js"
