@@ -1,8 +1,11 @@
 
-# Next release
+# v4.0.2
 
 - Upgrades the xorshift random number generator.
-  This does invalidate any tests that dependend upon consistent sequences.
+  This does invalidate any tests that dependend upon consistent sequences,
+  which is a breaking change but one that fallows so quickly on the release of
+  version 4.0, there are no production scripts affected and this merely
+  increases the scope of change in upgrading to version 4.
 
 # v4.0.1
 
