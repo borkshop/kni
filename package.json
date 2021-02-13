@@ -11,7 +11,7 @@
     "system": "^1.0.6",
     "table": "^3.7.8",
     "tee": "^0.2.0",
-    "xorshift": "^0.2.0"
+    "xorshift": "^1.1.1"
   },
   "devDependencies": {
     "eslint": "^2.7.0",

@@ -1,4 +1,9 @@
 
+# Next release
+
+- Upgrades the xorshift random number generator.
+  This does invalidate any tests that dependend upon consistent sequences.
+
 # v4.0.1
 
 - Publishes missing modules.

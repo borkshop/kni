@@ -231,10 +231,10 @@ Engine.prototype.capture = function capture(closure) {
         stack,
         this.global.capture(),
         [
-            this.randomer._state0U,
-            this.randomer._state0L,
-            this.randomer._state1U,
-            this.randomer._state1L
+            this.randomer._state0U | 0,
+            this.randomer._state0L | 0,
+            this.randomer._state1U | 0,
+            this.randomer._state1L | 0
         ],
     ];
 };

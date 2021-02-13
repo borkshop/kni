@@ -1,4 +1,4 @@
-# This example produces 1000 values using a uniform random variable from the
+# This example produces 100 values using a uniform random variable from the
 # sum of a series of 3 samples from a uniform random variable in the half open
 # interval [0, 6).  The result is an attenuated random variable in the interval
 # [0, 18) with a mean of 9.
@@ -12,4 +12,4 @@
 # Generate a histogram with this at the command line:
 # > kni distribution.kni | sort -n | uniq -c
 
-{(3~6)}/{+i}{(i < 100)||->start}
+@start {(3~6)}/{+i}{(i < 100)||->start}
