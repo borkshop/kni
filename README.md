@@ -29,7 +29,7 @@ Use npm to install and run kni. The kni command line requires Node.js version 4
 or greater. Use a major version of kni explicitly.
 
 ```
-$ npm install kni@3
+$ npm install kni@4
 $ PATH=$(pwd)/node_modules/.bin:$PATH
 $ kni
 ```
