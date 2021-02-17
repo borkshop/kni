@@ -679,13 +679,15 @@ All of these operators produce 32 bit integers.
 Logical operators return 0 or 1.
 
 - unary `not`, `-`, `~`, `#`
-- `*`, `/`, `%`, `~`
+- `*`, `**`, `/`, `%`, `~`
 - `+`, `-`
 - ``<``, ``<=``, `==`, `!=`, `>=`, `>`, `#`.
 - `and`
 - `or`
 
 `*` is multiplication.
+
+`**` is exponentiation.
 
 `/` is division.
 
