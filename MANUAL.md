@@ -740,9 +740,9 @@ coordinates in a square of height and width 64k centered about the origin.
 
 Kni also supports a limited set of functions: `floor(x)`, `ceil(x)`,
 `round(x)`, `abs(x)`, `acos(t)`, `asin(t)`, `atan2(x, y)`, `exp(x, y)`,
-`log(x)` (natural log), `log(x, root)`, `max(n...)`, `min(n...)`, `pow(x, y)`,
+`log(x)` (natural log), `log(x, base)`, `max(n...)`, `min(n...)`, `pow(x, y)`,
 `sin(t)`, `tan(t)`, `sign(x)`, `mean(n...)`, `root(x)` (square root), `root(x,
-root)`, `distance(x1, y1, x2, y2)`, `manhattan(x1, y1, x2, y2)` (distance if
+n)`, `distance(x1, y1, x2, y2)`, `manhattan(x1, y1, x2, y2)` (distance if
 only travelling orthogonally to the x or y axes).
 
 ## Variables
