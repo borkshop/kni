@@ -180,7 +180,7 @@ var binary = {
     '#': function (x, y) {
         return hilbert(x, y);
     },
-    '~': function (x, y, scope, randomer) {
+    '~': function (x, y, _scope, randomer) {
         var r = 0;
         for (var i = 0; i < x; i++) {
             r += randomer.random() * y;
@@ -197,7 +197,7 @@ var unary = {
     '-': function (x) {
         return -x;
     },
-    '~': function (x, scope, randomer) {
+    '~': function (x, _scope, randomer) {
         return Math.floor(randomer.random() * x);
     },
     '#': function (x) {
