@@ -78,7 +78,7 @@ Was bedeudet, „Rindfleische{
 ## Indentation and threads
 
 Kni is a white-space significant language.
-All leading tabs and spaces, as well as bullet symbols, on a line contribute
+All leading tabs and spaces, as well as bullet symbols, on a line
 determine the initial column number of the line.
 Tabs advance the cursor to the next tab stop, which occur on every fourth
 column.
