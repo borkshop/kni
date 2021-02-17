@@ -184,7 +184,7 @@ An expression in braces serves as a condition, without which the option
 is not available.
 
 An expression with the plus `+` prefix denotes a product of the choice.
-Chosing this option increases the variable.
+Choosing this option increases the variable.
 
 An expression with the minus `-` prefix is a component that gets
 consumed with the option. So, `{-2coal}` would indicate that the option
@@ -428,7 +428,7 @@ in the callee scope.
 
 ## Returning or exiting
 
-In the above example, the greet procedure impicitly returns at the end of the thread.
+In the above example, the greet procedure implicitly returns at the end of the thread.
 The reverse arrow will skip to the end of a procedure.
 For the main narrative, this means exiting out the bottom of the file.
 Within a procedure, this means exiting out the end of the procedure.
@@ -539,10 +539,10 @@ Kni also supports "hypergeometric sampling", or rather "sampling without
 replacement".
 With the "^" prefix followed by an expression, you can determine the number
 of threads to sample from the alternation.
-Once a thread has been sampled, it is inelligible for the next sample, until
+Once a thread has been sampled, it is ineligible for the next sample, until
 the number of samples or the number of threads has been exhausted.
 Samples can also have weights.
-If the weight of a thread is 0, it is inelligible for sampling.
+If the weight of a thread is 0, it is ineligible for sampling.
 
 In the next example, there are threads, each catering to a different sense.
 Depending on the narrators perception of those senses, they may experience up
