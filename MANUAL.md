@@ -1,6 +1,6 @@
 # Kni Manual
 
-The following is an undigestable reference because I don’t yet have time to
+The following is an undigestable reference because I don't yet have time to
 write a graduated tutorial.
 
 Kni is a parser, compiler, and a runtime, all of which are accessible with
@@ -203,7 +203,7 @@ These primitives enable concise crafting formulae.
 
 Options, starting with plus or asterisk, have a special notation and use the
 additional symbols `[` and `]`.
-The form of this notation denotes text that is part of the narrator’s answer,
+The form of this notation denotes text that is part of the narrator's answer,
 question, and a part that is common to both.
 
 ```
@@ -310,7 +310,7 @@ Invisible options can also be chosen by keyword.
 2.  Choose orange or lemon.
 > grape
 
-You chose a grape, which wasn’t even on the menu.
+You chose a grape, which wasn't even on the menu.
 ```
 
 
@@ -727,7 +727,7 @@ mean value of 6, where 6 is the most likely variable, with diminishing
 probability toward 0 and 12. The D&D expression `2d6` is equivalent to
 `1~6 + 1~6 + 2` owing to the vagaries of math.
 
-I haven’t implemented simplified notation for die rolls, favoring the ~
+I haven't implemented simplified notation for die rolls, favoring the ~
 operator initially because it composes better mathematically.
 
 binary `#` produces the equivalent point on a Hilbert Curve for a coordinate X, Y.
