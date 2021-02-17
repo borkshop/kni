@@ -43,10 +43,10 @@ the generated narrative.
 
 ## Collapsed space
 
-For any two pieces of text, if there is any white space between the first text
-and the next symbol, or if there is any white space before the second
+For any two pieces of text, if there is any whitespace between the first text
+and the next symbol, or if there is any whitespace before the second
 text and the previous symbol, those pieces of text will be separated by
-white space in the generated narrative.
+whitespace in the generated narrative.
 
 The following lines are equivalent:
 
