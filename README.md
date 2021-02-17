@@ -131,12 +131,12 @@ The command line tool can also:
   $ kni -J hello.json
   ```
 
-- Kni can also produce a diagnostique view of a story. The first column is
+- Kni can also produce a diagnostic view of a story. The first column is
   the thread label, then the instruction type, a description of the
-  instruction, and an indicator for the next thread. In the absense of an
+  instruction, and an indicator for the next thread. In the absence of an
   indicator, the engine proceeds to the next instruction. A forward arrow
   indicates a jump and a backward arrow indicates a return to a calling thread,
-  a processsion to the next thread of a question or answer sequence, or an
+  a procession to the next thread of a question or answer sequence, or an
   exit.
 
   ```
