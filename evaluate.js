@@ -71,8 +71,8 @@ var functions = {
     tan: Math.tan,
 
     floor: Math.floor,
-    ceil: Math.floor,
-    round: Math.floor,
+    ceil: Math.ceil,
+    round: Math.round,
 
     sign: function (x) {
         if (x < 0) {
