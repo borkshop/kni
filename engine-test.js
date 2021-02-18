@@ -89,13 +89,13 @@ function main() {
         has: function has(name) {
             return name === 'moxy';
         },
-        get: function get(name) {
+        get: function get(_name) {
             return this.moxy;
         },
-        set: function set(name, value) {
+        set: function set(_name, value) {
             this.moxy = value;
         },
-        goto: function _goto(label) {
+        goto: function _goto(_label) {
         },
         changed: function changed(name, value) {
             process.exitCode |= name !== 'moxy';
@@ -122,7 +122,7 @@ function main() {
                 process.exitCode = 1;
             }
         },
-        waypoint: function waypoint(state) {
+        waypoint: function waypoint(_state) {
         },
         end: function end(engine) {
             engine.render.paragraph();
@@ -161,7 +161,7 @@ function main() {
     }
 
     test('tests/cues.kni', 'tests/cues.2', {
-        cue: function (cue, next, engine) {
+        cue: function (_cue, next, engine) {
             engine.render.paragraph();
             engine.render.write('', 'Then there was a cue.', '');
             engine.render.paragraph();

@@ -55,7 +55,7 @@ function Echo(expression) {
 }
 
 constructors.option = Option;
-function Option(label) {
+function Option(_label) {
     this.type = 'opt';
     this.question = [];
     this.answer = [];

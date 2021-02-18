@@ -17,7 +17,7 @@ function Stop(scope) {
 }
 
 // istanbul ignore next
-Stop.prototype.next = function next(type, space, text, scanner) {
+Stop.prototype.next = function next(type, _space, text, scanner) {
     // The only way to reach this method is for there to be a bug in the
     // outline lexer, or a bug in the grammar.
     if (type !== 'stop') {
@@ -26,7 +26,7 @@ Stop.prototype.next = function next(type, space, text, scanner) {
     return new End();
 };
 
-Stop.prototype.return = function _return(scope, rets, escs, scanner) {
+Stop.prototype.return = function _return(_scope, rets, escs, _scanner) {
     Scope.tie(rets, 'RET');
     Scope.tie(escs, 'ESC');
     return this;
@@ -37,7 +37,7 @@ function End() {
 }
 
 // istanbul ignore next
-End.prototype.next = function next(type, space, text, scanner) {
+End.prototype.next = function next(_type, _space, _text, _scanner) {
     return this;
 };
 
@@ -110,7 +110,7 @@ Thread.prototype.next = function next(type, space, text, scanner) {
     return new Text(this.scope, space, text, this, this.rets);
 };
 
-Thread.prototype.return = function _return(scope, rets, escs, scanner) {
+Thread.prototype.return = function _return(scope, rets, escs, _scanner) {
     // All rules above (in next) guarantee that this.rets has been passed to
     // any rule that might use them. If the rule fails to use them, they must
     // return them. However, escs are never passed to any rule that returns.
@@ -238,7 +238,7 @@ MaybeOption.prototype.next = function next(type, space, text, scanner) {
     return this.option(scanner).next(type, space, text, scanner);
 };
 
-MaybeOption.prototype.return = function _return(scope, operator, expression, modifier, scanner) {
+MaybeOption.prototype.return = function _return(_scope, operator, expression, modifier, _scanner) {
     if (operator === '+' || operator === '-' || operator === '!') {
         modifier = modifier || ['val', 1];
     }
@@ -316,7 +316,7 @@ function Keyword(scope, parent) {
     Object.seal(this);
 }
 
-Keyword.prototype.next = function next(type, space, text, scanner) {
+Keyword.prototype.next = function next(_type, space, text, _scanner) {
     if (text === '>') {
         return this.parent.return(this.scope, 'keyword', this.keyword);
     }
@@ -436,7 +436,7 @@ function OptionThread(scope, parent, rets, option, mode, Next) {
     Object.freeze(this);
 }
 
-OptionThread.prototype.return = function _return(scope, rets, escs, scanner) {
+OptionThread.prototype.return = function _return(scope, rets, escs, _scanner) {
     this.option.push(scope, this.mode);
     // TODO investigate whether we can consistently tie of received rets
     // instead of passing them forward to OptionThread, which consistently
@@ -457,7 +457,7 @@ function AfterInitialQA(scope, parent, rets, option) {
     Object.freeze(this);
 }
 
-AfterInitialQA.prototype.next = function next(type, space, text, scanner) {
+AfterInitialQA.prototype.next = function next(type, _space, text, scanner) {
     // istanbul ignore else
     if (type === 'token' && text === '[') {
         return this.option.thread(scanner, new AfterQorA(this.scope, this, this.rets, this.option));
@@ -508,7 +508,7 @@ function DecideQorA(scope, parent, rets, option) {
     Object.freeze(this);
 }
 
-DecideQorA.prototype.next = function next(type, space, text, scanner) {
+DecideQorA.prototype.next = function next(type, _space, text, scanner) {
     if (type === 'token' && text === '[') { // A
         this.option.push(this.scope, 'a');
         return this.option.thread(scanner,
@@ -542,7 +542,7 @@ function AfterQA(scope, parent, rets, option) {
     Object.freeze(this);
 }
 
-AfterQA.prototype.next = function next(type, space, text, scanner) {
+AfterQA.prototype.next = function next(type, _space, text, scanner) {
     if (type === 'token' && text === '[') {
         return this.option.thread(scanner,
             new OptionThread(this.scope, this, this.rets, this.option, 'q', ExpectFinalBracket));
@@ -554,7 +554,7 @@ AfterQA.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-AfterQA.prototype.return = function _return(scope, rets, escs, scanner) {
+AfterQA.prototype.return = function _return(_scope, rets, escs, scanner) {
     // TODO terminate returned scope
     // TODO no test exercises these escapes.
     Scope.tie(escs, 'ESC');
@@ -574,7 +574,7 @@ function AfterQorA(scope, parent, rets, option) {
 }
 
 // Just capture the path and proceed.
-AfterQorA.prototype.return = function _return(scope, rets, escs, scanner) {
+AfterQorA.prototype.return = function _return(scope, rets, escs, _scanner) {
     // TODO consider whether this could have been done earlier.
     Scope.tie(this.rets, 'RET');
     // TODO no test exercises these escapes.
@@ -604,7 +604,7 @@ ExpectFinalBracket.prototype.next = function next(type, space, text, scanner) {
 // After the closing bracket in an option], everything that remains is the last
 // node of the answer. After that thread has been submitted, we expect the
 // block to end.
-function AfterFinalA(scope, parent, rets, option) {
+function AfterFinalA(scope, parent, rets, _option) {
     this.scope = scope;
     this.parent = parent;
     this.rets = rets;
@@ -677,7 +677,7 @@ function Loop(scope, parent) {
     Object.freeze(this);
 }
 
-Loop.prototype.return = function _return(scope, rets, escs, scanner) {
+Loop.prototype.return = function _return(scope, rets, _escs, scanner) {
     // tie back rets
     this.scope.tie(rets);
     // TODO tie back escs
@@ -691,7 +691,7 @@ function ConcludeProcedure(scope, parent, rets) {
     Object.freeze(this);
 };
 
-ConcludeProcedure.prototype.return = function _return(scope, rets, escs, scanner) {
+ConcludeProcedure.prototype.return = function _return(_scope, rets, escs, scanner) {
     // After a procedure, connect prior rets.
     Scope.tie(rets, 'RET');
     // Dangling escs go to an escape instruction, to follow the jump path in
@@ -799,7 +799,7 @@ function SetBlock(parent, rets, op) {
     Object.freeze(this);
 }
 
-SetBlock.prototype.return = function _return(scope, expression, scanner) {
+SetBlock.prototype.return = function _return(scope, expression, _scanner) {
     return new MaybeSetVariable(scope, this.parent, this.rets, this.op, expression);
 };
 
@@ -833,7 +833,7 @@ MaybeSetVariable.prototype.set = function set(source, target, scanner) {
     return this.parent.return(this.scope.next(), [node], [], scanner);
 };
 
-MaybeSetVariable.prototype.return = function _return(scope, target, scanner) {
+MaybeSetVariable.prototype.return = function _return(_scope, target, scanner) {
     return this.set(this.expression, target, scanner);
 };
 
@@ -859,7 +859,7 @@ function ExpressionBlock(parent, rets, mode) {
     Object.freeze(this);
 }
 
-ExpressionBlock.prototype.return = function _return(scope, expression, scanner) {
+ExpressionBlock.prototype.return = function _return(scope, expression, _scanner) {
     return new AfterExpressionBlock(scope, this.parent, this.rets, this.mode, expression);
 };
 
@@ -917,7 +917,7 @@ SwitchBlock.prototype.start = function start(scanner, expression, variable, valu
     return new MaybeWeightedCase(this.scope, new Case(this.scope.firstChild(), this, [], this.branches, min || 0));
 };
 
-SwitchBlock.prototype.return = function _return(scope, rets, escs, scanner) {
+SwitchBlock.prototype.return = function _return(_scope, rets, escs, scanner) {
     if (this.node.mode === 'pick') {
         Scope.tie(rets, 'RET');
         rets = [this.node];
@@ -961,7 +961,7 @@ Case.prototype.case = function _case(args, scanner) {
     return new Thread(scope, this, [node], []);
 };
 
-Case.prototype.return = function _return(scope, rets, escs, scanner) {
+Case.prototype.return = function _return(_scope, rets, escs, _scanner) {
     return new Case(this.scope.next(), this.parent, this.rets.concat(rets, escs), this.branches, this.min);
 };
 
@@ -981,7 +981,7 @@ MaybeWeightedCase.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-MaybeWeightedCase.prototype.return = function _return(scope, args, scanner) {
+MaybeWeightedCase.prototype.return = function _return(_scope, args, scanner) {
     return this.parent.case(args, scanner);
 };
 
@@ -997,7 +997,7 @@ Ask.prototype.next = function next(type, space, text, scanner) {
     if (type == 'alphanum') {
         return new Read(text, this.scope, this.parent, this.rets, this.escs);
     }
-    var node = this.scope.create('ask', null, scanner.position());
+    this.scope.create('ask', null, scanner.position());
     return new Thread(this.scope.next(), this.parent, this.rets, this.escs)
         .next(type, space, text, scanner);
 };
@@ -1048,7 +1048,7 @@ Program.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-Program.prototype.return = function _return(scope, rets, escs, scanner) {
+Program.prototype.return = function _return(scope, rets, escs, _scanner) {
     return new Program(scope, this.parent, rets, escs);
 };
 
@@ -1060,7 +1060,7 @@ function Assignment(scope, parent, rets, escs) {
     Object.freeze(this);
 }
 
-Assignment.prototype.return = function _return(scope, expression, scanner) {
+Assignment.prototype.return = function _return(_scope, expression, scanner) {
     // istanbul ignore else
     if (expression[0] === 'get' || expression[0] === 'var') {
         return new ExpectOperator(this.scope, this.parent, this.rets, this.escs, expression);
@@ -1080,7 +1080,7 @@ function ExpectOperator(scope, parent, rets, escs, left) {
     Object.freeze(this);
 }
 
-ExpectOperator.prototype.next = function next(type, space, text, scanner) {
+ExpectOperator.prototype.next = function next(type, _space, text, scanner) {
     // istanbul ignore else
     if (text === '=') {
         return expression(this.scope, new ExpectExpression(this.scope, this.parent, this.rets, this.escs, this.left, text));
@@ -1100,7 +1100,7 @@ function ExpectExpression(scope, parent, rets, escs, left, operator) {
     Object.freeze(this);
 }
 
-ExpectExpression.prototype.return = function _return(scope, right, scanner) {
+ExpectExpression.prototype.return = function _return(_scope, right, scanner) {
     var node;
     // TODO validate this.left as a valid move target
     this.scope.tie(this.rets);
@@ -1201,7 +1201,7 @@ function Open(parent) {
     Object.seal(this);
 }
 
-Open.prototype.return = function _return(scope, expression, scanner) {
+Open.prototype.return = function _return(scope, expression, _scanner) {
     return new Close(scope, this.parent, expression);
 };
 
@@ -1212,7 +1212,7 @@ function Close(scope, parent, expression) {
     Object.seal(this);
 }
 
-Close.prototype.next = function next(type, space, text, scanner) {
+Close.prototype.next = function next(type, _space, text, scanner) {
     // istanbul ignore else
     if (type === 'symbol' && text === ')') {
         return this.parent.return(this.scope, this.expression, scanner);
@@ -1250,7 +1250,7 @@ function AfterVariable(parent) {
     Object.seal(this);
 }
 
-AfterVariable.prototype.return = function _return(scope, expression, scanner) {
+AfterVariable.prototype.return = function _return(scope, expression, _scanner) {
     return new MaybeCall(scope, this.parent, expression);
 };
 
@@ -1285,7 +1285,7 @@ Arguments.prototype.next = function next(type, space, text, scanner) {
     }
 };
 
-Arguments.prototype.return = function _return(scope, expression, scanner) {
+Arguments.prototype.return = function _return(scope, expression, _scanner) {
     this.args.push(expression);
     return new MaybeArgument(scope, this);
 };
@@ -1361,7 +1361,7 @@ function MaybeExpression(parent, operators) {
     Object.seal(this);
 }
 
-MaybeExpression.prototype.return = function _return(scope, expression, scanner) {
+MaybeExpression.prototype.return = function _return(scope, expression, _scanner) {
     return new MaybeOperator(scope, this.parent, expression, this.operators);
 };
 
@@ -1381,7 +1381,7 @@ function BinaryExpression(operators, parent) {
     Object.seal(this);
 }
 
-BinaryExpression.prototype.return = function _return(scope, expression, scanner) {
+BinaryExpression.prototype.return = function _return(scope, expression, _scanner) {
     return new MaybeOperator(scope, this.parent, expression, this.operators);
 };
 
@@ -1392,7 +1392,7 @@ function GetDynamicVariable(parent, literals, expressions) {
     Object.seal(this);
 }
 
-GetDynamicVariable.prototype.return = function _return(scope, expression, scanner) {
+GetDynamicVariable.prototype.return = function _return(scope, expression, _scanner) {
     return new Expect('token', '}', scope, new ContinueVariable(
         scope,
         this.parent,
@@ -1480,7 +1480,7 @@ function Expect(expect, text, scope, parent, args) {
     Object.freeze(this);
 }
 
-Expect.prototype.next = function next(type, space, text, scanner) {
+Expect.prototype.next = function next(type, _space, text, scanner) {
     if (type !== this.expect || text !== this.text) {
         this.scope.error(scanner.position() + ': Expected ' + tokenName(this.expect, this.text) + ' but got ' + tokenName(type, text) + '.');
     }

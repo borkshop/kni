@@ -148,7 +148,7 @@ Document.prototype.handleEvent = function handleEvent(event) {
     }
 };
 
-Document.prototype.ask = function ask(cue) {
+Document.prototype.ask = function ask(_cue) {
 };
 
 Document.prototype.answer = function answer(text) {

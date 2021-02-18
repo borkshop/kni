@@ -20,7 +20,7 @@ types.opt = function opt(node) {
     return '(Q ' + node.question.join(' ') + ') (A ' + node.answer.join(' ') + ')';
 };
 
-types.goto = function goto(node) {
+types.goto = function goto(_node) {
     return '';
 };
 
@@ -59,31 +59,31 @@ types.cue = function cue(node) {
     return node.cue;
 };
 
-types.br = function br(node) {
+types.br = function br(_node) {
     return '';
 };
 
-types.par = function par(node) {
+types.par = function par(_node) {
     return '';
 };
 
-types.rule = function rule(node) {
+types.rule = function rule(_node) {
     return '';
 };
 
-types.startJoin = function startJoin(node) {
+types.startJoin = function startJoin(_node) {
     return '';
 };
 
-types.stopJoin = function stopJoin(node) {
+types.stopJoin = function stopJoin(_node) {
     return '';
 };
 
-types.delimit = function delimit(node) {
+types.delimit = function delimit(_node) {
     return '';
 };
 
-types.ask = function ask(node) {
+types.ask = function ask(_node) {
     return '';
 };
 
