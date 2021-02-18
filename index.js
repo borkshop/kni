@@ -1,7 +1,7 @@
 'use strict';
+
 var Engine = require('./engine');
 var story = require('./examples/archery.json');
-var Story = require('./story');
 var Document = require('./document');
 
 var reset = document.querySelector(".reset");
