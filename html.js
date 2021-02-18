@@ -1,6 +1,5 @@
 "use strict";
 
-var fs = require("fs");
 var System = require("system");
 var bundleSystemId = require("system/bundle").bundleSystemId;
 var Location = require("system/location");

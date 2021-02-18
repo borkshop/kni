@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 'use strict';
 
-var fs = require('fs');
 var tee = require('tee');
 var Console = require('./console');
 var Readline = require('./readline');
