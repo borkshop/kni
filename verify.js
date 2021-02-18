@@ -109,7 +109,7 @@ function FakeReadline(writer, answers) {
     Object.seal(this);
 }
 
-FakeReadline.prototype.ask = function ask(question) {
+FakeReadline.prototype.ask = function ask(_question) {
     var answer = this.answers.shift();
     // istanbul ignore if
     if (answer == null) {
