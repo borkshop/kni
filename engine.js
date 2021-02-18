@@ -10,7 +10,6 @@ var debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
 function Engine(args) {
     // istanbul ignore next
-    var self = this;
     this.story = args.story;
     this.labels = Object.keys(this.story);
     this.handler = args.handler;

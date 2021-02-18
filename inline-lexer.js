@@ -18,7 +18,6 @@ var debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER;
 var L1 = '@[]{}|/<>';
 var L2 = ['->', '<-', '==', '<>', '>=', '<=', '{"', '"}', '{\'', '\'}', '//', '**'];
 var num = /\d/;
-var space = /\s/;
 // alphanumerics including non-english
 var alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\d_]/;
 
