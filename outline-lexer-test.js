@@ -1,7 +1,5 @@
 'use strict';
 
-var fs = require('fs');
-
 var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
 var equals = require('pop-equals');

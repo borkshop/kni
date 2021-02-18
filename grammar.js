@@ -1,7 +1,6 @@
 'use strict';
 
 var Scope = require('./scope');
-var story = require('./story');
 
 exports.start = start;
 
