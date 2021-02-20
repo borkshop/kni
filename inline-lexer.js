@@ -73,7 +73,7 @@ module.exports = class InlineLexer {
         let i = 0;
         for (; i < text.length - 1; i++) {
             let c = text[i];
-            const d = text[i + 1];
+            const d = text[i + 1]; // XXX || ''
             const cd = c + d;
             const numeric = num.test(c);
             const alphanum = alpha.test(c);
