@@ -279,10 +279,8 @@ module.exports = class Engine {
             }
 
             // Restore stack
-            var engine = this;
-            this.top = stack.reduceRight(function (parent, snapshot) {
-                return Frame.restore(engine, snapshot, parent);
-            }, this.global);
+            this.top = stack.reduceRight((parent, snapshot) =>
+                Frame.restore(this, snapshot, parent), this.global);
 
             // Restore prng
             this.randomer._state0U = random[0];
