@@ -7,105 +7,105 @@
 //
 // The scanner feeds into an outline lexer.
 
-var tabWidth = 4;
-var leaders = '-+*!>';
-var debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
-
-module.exports = Scanner;
-
-function Scanner(generator, fileName) {
-    this.generator = generator;
-    this.fileName = fileName || '-';
-    this.indent = 0;
-    this.lineStart = 0;
-    this.indentStart = 0;
-    this.itemStart = 0;
-    this.lineNo = 0;
-    this.columnNo = 0;
-    this.columnStart = 0;
-    this.leading = true;
-    this.leader = '';
-    this.debug = debug;
-    Object.seal(this);
-}
-
-Scanner.prototype.next = function next(text) {
-    for (var i = 0; i < text.length; i++) {
-        var c = text[i];
-        var d = text[i + 1];
-        // istanbul ignore if
-        if (this.debug) {
-            console.error('SCN', this.position() + ':' + i, JSON.stringify(c + (d || '')));
-        }
-        if (
-            ((c === '\t' || c === ' ') && d === '#') ||
-            (this.columnNo === 0 && c === '#')
-        ) {
-            this.newLine(text, i);
-            for (i++; i < text.length; i++) {
-                c = text[i];
-                if (c === '\n') {
-                    break;
-                }
-            }
-        } else if (c === '\t') {
-            this.columnNo = nextTabStop(this.columnNo);
-        } else if (c === '\n') {
-            this.newLine(text, i);
-        } else if (c === ' ') {
-            this.columnNo++;
-        } else if (
-            this.leading && leaders.indexOf(c) >= 0 &&
-            (d === ' ' || d === '\t')
-        ) {
-            this.leader += c;
-            this.columnNo++;
-        } else if (this.leading && leaders.indexOf(c) >= 0 && d === '\n') {
-            this.leader += c;
-            this.indentStart = i;
-            this.columnStart = this.columnNo;
-            this.lineStart = this.lineNo;
-            this.indent = this.columnNo + 2;
-        } else if (this.leading) {
-            this.indent = this.columnNo;
-            this.indentStart = i;
-            this.columnStart = this.columnNo;
-            this.lineStart = this.lineNo;
-            this.columnNo++;
-            this.leading = false;
-        }
-    }
-
-    // TODO To exercise the following block, you need a file with no final
-    // newline.
-    // istanbul ignore if
-    if (!this.leading) {
-        this.generator.next(text.slice(this.indentStart, i), this);
-    }
-};
-
-Scanner.prototype.newLine = function newLine(text, i) {
-    if (this.leading) {
-        this.indentStart = i;
-    }
-    this.leading = true;
-    this.generator.next(text.slice(this.indentStart, i), this);
-    this.columnNo = 0;
-    this.lineNo++;
-    this.lineStart = i + 1;
-    this.leader = '';
-};
-
-Scanner.prototype.return = function _return() {
-    this.generator.return(this);
-};
-
-// istanbul ignore next
-Scanner.prototype.position = function position() {
-    return this.fileName + ':' + (this.lineNo + 1) + ':' + (this.columnStart + 1);
-};
-
+const tabWidth = 4;
 function nextTabStop(columnNo) {
     // TODO simplify with modulo arithmetic
     return Math.floor((columnNo + tabWidth) / tabWidth) * tabWidth;
+}
+
+var leaders = '-+*!>';
+var debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
+
+module.exports = class Scanner {
+    constructor(generator, fileName) {
+        this.generator = generator;
+        this.fileName = fileName || '-';
+        this.indent = 0;
+        this.lineStart = 0;
+        this.indentStart = 0;
+        this.itemStart = 0;
+        this.lineNo = 0;
+        this.columnNo = 0;
+        this.columnStart = 0;
+        this.leading = true;
+        this.leader = '';
+        this.debug = debug;
+        Object.seal(this);
+    }
+
+    next(text) {
+        for (var i = 0; i < text.length; i++) {
+            var c = text[i];
+            var d = text[i + 1];
+            // istanbul ignore if
+            if (this.debug) {
+                console.error('SCN', this.position() + ':' + i, JSON.stringify(c + (d || '')));
+            }
+            if (
+                ((c === '\t' || c === ' ') && d === '#') ||
+                (this.columnNo === 0 && c === '#')
+            ) {
+                this.newLine(text, i);
+                for (i++; i < text.length; i++) {
+                    c = text[i];
+                    if (c === '\n') {
+                        break;
+                    }
+                }
+            } else if (c === '\t') {
+                this.columnNo = nextTabStop(this.columnNo);
+            } else if (c === '\n') {
+                this.newLine(text, i);
+            } else if (c === ' ') {
+                this.columnNo++;
+            } else if (
+                this.leading && leaders.indexOf(c) >= 0 &&
+                (d === ' ' || d === '\t')
+            ) {
+                this.leader += c;
+                this.columnNo++;
+            } else if (this.leading && leaders.indexOf(c) >= 0 && d === '\n') {
+                this.leader += c;
+                this.indentStart = i;
+                this.columnStart = this.columnNo;
+                this.lineStart = this.lineNo;
+                this.indent = this.columnNo + 2;
+            } else if (this.leading) {
+                this.indent = this.columnNo;
+                this.indentStart = i;
+                this.columnStart = this.columnNo;
+                this.lineStart = this.lineNo;
+                this.columnNo++;
+                this.leading = false;
+            }
+        }
+
+        // TODO To exercise the following block, you need a file with no final
+        // newline.
+        // istanbul ignore if
+        if (!this.leading) {
+            this.generator.next(text.slice(this.indentStart, i), this);
+        }
+    }
+
+    newLine(text, i) {
+        if (this.leading) {
+            this.indentStart = i;
+        }
+        this.leading = true;
+        this.generator.next(text.slice(this.indentStart, i), this);
+        this.columnNo = 0;
+        this.lineNo++;
+        this.lineStart = i + 1;
+        this.leader = '';
+    }
+
+    return() {
+        this.generator.return(this);
+    }
+
+    // istanbul ignore next
+    position() {
+        return this.fileName + ':' + (this.lineNo + 1) + ':' + (this.columnStart + 1);
+    }
 }

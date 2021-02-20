@@ -27,27 +27,29 @@ function test(input, output) {
     }
 }
 
-function InlineLexLister() {
-    this.list = [];
-    this.debug = debug;
-}
+class InlineLexLister {
+    constructor() {
+        this.list = [];
+        this.debug = debug;
+    }
 
-InlineLexLister.prototype.next = function next(type, space, text, scanner) {
-    // istanbul ignore if
-    if (this.debug) {
-        console.log("LL", scanner.position(), type, JSON.stringify(space), JSON.stringify(text));
+    next(type, space, text, scanner) {
+        // istanbul ignore if
+        if (this.debug) {
+            console.log("LL", scanner.position(), type, JSON.stringify(space), JSON.stringify(text));
+        }
+        if (space.length) {
+            this.list.push(space);
+        }
+        if (type !== 'alphanum') {
+            this.list.push(type.toUpperCase());
+        }
+        if (text) {
+            this.list.push(text);
+        }
+        return this;
     }
-    if (space.length) {
-        this.list.push(space);
-    }
-    if (type !== 'alphanum') {
-        this.list.push(type.toUpperCase());
-    }
-    if (text) {
-        this.list.push(text);
-    }
-    return this;
-};
+}
 
 function enline(line) {
     return line + '\n';

@@ -23,24 +23,26 @@ function test(input, output) {
     }
 }
 
-function OutlineLexLister() {
-    this.list = [];
-    this.debug = debug;
-}
+class OutlineLexLister {
+    constructor() {
+        this.list = [];
+        this.debug = debug;
+    }
 
-OutlineLexLister.prototype.next = function next(type, text, scanner) {
-    // istanbul ignore if
-    if (this.debug) {
-        console.log("OLL", scanner.position(), type, JSON.stringify(text));
+    next(type, text, scanner) {
+        // istanbul ignore if
+        if (this.debug) {
+            console.log("OLL", scanner.position(), type, JSON.stringify(text));
+        }
+        if (type !== 'text') {
+            this.list.push(type.toUpperCase());
+        }
+        if (text) {
+            this.list.push(text);
+        }
+        return this;
     }
-    if (type !== 'text') {
-        this.list.push(type.toUpperCase());
-    }
-    if (text) {
-        this.list.push(text);
-    }
-    return this;
-};
+}
 
 function enline(line) {
     return line + '\n';
