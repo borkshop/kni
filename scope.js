@@ -14,8 +14,7 @@ module.exports = class Scope {
      * @param {string} name
      */
     static tie(ends, name) {
-        for (var i = 0; i < ends.length; i++) {
-            var end = ends[i];
+        for (const end of ends) {
             if (end.type === 'branch') {
                 end.node.branch = name;
             } else {
