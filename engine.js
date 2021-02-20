@@ -1,6 +1,5 @@
 'use strict';
 
-var Story = require('./story');
 var evaluate = require('./evaluate');
 var describe = require('./describe');
 
@@ -22,7 +21,7 @@ function Engine(args) {
     // istanbul ignore next
     this.start = args.start || 'start';
     this.label = this.start;
-    this.instruction = new Story.constructors.goto(this.start);
+    this.instruction = {type: 'goto', next: this.start};
     this.render = args.render;
     this.dialog = args.dialog;
     this.dialog.engine = this;
