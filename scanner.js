@@ -20,9 +20,9 @@ function nextTabStop(columnNo) {
     return Math.floor((columnNo + tabWidth) / tabWidth) * tabWidth;
 }
 
-var leaders = '-+*!>';
-
 module.exports = class Scanner {
+    leaders = '-+*!>'
+
     debug = typeof process === 'object' && process.env.DEBUG_SCANNER
 
     indent = 0
@@ -83,12 +83,12 @@ module.exports = class Scanner {
             } else if (c === ' ') {
                 this.columnNo++;
             } else if (
-                this.leading && leaders.indexOf(c) >= 0 &&
+                this.leading && this.leaders.indexOf(c) >= 0 &&
                 (d === ' ' || d === '\t')
             ) {
                 this.leader += c;
                 this.columnNo++;
-            } else if (this.leading && leaders.indexOf(c) >= 0 && d === '\n') {
+            } else if (this.leading && this.leaders.indexOf(c) >= 0 && d === '\n') {
                 this.leader += c;
                 this.indentStart = i;
                 this.columnStart = this.columnNo;
