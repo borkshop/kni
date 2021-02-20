@@ -456,9 +456,11 @@ module.exports = class Engine {
                 }
             } else {
                 value = evaluate(this.top, this.randomer, this.instruction.expression);
-                if (this.instruction.variable != null) {
-                    this.top.set(this.instruction.variable, value + this.instruction.value);
-                }
+            }
+
+            // save chosen value if requested
+            if (this.instruction.variable != null) {
+                this.top.set(this.instruction.variable, value + this.instruction.value);
             }
 
             // clamp value to branch index
