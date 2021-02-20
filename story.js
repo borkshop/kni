@@ -8,13 +8,12 @@ module.exports = class Story {
     errors = []
 
     create(path, type, arg, position) {
-        var name = Path.toName(path);
-        var Node = this.constructors[type];
-        if (!Node) {
+        const name = Path.toName(path);
+        const makeNode = this.nodeMakers[type];
+        if (!makeNode) {
             throw new Error('No node constructor for type: ' + type);
         }
-        var node = new Node(arg);
-        node.position = position;
+        const node = {...makeNode(arg), position};
         this.states[name] = node;
         return node;
     }
@@ -23,167 +22,25 @@ module.exports = class Story {
         this.errors.push(error);
     }
 
-    constructors = {
-
-        text: class Text {
-            constructor(text) {
-                this.type = 'text';
-                this.text = text;
-                this.lift = ' ';
-                this.drop = ' ';
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        echo: class Echo {
-            constructor(expression) {
-                this.type = 'echo';
-                this.expression = expression;
-                this.lift = '';
-                this.drop = '';
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        option: class Option {
-            constructor(_label) {
-                this.type = 'opt';
-                this.question = [];
-                this.answer = [];
-                this.keywords = null;
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        goto: class Goto {
-            constructor(next) {
-                this.type = 'goto';
-                this.next = next;
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        call: class Call {
-            constructor(label) {
-                this.type = 'call';
-                this.label = label;
-                this.args = null;
-                this.next = 'RET';
-                this.branch = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        cue: class Cue {
-            constructor(cue) {
-                this.type = 'cue';
-                this.cue = cue;
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        def: class Def {
-            constructor(locals) {
-                this.type = 'def';
-                this.locals = locals;
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        jump: class Jump {
-            constructor(condition) {
-                this.type = 'jump';
-                this.condition = condition;
-                this.branch = 'RET';
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        switch: class Switch {
-            constructor(expression) {
-                this.type = 'switch';
-                this.expression = expression;
-                this.variable = null;
-                this.value = 0;
-                this.mode = null;
-                this.branches = [];
-                this.weights = [];
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        move: class Move {
-            constructor() {
-                this.type = 'move';
-                this.source = null;
-                this.target = null;
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        break: class Break {
-            constructor() {
-                this.type = 'br';
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        paragraph: class Paragraph {
-            constructor() {
-                this.type = 'par';
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        rule: class Rule {
-            constructor() {
-                this.type = 'rule';
-                this.next = 'RET';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        ask: class Ask {
-            constructor() {
-                this.type = 'ask';
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
-        read: class Read {
-            constructor(variable) {
-                this.type = 'read';
-                this.next = 'RET';
-                this.variable = variable;
-                this.cue = null;
-                this.position = null;
-                Object.seal(this);
-            }
-        },
-
+    nodeMakers = {
+        text(text) { return {type: 'text', text, lift: ' ', drop: ' ', next: 'RET'} },
+        echo(expression) { return {type: 'echo', expression, lift: '', drop: '', next: 'RET'} },
+        option(_label) { return {type: 'opt', question: [], answer: [], keywords: null, next: 'RET'} },
+        goto(next) { return {type: 'goto', next} },
+        call(label) { return {type: 'call', label, args: null, next: 'RET', branch: 'RET'} },
+        cue(cue) { return {type: 'cue', cue, next: 'RET'} },
+        def(locals) { return {type: 'def', locals, next: 'RET'} },
+        jump(condition) { return {type: 'jump', condition, branch: 'RET', next: 'RET'} },
+        switch(expression) { return {type: 'switch', expression,
+            variable: null, value: 0,
+            mode: null, branches: [], weights: [],
+            next: 'RET',
+        } },
+        move() { return {type: 'move', source: null, target: null, next: 'RET'} },
+        break() { return {type: 'br', next: 'RET'} },
+        paragraph() { return {type: 'par', next: 'RET'} },
+        rule() { return {type: 'rule', next: 'RET'} },
+        ask() { return {type: 'ask'} },
+        read(variable) { return {type: 'read', variable, cue: null, next: 'RET'} },
     }
 }
