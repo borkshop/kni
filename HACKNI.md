@@ -19,8 +19,8 @@ scanner -> outline-lexer -> inline-lexer -> grammar
 
 - scanner.js
 
-The scanner is transforms a stream of text into a sequence of lines, tracking
-each line’s level of indentation and leading bullets.
+The scanner transforms a stream of text into a sequence of lines, tracking each
+line’s level of indentation and leading bullets.
 The scanner trims lines, collapses internal white space, and strips comments.
 The scanner recognizes that lines that start with sequences of space delimited
 bullets (`-`, `+`, and `*`) are special, as well as lines consisting of the
@@ -37,29 +37,29 @@ bullets, it establishes a new indentation depth, writing a start token to go
 deeper, or unrolling stop tokens to go shallower. Break tokens indicate blank
 lines.  The scanner drives the outline lexer by calling `next(line, scanner)`,
 making `scanner.leader` and `scanner.indent` available for indentation
-descisions, or `return(scanner)` to terminate the stream.
+decisions, or `return(scanner)` to terminate the stream.
 
-The outline lexer produces tokens with a `type` and `text`. The `text` always
-comes from the original document and the parser can interpret text either as
-literal or significant text depending on context or type.  The `start` token
-passes the leading bullets as text. The `text` token passes text through. All
-other tokens have empty text.
+The outline lexer produces tokens with a `type` and `text`.
+The `text` always comes from the original document and the parser can interpret
+text either as literal or significant text depending on context or type.
+The `start` token passes the leading bullets as text.
+The `text` token passes text through.
+All other tokens have empty text.
 
 - inline-lexer.js
 
 The inline lexer passes `start`, `stop`, and `break` tokens through without
 alteration and breaks `text` tokens into finer `token`, `symbol`, `alphanum`,
-`alpha`, and `dash` type tokens, tracking whether each token was preceded by
-white space, normalizing all sequences of whitespace as a single space
-character.
+`alpha`, and `dash` type tokens.
+It tracks whether each token was preceded by white space, normalizing all
+sequences of whitespace as a single space character.
 The outline lexer drives the inline lexer with `next(type, text, scanner)`,
 taking a `stop` token instead of a `return()` call to signal the end of stream.
 Number tokens greedily consume sequences of numeric digits.
 Alphanum tokens are sequences of letters and numbers, including non-english
 alphanumeric characters.
-Tokens include some one and two character wide special symbols
-including `@`, `[`, `]`, `{`, `}`, `|`, `/`, `<`, `>`, `->`, `<-`, `==`, `!=`,
-`>=`, and `<=`.
+Tokens include some one and two character wide special symbols including `@`,
+`[`, `]`, `{`, `}`, `|`, `/`, `<`, `>`, `->`, `<-`, `==`, `!=`, `>=`, and `<=`.
 All other characters are treated as individual symbol characters, notably
 characters like `%` and `^` that are significant in some contexts but are
 merely text in others.
@@ -72,9 +72,9 @@ The inline lexer drives the parser with `next(type, space, text, scanner)` calls
 Each grammar state has an informative `type` property for debugging, and
 accepts the same `next(type, space, text, scanner)` calls, but must also return
 a new state.
-None of these interfaces throw exceptions. When the grammar encounters an
-error, it will track it on the generated story and return a best-effort next
-state.
+None of these interfaces throw exceptions.
+When the grammar encounters an error, it will track it on the generated story
+and return a best-effort next state.
 
 - grammar.js
 - expression.js
@@ -84,14 +84,16 @@ state.
 The constructor for each grammar state typically takes a `story`, a `path`, a
 `parent` state, loose `ends`, and `jumps`.
 A `story` instance contains `states`, an object mapping state names to state
-structs, suitable for serialization as JSON and direct consumption by the
-Kni runtime engine.
+structs, suitable for serialization as JSON and direct consumption by the Kni
+runtime engine.
 The `story` also tracks an array of `errors`, just in case.
 The grammar uses the story’s `create(path, type, arg)` method to create or
-update nodes on the story graph. The `path` is the next path that the parser
-can consume. The `ends` is an array of paths to nodes that should be tied to
-the next node the parser generates in the current context, and `jumps` is an
-array of loose paths to connect to the next node after the next prompt node.
+update nodes on the story graph.
+The `path` is the next path that the parser can consume.
+The `ends` is an array of paths to nodes that should be tied to
+the next node the parser generates in the current context.
+The `jumps` is an array of loose paths to connect to the next node after the
+next prompt node.
 Each state is responsible for carrying these to the next state, advancing the
 path when necessary, creating child branches in the path, and collecting loose
 ends when a state returns to its parent state.
@@ -146,10 +148,10 @@ read uses the same sequence of random numbers.
 
 Kni provides operators for simple probability distributions.
 The unary random operators (``~n``) provides a number in the half open interval
-from [0, n), excluding n. The binary random operators (``n~m``) provides
-the sum of `n` samples of a variable in the [0, m) interval, effectively
-producing a variable in the [0, n*m) range, but with a bias toward the mean
-(n*m/2) that grows with n. The random operator is an homage to the D&D
+from `[0, n)`, excluding n. The binary random operators (``n~m``) provides
+the sum of `n` samples of a variable in the `[0, m)` interval, effectively
+producing a variable in the `[0, n*m)` range, but with a bias toward the mean
+`(n*m/2)` that grows with n. The random operator is an homage to the D&D
 die roll notation, e.g., 2d6 which has a range of [2, 12] and a mean of 7, with
 a triangular histogram of probable die rolls. However, `2~6` is different in
 two ways. For one, the interval always starts with zero regardless of the number
@@ -159,14 +161,15 @@ interval [0, 12), effectively [0, 11].
 
 Two novel "operators" in Kni are `hash` and `hilbert`.
 These have varied in implementation version over major version, but they
-serve procedural narrative generation. The unary hash operator (``#x``)
-produces a hash of the given value, handy for generating a seemingly random
-but deterministic number from an arbitrary number, like a seed or position in
-space or a multiverse. The binary hilbert operator (``x#y``) produces
-a position along a winding curve that fills a square around the origin, 64K
-tall and wide, assigning a unique number from 0 to 4M to every (x, y)
-coordinate. The hash and hilbert operators combine (#x#y) to assign a
-pseudorandom number to every position in that space.
+serve procedural narrative generation.
+The unary hash operator (``#x``) produces a hash of the given value, handy for
+generating a seemingly random but deterministic number from an arbitrary
+number, like a seed or position in space or a multiverse.
+The binary hilbert operator (``x#y``) produces a position along a winding curve
+that fills a square around the origin, 64K tall and wide, assigning a unique
+number from 0 to 4M to every (x, y) coordinate.
+The hash and hilbert operators combine (#x#y) to assign a pseudorandom number
+to every position in that space.
 
 
 ## Runtime Hooks
@@ -204,7 +207,7 @@ The handler may implement any of the following methods.
 
 ## Dialogs
 
-A dialog is responsible for prompting the interolocutor for input.
+A dialog is responsible for prompting the interlocutor for input.
 The web dialog hooks up click and keyboard event handlers to choose options
 and resumes the engine with an answer when the user chooses.
 The command line dialog uses readline.
