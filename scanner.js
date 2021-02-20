@@ -61,9 +61,9 @@ module.exports = class Scanner {
     next(text) {
         for (var i = 0; i < text.length; i++) {
             var c = text[i];
-            var d = text[i + 1];
+            var d = text[i + 1] || '';
             if (this.debug) {
-                console.error('SCN', this.position() + ':' + i, JSON.stringify(c + (d || '')));
+                console.error('SCN', this.position() + ':' + i, JSON.stringify(c + d));
             }
             if (
                 ((c === '\t' || c === ' ') && d === '#') ||
