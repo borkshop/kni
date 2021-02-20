@@ -268,50 +268,45 @@ module.exports = class Engine {
         this.instruction = this.story[this.label];
         this.global = new Global(this.handler);
         this.top = this.global;
-        if (snapshot == null) {
-            if (this.handler && this.handler.waypoint) {
-                this.handler.waypoint(null, this);
+        if (snapshot != null) {
+            // Destructure snapshot
+            var label = this.labelOfIndex(snapshot[0]);
+            var stack = snapshot[1];
+            var global = snapshot[2];
+            var random = snapshot[3];
+
+            // Restore globals
+            var keys = global[0];
+            var values = global[1];
+            for (var i = 0; i < keys.length; i++) {
+                this.global.set(keys[i], values[i]);
             }
-            this.continue();
-            return;
-        }
 
-        // Destructure snapshot
-        var label = this.labelOfIndex(snapshot[0]);
-        var stack = snapshot[1];
-        var global = snapshot[2];
-        var random = snapshot[3];
+            // Restore stack
+            var engine = this;
+            this.top = stack.reduceRight(function (parent, snapshot) {
+                return Frame.restore(engine, snapshot, parent);
+            }, this.global);
 
-        // Restore globals
-        var keys = global[0];
-        var values = global[1];
-        for (var i = 0; i < keys.length; i++) {
-            this.global.set(keys[i], values[i]);
-        }
+            // Restore prng
+            this.randomer._state0U = random[0];
+            this.randomer._state0L = random[1];
+            this.randomer._state1U = random[2];
+            this.randomer._state1L = random[3];
 
-        // Restore stack
-        var engine = this;
-        this.top = stack.reduceRight(function (parent, snapshot) {
-            return Frame.restore(engine, snapshot, parent);
-        }, this.global);
-
-        // Restore prng
-        this.randomer._state0U = random[0];
-        this.randomer._state0L = random[1];
-        this.randomer._state1U = random[2];
-        this.randomer._state1L = random[3];
-
-        var instruction = this.story[label];
-        if (instruction.type === 'opt') {
-            if (this.gothrough(instruction.answer, 'RET')) {
-                this.flush();
-                this.continue();
+            var instruction = this.story[label];
+            if (instruction.type !== 'opt') {
+                this.label = label;
+            } else if (!this.gothrough(instruction.answer, 'RET')) {
+                return;
             }
-        } else {
-            this.label = label;
+
             this.flush();
-            this.continue();
+        } else if (this.handler && this.handler.waypoint) {
+            this.handler.waypoint(null, this);
         }
+
+        this.continue();
     }
 
     log() {
