@@ -269,15 +269,11 @@ module.exports = class Engine {
         this.global = new Global(this.handler);
         this.top = this.global;
         if (snapshot != null) {
-            // Destructure snapshot
-            var label = this.labelOfIndex(snapshot[0]);
-            var stack = snapshot[1];
-            var global = snapshot[2];
-            var random = snapshot[3];
+            const [index, stack, global, random] = snapshot;
+            const label = this.labelOfIndex(index);
 
             // Restore globals
-            var keys = global[0];
-            var values = global[1];
+            const [keys, values] = global;
             for (var i = 0; i < keys.length; i++) {
                 this.global.set(keys[i], values[i]);
             }
