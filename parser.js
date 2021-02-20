@@ -27,14 +27,14 @@ module.exports = class Parser {
      * @returns {Parser}
      */
     next(type, space, text, scanner) {
-        var prior = this.generator.constructor.name;
+        var prior = this.generator;
         this.generator = this.generator.next(type, space, text, scanner);
         if (this.debug) {
             console.error(
                 'PAR',
                 scanner.position(),
                 type, JSON.stringify(text),
-                prior + '->' + this.generator.constructor.name
+                prior.constructor.name + '->' + this.generator.constructor.name
             );
         }
         return this;
