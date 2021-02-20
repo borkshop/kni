@@ -66,8 +66,7 @@ module.exports = class Engine {
     }
 
     continue() {
-        var _continue;
-        do {
+        for (; ;) {
             if (this.debug) {
                 console.log(this.label + ' ' +  this.instruction.type + ' ' + describe(this.instruction));
             }
@@ -81,8 +80,8 @@ module.exports = class Engine {
                 console.error('Unexpected instruction type: ' + this.instruction.type, this.instruction);
                 this.resume();
             }
-            _continue = this['$' + this.instruction.type](this.instruction);
-        } while (_continue);
+            if (!this['$' + this.instruction.type](this.instruction)) break;
+        }
     }
 
     goto(label) {
