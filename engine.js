@@ -440,6 +440,8 @@ module.exports = class Engine {
             samples = evaluate(this.top, this.randomer, this.instruction.expression);
         }
         for (var i = 0; i < samples; i++) {
+
+            // choose a value
             var value;
             var weights = [];
             var weight = weigh(this.top, this.randomer, weightExpressions, weights);
@@ -458,6 +460,8 @@ module.exports = class Engine {
                     this.top.set(this.instruction.variable, value + this.instruction.value);
                 }
             }
+
+            // clamp value to branch index
             if (this.instruction.mode === 'loop') {
                 // actual modulo, wraps negatives
                 value = ((value % branches.length) + branches.length) % branches.length;
@@ -466,10 +470,13 @@ module.exports = class Engine {
             }
             value = Math.min(value, branches.length - 1);
             value = Math.max(value, 0);
+
+            // collect next branch to gothrough
             var next = branches[value];
             pop(branches, value);
             pop(weightExpressions, value);
             nexts.push(next);
+
         }
         if (this.debug) {
             console.log(this.top.at() + '/' + this.label + ' ' + value + ' -> ' + next);
