@@ -161,7 +161,12 @@ const unary = {
     'not': function boolNot(x) { return x ? 0 : 1; },
     '-': function negate(x) { return -x; },
     '~': function randInt(x, _scope, randomer) {
-        return Math.floor(randomer.random() * x);
+        const max = Math.floor(2**32/x) * x;
+        let v = 0;
+        do {
+            v = Math.floor(randomer.random() * 2**32);
+        } while(v >= max);
+        return v % x;
     },
     '#': hash,
 };
