@@ -175,6 +175,7 @@ module.exports = class Engine {
             this.handler.answer(text, this);
         }
         this.render.flush();
+
         if (this.instruction.type === 'read') {
             this.top.set(this.instruction.variable, text);
             this.render.clear();
@@ -183,15 +184,18 @@ module.exports = class Engine {
             }
             return;
         }
-        var choice = text - 1;
+
+        const choice = text - 1;
         if (choice >= 0 && choice < this.options.length) {
             return this.choice(this.options[choice]);
-        } else if (this.keywords[text]) {
-            return this.choice(this.keywords[text]);
-        } else {
-            this.render.pardon();
-            this.ask();
         }
+
+        if (this.keywords[text]) {
+            return this.choice(this.keywords[text]);
+        }
+
+        this.render.pardon();
+        this.ask();
     }
 
     choice(closure) {
