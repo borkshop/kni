@@ -9,15 +9,14 @@
 
 // TODO remove the break emission feature
 
-var debug = typeof process === 'object' && process.env.DEBUG_OUTLINE_LEXER;
-
 module.exports = class OutlineLexer {
+    debug = typeof process === 'object' && process.env.DEBUG_OUTLINE_LEXER
+
     constructor(generator) {
         this.generator = generator;
         this.top = 0;
         this.stack = [this.top];
         this.broken = false;
-        this.debug = debug;
     }
 
     next(line, scanner) {

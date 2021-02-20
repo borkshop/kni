@@ -11,8 +11,6 @@
 // states.
 // The final parse state captures the entire syntax tree.
 
-var debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER;
-
 var L1 = '@[]{}|/<>';
 var L2 = ['->', '<-', '==', '<>', '>=', '<=', '{"', '"}', '{\'', '\'}', '//', '**'];
 var num = /\d/;
@@ -20,15 +18,14 @@ var num = /\d/;
 // alphanumerics including non-english
 const alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\d_]/;
 
-var debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER;
-
 module.exports = class InlineLexer {
+    debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER
+
     constructor(generator) {
         this.generator = generator;
         this.space = '';
         this.accumulator = '';
         this.type = 'symbol';
-        this.debug = debug;
     }
 
     next(type, text, scanner) {

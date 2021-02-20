@@ -1,11 +1,10 @@
 'use strict';
 
-var debug = typeof process === 'object' && process.env.DEBUG_PARSER;
-
 module.exports = class Parser {
+    debug = typeof process === 'object' && process.env.DEBUG_PARSER
+
     constructor (generator) {
         this.generator = generator;
-        this.debug = debug;
     }
 
     next(type, space, text, scanner) {

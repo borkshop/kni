@@ -4,8 +4,6 @@ var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
 var equals = require('pop-equals');
 
-var debug = process.env.DEBUG_OUTLINE_LEXER;
-
 function test(input, output) {
     var text = input.map(enline).join('');
     var lister = new OutlineLexLister();
@@ -24,9 +22,10 @@ function test(input, output) {
 }
 
 class OutlineLexLister {
+    debug = process.env.DEBUG_OUTLINE_LEXER
+
     constructor() {
         this.list = [];
-        this.debug = debug;
     }
 
     next(type, text, scanner) {
