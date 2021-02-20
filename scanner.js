@@ -14,9 +14,10 @@ function nextTabStop(columnNo) {
 }
 
 var leaders = '-+*!>';
-var debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
 
 module.exports = class Scanner {
+    debug = typeof process === 'object' && process.env.DEBUG_SCANNER
+
     constructor(generator, fileName) {
         this.generator = generator;
         this.fileName = fileName || '-';
@@ -29,7 +30,6 @@ module.exports = class Scanner {
         this.columnStart = 0;
         this.leading = true;
         this.leader = '';
-        this.debug = debug;
         Object.seal(this);
     }
 

@@ -29,9 +29,9 @@ function pop(array, index) {
     array.length--;
 }
 
-var debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
-
 module.exports = class Engine {
+    debug = typeof process === 'object' && process.env.DEBUG_ENGINE
+
     constructor(args) {
         // istanbul ignore next
         this.story = args.story;
@@ -51,7 +51,6 @@ module.exports = class Engine {
         this.dialog.engine = this;
         // istanbul ignore next
         this.randomer = args.randomer || Math;
-        this.debug = debug;
         this.waypoint = this.capture();
         Object.seal(this);
     }

@@ -5,8 +5,6 @@ var Scanner = require('./scanner');
 var OutlineLexer = require('./outline-lexer');
 var InlineLexer = require('./inline-lexer');
 
-var debug = process.env.DEBUG_INLINE_LEXER;
-
 function test(input, output) {
     var text = input.map(enline).join('');
     var ll = new InlineLexLister();
@@ -28,9 +26,10 @@ function test(input, output) {
 }
 
 class InlineLexLister {
+    debug = process.env.DEBUG_INLINE_LEXER
+
     constructor() {
         this.list = [];
-        this.debug = debug;
     }
 
     next(type, space, text, scanner) {
