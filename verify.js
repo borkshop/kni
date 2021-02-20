@@ -101,43 +101,47 @@ function verify(kni, trans, handler, kniscript) {
     };
 }
 
-function FakeReadline(writer, answers) {
-    this.writer = writer;
-    this.answers = answers;
-    this.engine = null;
-    this.history = [];
-    Object.seal(this);
+class FakeReadline {
+    constructor(writer, answers) {
+        this.writer = writer;
+        this.answers = answers;
+        this.engine = null;
+        this.history = [];
+        Object.seal(this);
+    }
+
+    ask(_question) {
+        var answer = this.answers.shift();
+        // istanbul ignore if
+        if (answer == null) {
+            return;
+        }
+        this.writer.write(('> ' + answer).trim() + '\n');
+
+        if (answer === 'quit') {
+        } else if (answer === 'replay') {
+            this.writer.write('\n');
+            this.engine.resume(this.engine.waypoint);
+        } else if (answer === 'back') {
+            this.writer.write('\n');
+            this.engine.waypoint = this.history.pop();
+            this.engine.resume(this.engine.waypoint);
+        } else {
+            this.history.push(this.engine.waypoint);
+            this.engine.answer(answer);
+        }
+    }
+
+    close() {
+    }
 }
 
-FakeReadline.prototype.ask = function ask(_question) {
-    var answer = this.answers.shift();
-    // istanbul ignore if
-    if (answer == null) {
-        return;
+class StringWriter {
+    constructor() {
+        this.string = '';
     }
-    this.writer.write(('> ' + answer).trim() + '\n');
 
-    if (answer === 'quit') {
-    } else if (answer === 'replay') {
-        this.writer.write('\n');
-        this.engine.resume(this.engine.waypoint);
-    } else if (answer === 'back') {
-        this.writer.write('\n');
-        this.engine.waypoint = this.history.pop();
-        this.engine.resume(this.engine.waypoint);
-    } else {
-        this.history.push(this.engine.waypoint);
-        this.engine.answer(answer);
+    write(string) {
+        this.string += string;
     }
-};
-
-FakeReadline.prototype.close = function close() {
-};
-
-function StringWriter() {
-    this.string = '';
 }
-
-StringWriter.prototype.write = function write(string) {
-    this.string += string;
-};
