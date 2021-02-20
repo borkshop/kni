@@ -49,7 +49,6 @@ module.exports = class Engine {
         this.dialog.engine = this;
         this.randomer = args.randomer || Math;
         this.waypoint = this.capture();
-        Object.seal(this);
     }
 
     reset() {
@@ -503,7 +502,6 @@ class Global {
         this.handler = handler;
         this.next = 'RET';
         this.branch = 'RET';
-        Object.seal(this);
     }
 
     get(name) {
@@ -586,7 +584,6 @@ class Frame {
         this.branch = branch;
         this.label = label;
         this.stopOption = stopOption || false;
-        Object.seal(this);
     }
 
     get(name) {
@@ -639,6 +636,5 @@ class Closure {
     constructor(scope, label) {
         this.scope = scope;
         this.label = label;
-        Object.seal(this);
     }
 }
