@@ -2,7 +2,6 @@
 
 module.exports = class Document {
     constructor(element, createPage) {
-        var self = this;
         this.document = element.ownerDocument;
         this.parent = element;
         this.frame = null;
@@ -18,11 +17,10 @@ module.exports = class Document {
         this.options = null;
         this.p = false;
         this.br = false;
-        this.onclick = onclick;
-        this.createPage = createPage || this.createPage;
-        function onclick(event) {
-            self.answer(event.target.number);
+        this.onclick = (event) => {
+            this.answer(event.target.number);
         }
+        this.createPage = createPage || this.createPage;
         Object.seal(this);
     }
 
