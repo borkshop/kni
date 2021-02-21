@@ -438,6 +438,7 @@ module.exports = class Engine {
             var weight = weigh(this.top, this.randomer, weightExpressions, weights);
             if (this.instruction.mode === 'rand' || this.instruction.mode === 'pick') {
                 if (weights.length === weight) {
+                    // TODO share with evaluate.js unary ~ code
                     value = Math.floor(this.randomer.random() * branches.length);
                 } else {
                     value = pick(weights, weight, this.randomer);
