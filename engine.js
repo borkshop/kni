@@ -150,10 +150,9 @@ module.exports = class Engine {
             }
             this.dialog.ask();
         } else if (this.noOption != null) {
-            var closure = this.noOption;
-            var option = this.story[closure.label];
-            this.top = closure.scope;
-            var answer = option.answer;
+            const {label, scope} = this.noOption;
+            const {answer} = this.story[label];
+            this.top = scope;
             this.flush();
             this.gothrough(answer, 'RET');
             this.continue();
