@@ -21,7 +21,6 @@ module.exports = class Document {
             this.answer(event.target.number);
         }
         this.createPage = createPage || this.createPage;
-        Object.seal(this);
     }
 
     write(lift, text, drop) {
