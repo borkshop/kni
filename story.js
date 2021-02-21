@@ -60,7 +60,7 @@ module.exports = class Story {
             throw new Error('No node constructor for type: ' + type);
         }
         const node = {...makeNode(arg), position};
-        this.states[name] = node;
+        this.states[name] = node; // TODO assert unique?
         return node;
     }
 
