@@ -42,7 +42,7 @@ var Path = require('./path');
 
 module.exports = class Story {
     /** @type {Object<string, Node>} */
-    states = {}
+    states = {} // TODO Map<string, T>
 
     /** @type {string[]} */
     errors = []
