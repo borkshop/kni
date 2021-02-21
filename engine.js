@@ -104,7 +104,7 @@ module.exports = class Engine {
             return this.end();
         }
 
-        var next = this.story[label];
+        const next = this.story[label];
         if (!next) {
             console.error('Story missing label', label);
             return this.resume();
@@ -235,7 +235,7 @@ module.exports = class Engine {
     capture(closure) {
         const {label, top} = closure || this;
 
-        var stack = [];
+        const stack = [];
         for (; top != this.global; top = top.parent) {
             stack.push(top.capture(this));
         }
@@ -280,7 +280,7 @@ module.exports = class Engine {
             this.randomer._state1U = random[2];
             this.randomer._state1L = random[3];
 
-            var instruction = this.story[label];
+            const instruction = this.story[label];
             if (instruction.type !== 'opt') {
                 this.label = label;
             } else if (!this.gothrough(instruction.answer, 'RET')) {
