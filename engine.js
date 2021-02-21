@@ -233,14 +233,7 @@ module.exports = class Engine {
     }
 
     capture(closure) {
-        var label, top;
-        if (closure != null) {
-            label = closure.label;
-            top = closure.scope;
-        } else {
-            label = this.label;
-            top = this.top;
-        }
+        const {label, top} = closure || this;
 
         var stack = [];
         for (; top != this.global; top = top.parent) {
