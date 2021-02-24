@@ -34,14 +34,12 @@ class ParserState {
     return(_scope, _rets, _escs, _scanner) { return this }
 }
 
-exports.start = start;
-
 /**
  * @param {Story} story
  * @param {Path} path
  * @param {Path} base
  */
-function start(story, path, base) {
+exports.start = function start(story, path, base) {
     const scope = new Scope(story, path, base);
     const stop = new Stop(scope);
     const start = scope.create('goto', 'RET', '1:1');
