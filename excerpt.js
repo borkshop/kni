@@ -168,6 +168,7 @@ class Conjunction {
         this.lift = lift;
         this.delimiter = delimiter;
         this.conjunction = conjunction;
+        this.flag = false;
     }
 
     Child = Stanza;
