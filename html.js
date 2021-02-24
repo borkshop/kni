@@ -4,8 +4,7 @@ var System = require("system");
 var bundleSystemId = require("system/bundle").bundleSystemId;
 var Location = require("system/location");
 
-module.exports = makeHtml;
-function makeHtml(story, output, templateArgs) {
+module.exports = function makeHtml(story, output, templateArgs) {
     var location = Location.fromDirectory(__dirname);
     var id = "./template";
 
