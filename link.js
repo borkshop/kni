@@ -1,8 +1,6 @@
 'use strict';
 
-module.exports = link;
-
-function link(story) {
+module.exports = function link(story) {
     var labels = Object.keys(story.states);
     for (var i = 0; i < labels.length; i++) {
         var label = labels[i];
