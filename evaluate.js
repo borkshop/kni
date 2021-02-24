@@ -133,53 +133,23 @@ const functions = {
 
 };
 
-var binary = {
-    '+': function (x, y) {
-        return x + y;
-    },
-    '-': function (x, y) {
-        return x - y;
-    },
-    '*': function (x, y) {
-        return x * y;
-    },
-    '/': function (x, y) {
-        return (x / y) >> 0;
-    },
-    '%': function (x, y) {
-        return ((x % y) + y) % y;
-    },
-    '**': function (x, y) {
-        return Math.pow(x, y);
-    },
-    'or': function (x, y) {
-        return x || y ? 1 : 0;
-    },
-    'and': function (x, y) {
-        return x && y ? 1 : 0;
-    },
-    '>=': function (x, y) {
-        return x >= y ? 1 : 0;
-    },
-    '>': function (x, y) {
-        return x > y ? 1 : 0;
-    },
-    '<=': function (x, y) {
-        return x <= y ? 1 : 0;
-    },
-    '<': function (x, y) {
-        return x < y ? 1 : 0;
-    },
-    '==': function (x, y) {
-        return x === y ? 1 : 0;
-    },
-    '<>': function (x, y) {
-        return x != y ? 1 : 0;
-    },
-    '#': function (x, y) {
-        return hilbert(x, y);
-    },
-    '~': function (x, y, _scope, randomer) {
+const binary = {
+    '+': function add(x, y) { return x + y; },
+    '-': function sub(x, y) { return x - y; },
+    '*': function mul(x, y) { return x * y; },
+    '/': function div(x, y) { return (x / y) >> 0; },
+    '%': function mod(x, y) { return ((x % y) + y) % y; },
+    '**': function pow(x, y) { return Math.pow(x, y); },
+    'or': function boolOr(x, y) { return x || y ? 1 : 0; },
+    'and': function boolAnd(x, y) { return x && y ? 1 : 0; },
+    '>=': function boolGte(x, y) { return x >= y ? 1 : 0; },
+    '>': function boolGt(x, y) { return x > y ? 1 : 0; },
+    '<=': function boolLte(x, y) { return x <= y ? 1 : 0; },
+    '<': function boolLt(x, y) { return x < y ? 1 : 0; },
+    '==': function boolEq(x, y) { return x === y ? 1 : 0; },
+    '<>': function boolNeq(x, y) { return x != y ? 1 : 0; },
+    '#': hilbert,
+    '~': function roll(x, y, _scope, randomer) {
         var r = 0;
         for (var i = 0; i < x; i++) {
             r += randomer.random() * y;
@@ -188,19 +158,13 @@ var binary = {
     }
 };
 
-var unary = {
-    'not': function (x) {
-        return x ? 0 : 1;
-    },
-    '-': function (x) {
-        return -x;
-    },
-    '~': function (x, _scope, randomer) {
+const unary = {
+    'not': function boolNot(x) { return x ? 0 : 1; },
+    '-': function negate(x) { return -x; },
+    '~': function randInt(x, _scope, randomer) {
         return Math.floor(randomer.random() * x);
     },
-    '#': function (x) {
-        return hash(x);
-    }
+    '#': hash,
 };
 
 // Robert Jenkins's 32 bit hash function
