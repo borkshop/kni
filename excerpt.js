@@ -3,9 +3,10 @@
 'use strict';
 
 class Excerpt {
+    flag = false
+
     constructor() {
         this.children = [];
-        this.flag = false;
     }
 
     Child = Paragraph;
@@ -71,9 +72,10 @@ class Excerpt {
 module.exports = Excerpt;
 
 class Paragraph {
+    flag = false
+
     constructor() {
         this.children = [];
-        this.flag = false;
     }
 
     Child = Stanza;
@@ -162,13 +164,14 @@ class StanzaProxy {
 }
 
 class Conjunction {
+    flag = false
+
     constructor(parent, lift, delimiter, conjunction) {
         this.children = [];
         this.parent = parent;
         this.lift = lift;
         this.delimiter = delimiter;
         this.conjunction = conjunction;
-        this.flag = false;
     }
 
     Child = Stanza;
