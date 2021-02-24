@@ -3,7 +3,7 @@
 module.exports = evaluate;
 
 function evaluate(scope, randomer, args) {
-    var name = args[0];
+    const name = args[0];
     if (unary[name] && args.length === 2) {
         return unary[name](
             evaluate(scope, randomer, args[1]),
@@ -24,14 +24,14 @@ function evaluate(scope, randomer, args) {
     } else if (name === 'var') {
         return scope.get(nominate(scope, randomer, args));
     } else if (name === 'call') {
-        var func = args[1][1];
-        var f = functions[func];
+        const func = args[1][1];
+        const f = functions[func];
         if (!f) {
             // TODO thread line number for containing instruction
             throw new Error('No function named ' + func);
         }
-        var values = [];
-        for (var i = 2; i < args.length; i++) {
+        const values = [];
+        for (let i = 2; i < args.length; i++) {
             values.push(evaluate(scope, randomer, args[i]));
         }
         return f.apply(null, values);
@@ -45,10 +45,9 @@ function nominate(scope, randomer, args) {
     if (args[0] === 'get') {
         return args[1];
     }
-    var literals = args[1];
-    var variables = args[2];
-    var name = '';
-    for (var i = 0; i < variables.length; i++) {
+    const [literals, variables] = args;
+    let name = '';
+    for (let i = 0; i < variables.length; i++) {
         name += literals[i] + evaluate(scope, randomer, variables[i]);
     }
     name += literals[i];
@@ -84,8 +83,8 @@ const functions = {
     },
 
     mean() {
-        var mean = 0;
-        for (var i = 0; i < arguments.length; i++) {
+        let mean = 0;
+        for (let i = 0; i < arguments.length; i++) {
             mean += arguments[i];
         }
         return mean / i;
@@ -124,7 +123,7 @@ const functions = {
     //     if (pop <= 0) {
     //         return -Infinity;
     //     }
-    //     var ratio = cap / pop - 1;
+    //     const ratio = cap / pop - 1;
     //     if (ratio === 0) {
     //         return Infinity;
     //     }
@@ -150,8 +149,8 @@ const binary = {
     '<>': function boolNeq(x, y) { return x != y ? 1 : 0; },
     '#': hilbert,
     '~': function roll(x, y, _scope, randomer) {
-        var r = 0;
-        for (var i = 0; i < x; i++) {
+        let r = 0;
+        for (let i = 0; i < x; i++) {
             r += randomer.random() * y;
         }
         return Math.floor(r);
@@ -183,15 +182,15 @@ function hash(a) {
 // hilbert in range from 0 to 2^32
 // x and y in range from 0 to 2^16
 // each dimension has origin at 2^15
-var dimensionWidth = (-1 >>> 16) + 1;
-var halfDimensionWidth = dimensionWidth / 2;
+const dimensionWidth = (-1 >>> 16) + 1;
+const halfDimensionWidth = dimensionWidth / 2;
 function hilbert(x, y) {
     x += halfDimensionWidth;
     y += halfDimensionWidth;
-    var rx = 0;
-    var ry = y;
-    var scalar = 0;
-    for (var scale = dimensionWidth; scale > 0; scale /= 2) {
+    let rx = 0;
+    let ry = y;
+    let scalar = 0;
+    for (let scale = dimensionWidth; scale > 0; scale /= 2) {
         rx = x & scale;
         ry = y & scale;
         scalar += scale * ((3 * rx) ^ ry);
@@ -202,7 +201,7 @@ function hilbert(x, y) {
                 y = scale - 1 - y;
             }
             // transpose
-            var t = x;
+            const t = x;
             x = y;
             y = t;
         }
