@@ -55,7 +55,7 @@ function nominate(scope, randomer, args) {
     return name;
 }
 
-var functions = {
+const functions = {
     abs: Math.abs,
     acos: Math.acos,
     asin: Math.asin,
@@ -73,7 +73,7 @@ var functions = {
     ceil: Math.ceil,
     round: Math.round,
 
-    sign: function (x) {
+    sign(x) {
         if (x < 0) {
             return -1;
         }
@@ -83,7 +83,7 @@ var functions = {
         return 0;
     },
 
-    mean: function () {
+    mean() {
         var mean = 0;
         for (var i = 0; i < arguments.length; i++) {
             mean += arguments[i];
@@ -91,18 +91,18 @@ var functions = {
         return mean / i;
     },
 
-    root: function root(x, y) {
+    root(x, y) {
         if (y === 2 || y == null) {
             return Math.sqrt(x);
         }
         return Math.pow(x, 1 / y);
     },
 
-    distance: function distance(x1, y1, x2, y2) {
+    distance(x1, y1, x2, y2) {
         return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
     },
 
-    manhattan: function distance(x1, y1, x2, y2) {
+    manhattan(x1, y1, x2, y2) {
         return Math.abs(x2 - x1) + Math.abs(y2 - y1);
     },
 
@@ -110,7 +110,7 @@ var functions = {
     // go from 25% to 75% of capacity, to adjust the rate. This will maybe
     // almost make them understandable.
     //
-    // sigmoid: function (steps, cap) {
+    // sigmoid(steps, cap) {
     //     if (steps === -Infinity) {
     //         return 0;
     //     } else if (steps === Infinity) {
@@ -120,7 +120,7 @@ var functions = {
     //     }
     // },
 
-    // diomgis: function (pop, cap) {
+    // diomgis(pop, cap) {
     //     if (pop <= 0) {
     //         return -Infinity;
     //     }
