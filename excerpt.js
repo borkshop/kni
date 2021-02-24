@@ -72,7 +72,7 @@ class Excerpt {
 module.exports = Excerpt;
 
 class Paragraph {
-    flag = false
+    flag = false // FIXME unused?
 
     constructor() {
         this.children = [];
@@ -164,7 +164,7 @@ class StanzaProxy {
 }
 
 class Conjunction {
-    flag = false
+    flag = false // FIXME unused ?
 
     constructor(parent, lift, delimiter, conjunction) {
         this.children = [];
