@@ -12,9 +12,7 @@ var Path = require('./path');
 var grammar = require('./grammar');
 var link = require('./link');
 
-module.exports = verify;
-
-function verify(kni, trans, handler, kniscript) {
+module.exports = function verify(kni, trans, handler, kniscript) {
     var lines = trans.split('\n');
 
     // filter the transcript for given answers
