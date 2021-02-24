@@ -13,9 +13,8 @@ module.exports = class Wrapper {
     }
 
     words(words) {
-        var array = words.split(' ');
-        for (var i = 0; i < array.length; i++) {
-            this.word(array[i]);
+        for (const word of words.split(' ')) {
+            this.word(word);
         }
     }
 
