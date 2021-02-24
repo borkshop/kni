@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "noEmit": true,
+
+    "module": "CommonJS",
+    "target": "es2020"
+  }
+}

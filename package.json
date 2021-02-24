@@ -20,7 +20,8 @@
     "eslint": "^7.20.0",
     "nyc": "^15.1.0",
     "open": "^7.4.2",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "typescript": "^4.2.2"
   },
   "files": [
     "console.js",
@@ -48,7 +49,7 @@
     "wrapper.js"
   ],
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint . && tsc",
     "test": "node -- test.js",
     "cover": "nyc npm test",
     "check-cover": "nyc check-coverage",
