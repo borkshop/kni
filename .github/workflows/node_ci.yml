@@ -19,6 +19,7 @@ jobs:
       - run: npm ci
       - run: npm ls -s
       - run: npx eslint .
+      - run: npx tsc
       - run: npx nyc npm test
       - name: Coveralls Upload
         uses: coverallsapp/github-action@master
