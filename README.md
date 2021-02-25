@@ -82,16 +82,16 @@ $ open hello.html
 - [Peruácru][peruacru] is an app for iOS and Android using Apache Cordova.
   A [slice](https://github.com/kriskowal/peruacru.then.land) of the game is open source for illustration.
 
-  [![Peruácru Icon](https://github.com/kriskowal/kni/raw/master/examples/peruacru.png)][peruacru]
+  [![Peruácru Icon](examples/peruacru.png)][peruacru]
 
 - The [archery][] prototype illustrates a shop and gambling game.
 
-  [![An Archery Shop](https://github.com/kriskowal/kni/raw/master/examples/archery.png)][archery]
+  [![An Archery Shop](examples/archery.png)][archery]
 
 - The [journey][] prototype illustrates a survival game over a
   procedurally-generated infinite road.
 
-  [![A Journey through Ælfland](https://github.com/kriskowal/kni/raw/master/examples/journey.png)][journey]
+  [![A Journey through Ælfland](examples/journey.png)][journey]
 
 - The [airship][] prototype illustrates a narrative that includes
   a simulation of the control and behavior of a steampunk airship.
