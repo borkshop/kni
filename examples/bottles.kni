@@ -1,7 +1,0 @@
-! Bottle = 99
-@refrain
-{(Bottle)||1 bottle|{(Bottle)} bottles} of beer on the wall. /
-{(Bottle)||1 bottle|{(Bottle)} bottles} of beer. /
-You take one down and pass it around. {-Bottle} /
-{(Bottle)|No more bottles|1 bottle|{(Bottle)} bottles} of beer on the wall. //
-{(Bottle)||->refrain}

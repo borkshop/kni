@@ -1,7 +1,0 @@
-+ <apple> [You chose[Choose] apple. ]
-+ <orange> <lemon>
-  <orange or lemon>
-  [You chose[Choose] orange or lemon. ]
-+ <grape> [] You chose a grape, which wasn'}t even on the menu.
-+ <> [] You should make a choice. ->start
->

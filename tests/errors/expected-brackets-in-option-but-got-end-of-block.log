@@ -1,1 +1,0 @@
-tests/errors/expected-brackets-in-option-but-got-end-of-block.kni:2:1: Expected "[]" brackets in option but got to the end of the block.
