@@ -1,3 +1,15 @@
+# v4.0.3
+
+- Regenerated `package-lock.json`, dropping references to unpm from these packages:
+  - asap
+  - camelcase
+  - pop-iterate
+  - q
+  - rezult
+  - shon
+  - system
+  - weak-map
+- necessarily upgraded all dependencies, due to reinstalling sans version lock
 
 # v4.0.2
 
