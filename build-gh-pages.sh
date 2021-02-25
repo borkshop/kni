@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 HERE=$(cd -L $(dirname -- $0); pwd)
 export PATH="$HERE/node_modules/.bin":"$PATH"
