@@ -17,7 +17,7 @@ OVERLAY=$(gentree | git mktree)
 git read-tree --empty
 git read-tree --prefix=/ $OVERLAY
 TREE=$(git write-tree --missing-ok)
-PARENT=$(git rev-parse refs/heads/master)
+PARENT=$(git rev-parse refs/heads/main)
 COMMIT=$(git commit-tree -p $PARENT $TREE < <(echo Create bundles))
 git update-ref refs/heads/gh-pages $COMMIT
 
