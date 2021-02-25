@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 HERE=$(cd -L $(dirname -- $0); pwd)
 export PATH="$HERE/node_modules/.bin":"$PATH"
@@ -17,8 +18,8 @@ OVERLAY=$(gentree | git mktree)
 git read-tree --empty
 git read-tree --prefix=/ $OVERLAY
 TREE=$(git write-tree --missing-ok)
-PARENT=$(git rev-parse refs/heads/master)
-COMMIT=$(git commit-tree -p $PARENT $TREE < <(echo Create bundles))
+PARENT=$(git rev-parse refs/heads/main)
+COMMIT=$(git commit-tree -p $PARENT $TREE -m 'Create bundles')
 git update-ref refs/heads/gh-pages $COMMIT
 
 rm $GIT_INDEX_FILE
