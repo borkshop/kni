@@ -14,7 +14,7 @@
     "xorshift": "^1.1.1"
   },
   "devDependencies": {
-    "eslint": "^2.7.0",
+    "eslint": "^7.20.0",
     "istanbul": "^0.4.3",
     "json-diff": "^0.3.1",
     "opn": "^1.0.1"
