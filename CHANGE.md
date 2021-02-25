@@ -1,4 +1,8 @@
 
+# v3.0.1
+
+- Fix missing index.js file
+
 # v3.0.0
 
 This version allows options to be declared in subroutines.
