@@ -1,3 +1,6 @@
+# v3.0.2
+
+- Backport of v4.0.3 package-lock regeneration to eliminate unpm references
 
 # v3.0.1
 
