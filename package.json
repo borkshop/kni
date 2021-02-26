@@ -18,8 +18,8 @@
     "@babel/eslint-parser": "^7.13.4",
     "@babel/plugin-syntax-class-properties": "^7.12.13",
     "eslint": "^7.20.0",
-    "istanbul": "^0.4.3",
     "json-diff": "^0.3.1",
+    "nyc": "^15.1.0",
     "opn": "^1.0.1"
   },
   "files": [
@@ -48,12 +48,13 @@
     "wrapper.js"
   ],
   "scripts": {
-    "ci": "npm ls -s && npm run lint && npm run cover -s",
+    "ci": "npm ls -s && npm run lint && npm run check-cover",
     "lint": "eslint .",
     "test": "node -- test.js",
-    "cover": "istanbul cover --report html --print npm run test && istanbul report text && npm run check-cover -s",
-    "check-cover": "istanbul check-coverage",
-    "view-cover": "opn ./coverage/index.html",
+    "cover": "nyc --silent npm run test",
+    "check-cover": "npm run cover && nyc check-coverage --per-file && nyc check-coverage",
+    "show-cover": "npm run cover && nyc report --reporter text",
+    "view-cover": "npm run cover && nyc report --reporter html && opn ./coverage/index.html",
     "build": "node kni.js examples/archery.kni -j > examples/archery.json && bundle index.js > bundle.js",
     "usage": "usage2json kni.usage > kni.json"
   },
