@@ -3,4 +3,4 @@ node_js:
   - "node"
   - "lts/*"
 script:
-  npm test
+  npm ci

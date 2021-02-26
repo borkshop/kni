@@ -48,12 +48,13 @@
     "wrapper.js"
   ],
   "scripts": {
-    "test": "npm ls -s && npm run lint && npm run cover -s",
+    "ci": "npm ls -s && npm run lint && npm run cover -s",
     "lint": "eslint .",
-    "build": "node kni.js examples/archery.kni -j > examples/archery.json && bundle index.js > bundle.js",
-    "cover": "istanbul cover --report html --print node -- test.js && istanbul report text && npm run check-cover -s",
+    "test": "node -- test.js",
+    "cover": "istanbul cover --report html --print npm run test && istanbul report text && npm run check-cover -s",
     "check-cover": "istanbul check-coverage",
     "view-cover": "opn ./coverage/index.html",
+    "build": "node kni.js examples/archery.kni -j > examples/archery.json && bundle index.js > bundle.js",
     "usage": "usage2json kni.usage > kni.json"
   },
   "translators": {
