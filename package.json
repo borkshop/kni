@@ -20,7 +20,7 @@
     "eslint": "^7.20.0",
     "json-diff": "^0.3.1",
     "nyc": "^15.1.0",
-    "opn": "^1.0.1"
+    "open": "^7.4.2"
   },
   "files": [
     "console.js",
@@ -54,7 +54,7 @@
     "cover": "nyc --silent npm run test",
     "check-cover": "npm run cover && nyc check-coverage --per-file && nyc check-coverage",
     "show-cover": "npm run cover && nyc report",
-    "view-cover": "npm run show-cover && opn ./coverage/index.html",
+    "view-cover": "npm run show-cover && open ./coverage/index.html",
     "build": "node kni.js examples/archery.kni -j > examples/archery.json && bundle index.js > bundle.js",
     "usage": "usage2json kni.usage > kni.json"
   },
