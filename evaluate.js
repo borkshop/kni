@@ -21,12 +21,14 @@ function evaluate(scope, randomer, args) {
         return args[1];
     } else if (name === 'get') {
         return scope.get(args[1]);
-    // istanbul ignore else
     } else if (name === 'var') {
         return scope.get(nominate(scope, randomer, args));
-    } else if (name === 'call') {
+    }
+    // istanbul ignore next
+    else if (name === 'call') {
         var name = args[1][1];
         var f = functions[name];
+        // istanbul ignore if
         if (!f) {
             // TODO thread line number for containing instruction
             throw new Error('No function named ' + name);
@@ -36,7 +38,9 @@ function evaluate(scope, randomer, args) {
             values.push(evaluate(scope, randomer, args[i]));
         }
         return f.apply(null, values);
-    } else {
+    }
+    // istanbul ignore next
+    else {
         throw new Error('Unexpected operator ' + JSON.stringify(args));
     }
 }
