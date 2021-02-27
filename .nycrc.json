@@ -3,6 +3,12 @@
   "exclude": [
     "describe.js"
   ],
+  "reporter": [
+    "html",
+    "json",
+    "json-summary",
+    "text"
+  ],
   "branches": 100,
   "functions": 100,
   "lines": 100,
