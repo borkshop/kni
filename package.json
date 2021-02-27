@@ -18,7 +18,6 @@
     "@babel/eslint-parser": "^7.13.4",
     "@babel/plugin-syntax-class-properties": "^7.12.13",
     "eslint": "^7.20.0",
-    "json-diff": "^0.3.1",
     "nyc": "^15.1.0",
     "open": "^7.4.2"
   },
