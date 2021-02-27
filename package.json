@@ -53,8 +53,8 @@
     "test": "node -- test.js",
     "cover": "nyc --silent npm run test",
     "check-cover": "npm run cover && nyc check-coverage --per-file && nyc check-coverage",
-    "show-cover": "npm run cover && nyc report --reporter text",
-    "view-cover": "npm run cover && nyc report --reporter html && opn ./coverage/index.html",
+    "show-cover": "npm run cover && nyc report",
+    "view-cover": "npm run show-cover && opn ./coverage/index.html",
     "build": "node kni.js examples/archery.kni -j > examples/archery.json && bundle index.js > bundle.js",
     "usage": "usage2json kni.usage > kni.json"
   },
