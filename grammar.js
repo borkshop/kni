@@ -1038,8 +1038,9 @@ Program.prototype.next = function next(type, space, text, scanner) {
             .next(type, space, text, scanner);
     } else if (text === ',' || type === 'break') {
         return this;
-    // istanbul ignore if
-    } else if (type === 'error') {
+    }
+    // istanbul ignore next
+    else if (type === 'error') {
         // Break out of recursive error loops
         return this.parent.return(this.scope, this.rets, this.escs, scanner);
     } else {
@@ -1235,10 +1236,13 @@ Value.prototype.next = function next(type, space, text, scanner) {
         return expression(this.scope, new Open(this.parent));
     } else if (text === '{') {
         return expression(this.scope, new GetDynamicVariable(this.parent, [''], []));
-    // istanbul ignore else
-    } else if (type === 'alphanum') {
+    }
+    // istanbul ignore next
+    else if (type === 'alphanum') {
         return new GetStaticVariable(this.scope, new AfterVariable(this.parent), [], [], text, false);
-    } else {
+    }
+    // istanbul ignore next
+    else {
         this.scope.error(scanner.position() + ': Expected expression but got ' + tokenName(type, text) + '.');
         return this.parent.return(this.scope, ['val', 0], scanner)
             .next(type, space, text, scanner);
@@ -1299,10 +1303,13 @@ function MaybeArgument(scope, parent) {
 MaybeArgument.prototype.next = function next(type, space, text, scanner) {
     if (text === ',') {
         return expression(this.scope, this.parent);
-    // istanbul ignore else
-    } else  if (text === ')') {
+    }
+    // istanbul ignore next
+    else if (text === ')') {
         return this.parent.next(type, space, text, scanner);
-    } else {
+    }
+    // istanbul ignore next
+    else {
         this.scope.error(scanner.position() + ': Expected "," or ")" to end or argument list but got ' + tokenName(type, text) + '.');
         return this.parent;
     }
