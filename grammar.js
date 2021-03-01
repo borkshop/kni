@@ -1560,19 +1560,23 @@ class GetStaticVariable {
             }
         }
 
-        var state;
-        if (this.literals.length === 0 && this.expressions.length === 0) {
-            // istanbul ignore if
-            if (this.literal === '') {
-                this.scope.error(scanner.position() + ': Expected name but got ' + tokenName(type, text));
-                return this.parent.return(this.scope, [], scanner);
-            } else {
-                state = this.parent.return(this.scope, ['get', this.literal], scanner);
-            }
-        } else {
-            state = this.parent.return(this.scope, ['var', this.literals.concat([this.literal]), this.expressions], scanner);
+        if (this.literals.length !== 0 ||
+            this.expressions.length !== 0) {
+            return this.parent
+                .return(this.scope, ['var', this.literals.concat([this.literal]), this.expressions], scanner)
+                .next(type, space, text, scanner);
         }
-        return state.next(type, space, text, scanner);
+
+        // istanbul ignore next
+        if (this.literal === '') {
+            this.scope.error(scanner.position() + ': Expected name but got ' + tokenName(type, text));
+            return this.parent
+                .return(this.scope, [], scanner);
+        }
+
+        return this.parent
+            .return(this.scope, ['get', this.literal], scanner)
+            .next(type, space, text, scanner);
     }
 }
 
