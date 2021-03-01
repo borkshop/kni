@@ -332,7 +332,7 @@ class Keyword {
         Object.seal(this);
     }
 
-    next(type, space, text, scanner) {
+    next(_type, space, text, _scanner) {
         if (text === '>') {
             return this.parent.return(this.scope, 'keyword', this.keyword);
         }
@@ -462,7 +462,7 @@ class OptionThread {
         Object.freeze(this);
     }
 
-    return(scope, rets, escs, scanner) {
+    return(scope, rets, escs, _scanner) {
         this.option.push(scope, this.mode);
         // TODO investigate whether we can consistently tie off received rets
         // instead of passing them forward to OptionThread, which consistently
@@ -485,7 +485,7 @@ class AfterInitialQA {
         Object.freeze(this);
     }
 
-    next(type, space, text, scanner) {
+    next(type, _space, text, scanner) {
         // istanbul ignore else
         if (type === 'token' && text === '[') {
             return this.option.thread(scanner, new AfterQorA(this.scope, this, this.rets, this.option));
@@ -538,7 +538,7 @@ class DecideQorA {
         Object.freeze(this);
     }
 
-    next(type, space, text, scanner) {
+    next(type, _space, text, scanner) {
         if (type === 'token' && text === '[') { // A
             this.option.push(this.scope, 'a');
             return this.option.thread(scanner,
@@ -574,7 +574,7 @@ class AfterQA {
         Object.freeze(this);
     }
 
-    next(type, space, text, scanner) {
+    next(type, _space, text, scanner) {
         if (type === 'token' && text === '[') {
             return this.option.thread(scanner,
                 new OptionThread(this.scope, this, this.rets, this.option, 'q', ExpectFinalBracket));
@@ -586,7 +586,7 @@ class AfterQA {
         }
     }
 
-    return(scope, rets, escs, scanner) {
+    return(_scope, rets, escs, scanner) {
         // TODO terminate returned scope
         // TODO no test exercises these escapes.
         Scope.tie(escs, 'ESC');
@@ -608,7 +608,7 @@ class AfterQorA {
     }
 
     // Just capture the path and proceed.
-    return(scope, rets, escs, scanner) {
+    return(scope, rets, escs, _scanner) {
         // TODO consider whether this could have been done earlier.
         Scope.tie(this.rets, 'RET');
         // TODO no test exercises these escapes.
@@ -642,7 +642,7 @@ class ExpectFinalBracket {
 // node of the answer. After that thread has been submitted, we expect the
 // block to end.
 class AfterFinalA {
-    constructor(scope, parent, rets, option) {
+    constructor(scope, parent, rets, _option) {
         this.scope = scope;
         this.parent = parent;
         this.rets = rets;
@@ -721,7 +721,7 @@ class Loop {
         Object.freeze(this);
     }
 
-    return(scope, rets, escs, scanner) {
+    return(scope, rets, _escs, scanner) {
         // tie back rets
         this.scope.tie(rets);
         // TODO tie back escs
@@ -737,7 +737,7 @@ class ConcludeProcedure {
         Object.freeze(this);
     };
 
-    return(scope, rets, escs, scanner) {
+    return(_scope, rets, escs, scanner) {
         // After a procedure, connect prior rets.
         Scope.tie(rets, 'RET');
         // Dangling escs go to an escape instruction, to follow the jump path in
@@ -853,7 +853,7 @@ class SetBlock {
         Object.freeze(this);
     }
 
-    return(scope, expression, scanner) {
+    return(scope, expression, _scanner) {
         return new MaybeSetVariable(scope, this.parent, this.rets, this.op, expression);
     }
 }
@@ -889,7 +889,7 @@ class MaybeSetVariable {
         return this.parent.return(this.scope.next(), [node], [], scanner);
     }
 
-    return(scope, target, scanner) {
+    return(_scope, target, scanner) {
         return this.set(this.expression, target, scanner);
     }
 }
@@ -919,7 +919,7 @@ class ExpressionBlock {
         Object.freeze(this);
     }
 
-    return(scope, expression, scanner) {
+    return(scope, expression, _scanner) {
         return new AfterExpressionBlock(scope, this.parent, this.rets, this.mode, expression);
     }
 }
@@ -981,7 +981,7 @@ class SwitchBlock {
         return new MaybeWeightedCase(this.scope, new Case(this.scope.firstChild(), this, [], this.branches, min || 0));
     }
 
-    return(scope, rets, escs, scanner) {
+    return(_scope, rets, escs, scanner) {
         if (this.node.mode === 'pick') {
             Scope.tie(rets, 'RET');
             rets = [this.node];
@@ -1027,7 +1027,7 @@ class Case {
         return new Thread(scope, this, [node], []);
     }
 
-    return(scope, rets, escs, scanner) {
+    return(_scope, rets, escs, _scanner) {
         return new Case(this.scope.next(), this.parent, this.rets.concat(rets, escs), this.branches, this.min);
     }
 }
@@ -1049,7 +1049,7 @@ class MaybeWeightedCase {
         }
     }
 
-    return(scope, args, scanner) {
+    return(_scope, args, scanner) {
         return this.parent.case(args, scanner);
     }
 }
@@ -1067,7 +1067,7 @@ class Ask {
         if (type == 'alphanum') {
             return new Read(text, this.scope, this.parent, this.rets, this.escs);
         }
-        var node = this.scope.create('ask', null, scanner.position());
+        this.scope.create('ask', null, scanner.position());
         return new Thread(this.scope.next(), this.parent, this.rets, this.escs)
             .next(type, space, text, scanner);
     }
@@ -1123,7 +1123,7 @@ class Program {
         }
     }
 
-    return(scope, rets, escs, scanner) {
+    return(scope, rets, escs, _scanner) {
         return new Program(scope, this.parent, rets, escs);
     }
 }
@@ -1137,7 +1137,7 @@ class Assignment {
         Object.freeze(this);
     }
 
-    return(scope, expression, scanner) {
+    return(_scope, expression, scanner) {
         // istanbul ignore else
         if (expression[0] === 'get' || expression[0] === 'var') {
             return new ExpectOperator(this.scope, this.parent, this.rets, this.escs, expression);
@@ -1159,7 +1159,7 @@ class ExpectOperator {
         Object.freeze(this);
     }
 
-    next(type, space, text, scanner) {
+    next(type, _space, text, scanner) {
         // istanbul ignore else
         if (text === '=') {
             return expression(this.scope, new ExpectExpression(this.scope, this.parent, this.rets, this.escs, this.left, text));
@@ -1181,7 +1181,7 @@ class ExpectExpression {
         Object.freeze(this);
     }
 
-    return(scope, right, scanner) {
+    return(_scope, right, scanner) {
         var node;
         // TODO validate this.left as a valid move target
         this.scope.tie(this.rets);
@@ -1284,7 +1284,7 @@ class Open {
         Object.seal(this);
     }
 
-    return(scope, expression, scanner) {
+    return(scope, expression, _scanner) {
         return new Close(scope, this.parent, expression);
     }
 }
@@ -1297,7 +1297,7 @@ class Close {
         Object.seal(this);
     }
 
-    next(type, space, text, scanner) {
+    next(type, _space, text, scanner) {
         // istanbul ignore else
         if (type === 'symbol' && text === ')') {
             return this.parent.return(this.scope, this.expression, scanner);
@@ -1342,7 +1342,7 @@ class AfterVariable {
         Object.seal(this);
     }
 
-    return(scope, expression, scanner) {
+    return(scope, expression, _scanner) {
         return new MaybeCall(scope, this.parent, expression);
     }
 }
@@ -1381,7 +1381,7 @@ class Arguments {
         }
     }
 
-    return(scope, expression, scanner) {
+    return(scope, expression, _scanner) {
         this.args.push(expression);
         return new MaybeArgument(scope, this);
     }
@@ -1470,7 +1470,7 @@ class MaybeExpression {
         Object.seal(this);
     }
 
-    return(scope, expression, scanner) {
+    return(scope, expression, _scanner) {
         return new MaybeOperator(scope, this.parent, expression, this.operators);
     }
 }
@@ -1494,7 +1494,7 @@ class BinaryExpression {
         Object.seal(this);
     }
 
-    return(scope, expression, scanner) {
+    return(scope, expression, _scanner) {
         return new MaybeOperator(scope, this.parent, expression, this.operators);
     }
 }
@@ -1507,7 +1507,7 @@ class GetDynamicVariable {
         Object.seal(this);
     }
 
-    return(scope, expression, scanner) {
+    return(scope, expression, _scanner) {
         return new Expect('token', '}', scope, new ContinueVariable(
             scope,
             this.parent,
@@ -1603,7 +1603,7 @@ class Expect {
         Object.freeze(this);
     }
 
-    next(type, space, text, scanner) {
+    next(type, _space, text, scanner) {
         if (type !== this.expect || text !== this.text) {
             this.scope.error(scanner.position() + ': Expected ' + tokenName(this.expect, this.text) + ' but got ' + tokenName(type, text) + '.');
         }
