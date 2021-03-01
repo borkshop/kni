@@ -119,6 +119,7 @@ class FakeReadline {
         this.writer.write(('> ' + answer).trim() + '\n');
 
         if (answer === 'quit') {
+            // noop
         } else if (answer === 'replay') {
             this.writer.write('\n');
             this.engine.resume(this.engine.waypoint);
