@@ -19,8 +19,7 @@ function verify(kni, trans, handler, kniscript) {
 
     // filter the transcript for given answers
     var answers = [];
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
+    for (const line of lines) {
         if (line.lastIndexOf('>', 0) === 0) {
             answers.push(line.slice(1).trim());
         }
@@ -44,8 +43,8 @@ function verify(kni, trans, handler, kniscript) {
     // istanbul ignore if
     if (story.errors.length) {
         var errors = '';
-        for (var i = 0; i < story.errors.length; i++) {
-            errors += story.errors[i] + '\n';
+        for (const err of story.errors) {
+            errors += err + '\n';
         }
 
         if (errors === trans) {
@@ -56,8 +55,8 @@ function verify(kni, trans, handler, kniscript) {
             };
         }
 
-        for (var i = 0; i < story.errors.length; i++) {
-            console.error(story.errors[i]);
+        for (const err of story.errors) {
+            console.error(err);
         }
         return {
             pass: false,
