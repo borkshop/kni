@@ -47,13 +47,11 @@
     "wrapper.js"
   ],
   "scripts": {
-    "ci": "npm ls -s && npm run lint && npm run check-cover",
     "lint": "eslint .",
     "test": "node -- test.js",
-    "cover": "nyc --silent npm run test",
-    "check-cover": "npm run cover && nyc check-coverage --per-file && nyc check-coverage",
-    "show-cover": "npm run cover && nyc report",
-    "view-cover": "npm run show-cover && open ./coverage/index.html",
+    "cover": "nyc npm test",
+    "check-cover": "nyc check-coverage",
+    "view-cover": "npm run cover && open ./coverage/index.html",
     "build": "node kni.js examples/archery.kni -j > examples/archery.json && bundle index.js > bundle.js",
     "usage": "usage2json kni.usage > kni.json"
   },
