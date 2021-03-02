@@ -11,9 +11,9 @@
 // states.
 // The final parse state captures the entire syntax tree.
 
-var L1 = '@[]{}|/<>';
-var L2 = ['->', '<-', '==', '<>', '>=', '<=', '{"', '"}', '{\'', '\'}', '//', '**'];
-var num = /\d/;
+const L1 = '@[]{}|/<>';
+const L2 = ['->', '<-', '==', '<>', '>=', '<=', '{"', '"}', '{\'', '\'}', '//', '**'];
+const num = /\d/;
 
 // alphanumerics including non-english
 const alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\d_]/;
@@ -41,13 +41,14 @@ module.exports = class InlineLexer {
             return this;
         }
 
-        var wrap = false;
-        for (var i = 0; i < text.length - 1; i++) {
-            var c = text[i];
-            var d = text[i + 1];
-            var cd = c + d;
-            var numeric = num.test(c);
-            var alphanum = alpha.test(c);
+        let wrap = false;
+        let i = 0;
+        for (; i < text.length - 1; i++) {
+            let c = text[i];
+            const d = text[i + 1];
+            const cd = c + d;
+            const numeric = num.test(c);
+            const alphanum = alpha.test(c);
             if (c === ' ' || c === '\t') {
                 this.flush(scanner);
                 this.space = ' ';
@@ -89,7 +90,8 @@ module.exports = class InlineLexer {
                 this.space = '';
             } else if (cd === '--') {
                 this.flush(scanner);
-                for (var j = i + 2; j < text.length; j++) {
+                let j = i + 2;
+                for (; j < text.length; j++) {
                     c = text[j];
                     if (c !== '-') {
                         break;
@@ -117,9 +119,9 @@ module.exports = class InlineLexer {
         }
 
         if (i < text.length) {
-            var c = text[i];
-            var numeric = num.test(c);
-            var alphanum = alpha.test(c);
+            const c = text[i];
+            const numeric = num.test(c);
+            const alphanum = alpha.test(c);
             if (c === '\\') {
                 wrap = true;
             } else if (c === ' ' || c === '\t') {
