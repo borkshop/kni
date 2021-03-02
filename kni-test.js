@@ -87,6 +87,20 @@ function testDescribe(kniscript, descript, done) {
     }, done);
 }
 
+function testCompiledJson(kniscript, transcript, done) {
+    withTempDir(transcript, function under(dir, fin) {
+        var outfile = dir + '/out';
+        var jsonfile = dir + '/json';
+        runArgs([kniscript, '-j'], jsonfile, function compileDone(err) {
+            if (err) {
+                fin(err);
+                return;
+            }
+            runArgs(['-J', jsonfile, '-v', transcript], outfile, fin);
+        });
+    }, done);
+}
+
 function main() {
     fs.readdir('tests', function(err, files) {
         if (err) {
@@ -130,8 +144,8 @@ function main() {
 
         // verification tests
         [
-            // TODO also derive from files and/or reconcile with engine-test
             ['basic', testBasic],
+            ['compiledJson', testCompiledJson],
         ].forEach(function eachTestMode(testMode) {
             var testModeName = testMode[0];
             var runTest = testMode[1];
