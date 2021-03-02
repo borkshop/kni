@@ -670,8 +670,9 @@ class Label {
     }
 
     return(scope, expression, scanner) {
-        if (expression[0] === 'get') {
-            const label = expression[1];
+        const [head, ...tail] = expression;
+        if (head === 'get') {
+            const [label] = tail;
             if (label === '...') {
                 const node = scope.create('goto', 'RET', scanner.position());
                 scope.tie(this.rets);
@@ -684,13 +685,13 @@ class Label {
                 // rets also forwarded so they can be tied off if the goto is replaced.
                 return this.parent.return(labelScope, this.rets.concat([node]), [], scanner);
             }
-        } else if (expression[0] === 'call') {
-            const label = expression[1][1];
+        } else if (head === 'call') {
+            const label = tail[0][1];
             const labelScope = scope.label(label);
             const node = labelScope.create('def', null, scanner.position());
             const params = [];
-            for (let i = 2; i < expression.length; i++) {
-                const arg = expression[i];
+            for (let i = 1; i < tail.length; i++) {
+                const arg = tail[i];
                 if (arg[0] === 'get') {
                     params.push(arg[1]);
                 } else {
