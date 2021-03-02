@@ -148,7 +148,12 @@ function main() {
                     process.exitCode = -1;
                     return;
                 }
-                test(kniscript, typescript);
+
+                var result = verify(kniscript, typescript);
+                if (!result.pass) {
+                    console.log(result.actual);
+                    process.exit(1);
+                }
             });
             return;
         }
@@ -184,14 +189,6 @@ function main() {
         }
     }
 
-}
-
-function test(kniscript, typescript) {
-    var result = verify(kniscript, typescript);
-    if (!result.pass) {
-        console.log(result.actual);
-        process.exit(1);
-    }
 }
 
 function describeStory(states) {
