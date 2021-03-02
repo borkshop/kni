@@ -6,6 +6,14 @@ const Document = require('./document');
 
 const handler = {
     storageKey: 'kni',
+
+    shouldLog: true,
+    log(...args) {
+        if (this.shouldLog) {
+            console.log(...args);
+        }
+    },
+
     load() {
         if (window.location.hash.length > 1) {
             const json = atob(window.location.hash.slice(1));
@@ -25,10 +33,10 @@ const handler = {
         localStorage.setItem(this.storageKey, json);
     },
     goto(label) {
-        console.log(label);
+        this.log(label);
     },
     answer(text) {
-        console.log('>', text);
+        this.log('>', text);
     },
 };
 
@@ -42,7 +50,7 @@ const engine = new Engine({
 });
 
 window.onpopstate = (event) => {
-    console.log('> back');
+    handler.log('>', 'back');
     engine.resume(event.state);
 };
 
