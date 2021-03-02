@@ -686,12 +686,11 @@ class Label {
                 return this.parent.return(labelScope, this.rets.concat([node]), [], scanner);
             }
         } else if (head === 'call') {
-            const label = tail[0][1];
-            const labelScope = scope.label(label);
+            const [label, ...args] = tail;
+            const labelScope = scope.label(label[1]);
             const node = labelScope.create('def', null, scanner.position());
             const params = [];
-            for (let i = 1; i < tail.length; i++) {
-                const arg = tail[i];
+            for (const arg of args) {
                 if (arg[0] === 'get') {
                     params.push(arg[1]);
                 } else {
