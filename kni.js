@@ -22,10 +22,10 @@ var getBorderCharacters = require('table').getBorderCharacters;
 var describe = require('./describe');
 var makeHtml = require('./html');
 
-function main() {
-    var config = exec(usage);
-
+function run(args, out, done) {
+    var config = exec(usage, args);
     if (!config) {
+        done(null);
         return;
     }
 
@@ -33,15 +33,13 @@ function main() {
 
     function onKniscripts(err, kniscripts) {
         if (err) {
-            console.error(err.message);
-            process.exit(-1);
+            done(err);
             return;
         }
 
         var interactive = true;
 
-        var out = process.stdout;
-        if (config.transcript === process.stdout) {
+        if (config.transcript === out) {
             config.transcript = null;
         }
         if (config.transcript) {
@@ -51,7 +49,6 @@ function main() {
         var states;
         if (config.fromJson) {
             states = JSON.parse(kniscripts[0].content); // TODO test needed
-
         } else {
             var story = new Story();
 
@@ -103,11 +100,12 @@ function main() {
 
             states = story.states;
             if (story.errors.length) {
-                dump(story.errors, process.stderr);
                 if (config.transcript != null) {
                     dump(story.errors, config.transcript);
                 }
-                process.exitCode = -1;
+                var storyError = new Error('internal story error');
+                storyError.story = story;
+                done(storyError);
                 return;
             }
         }
@@ -144,17 +142,18 @@ function main() {
         if (config.expected) {
             read(config.expected, function onTypescript(err, typescript) {
                 if (err) {
-                    console.error(err.message);
-                    process.exitCode = -1;
+                    done(err);
                     return;
                 }
 
                 var result = verify(kniscript, typescript);
                 if (!result.pass) {
                     console.log(result.actual);
-                    process.exit(1);
+                    done(new Error('verification failed'));
+                    return;
                 }
             });
+            done(null);
             return;
         }
 
@@ -176,8 +175,7 @@ function main() {
             if (config.waypoint) {
                 read(config.waypoint, function onWaypoint(err, waypoint) {
                     if (err) {
-                        console.error(err.message);
-                        process.exitCode = -1;
+                        done(err);
                         return;
                     }
                     waypoint = JSON.parse(waypoint);
@@ -189,6 +187,7 @@ function main() {
         }
     }
 
+    done(null);
 }
 
 function describeStory(states) {
@@ -309,4 +308,17 @@ function dump(errors, writer) {
     }
 }
 
-main();
+if (require.main === module) {
+    run(null, process.stdout, function runDone(err) {
+        if (err) {
+            console.error(typeof err === 'object' && err.message ? err.message : err);
+            if (typeof err.story === 'object' && err.story) {
+                var story = err.story;
+                dump(story.errors, process.stderr);
+            }
+            process.exit(-1);
+        }
+    });
+} else {
+    module.exports = run;
+}
