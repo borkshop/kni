@@ -48,6 +48,10 @@ function run(args, out, done) {
 
         var states;
         if (config.fromJson) {
+            if (kniscripts.length !== 1) {
+                done(new Error('must provide (only) one JSON input file'));
+                return;
+            }
             states = JSON.parse(kniscripts[0].content); // TODO test needed
         } else {
             var story = new Story();
