@@ -392,7 +392,7 @@ module.exports = class Engine {
         }
         // istanbul ignore if
         if (def.locals.length !== this.instruction.args.length) {
-            console.error('Argument length mismatch for ' + label, this.instruction, procedure);
+            console.error('Argument length mismatch for ' + label, this.instruction);
             return this.resume();
         }
         // TODO replace this.global with closure scope if scoped procedures become
