@@ -735,7 +735,7 @@ class ConcludeProcedure {
         this.parent = parent;
         this.rets = rets;
         Object.freeze(this);
-    };
+    }
 
     return(_scope, rets, escs, scanner) {
         // After a procedure, connect prior rets.
