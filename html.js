@@ -3,7 +3,6 @@
 var System = require("system");
 var bundleSystemId = require("system/bundle").bundleSystemId;
 var Location = require("system/location");
-var Identifier = require("system/identifier");
 
 module.exports = makeHtml;
 function makeHtml(story, output, templateArgs) {
