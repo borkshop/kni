@@ -40,7 +40,6 @@ function verify(kni, trans, handler, kniscript) {
 
     link(story);
 
-    // istanbul ignore if
     if (story.errors.length) {
         var errors = '';
         for (const err of story.errors) {
@@ -111,7 +110,6 @@ class FakeReadline {
 
     ask(_question) {
         var answer = this.answers.shift();
-        // istanbul ignore if
         if (answer == null) {
             return;
         }

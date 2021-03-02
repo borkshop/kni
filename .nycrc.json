@@ -1,6 +1,7 @@
 {
   "all": false,
   "exclude": [
+    "coverage/",
     "describe.js"
   ],
   "reporter": [
@@ -9,8 +10,8 @@
     "json-summary",
     "text"
   ],
-  "branches": 100,
-  "functions": 100,
-  "lines": 100,
-  "statements": 100
+  "branches": 92,
+  "functions": 94,
+  "lines": 92,
+  "statements": 92
 }

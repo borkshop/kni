@@ -33,7 +33,6 @@ module.exports = class Engine {
     debug = typeof process === 'object' && process.env.DEBUG_ENGINE
 
     constructor(args) {
-        // istanbul ignore next
         this.story = args.story;
         this.labels = Object.keys(this.story);
         this.handler = args.handler;
@@ -42,14 +41,12 @@ module.exports = class Engine {
         this.noOption = null;
         this.global = new Global(this.handler);
         this.top = this.global;
-        // istanbul ignore next
         this.start = args.start || 'start';
         this.label = this.start;
         this.instruction = {type: 'goto', next: this.start};
         this.render = args.render;
         this.dialog = args.dialog;
         this.dialog.engine = this;
-        // istanbul ignore next
         this.randomer = args.randomer || Math;
         this.waypoint = this.capture();
         Object.seal(this);
@@ -71,18 +68,15 @@ module.exports = class Engine {
     continue() {
         var _continue;
         do {
-            // istanbul ignore if
             if (this.debug) {
                 console.log(this.label + ' ' +  this.instruction.type + ' ' + describe(this.instruction));
             }
-            // istanbul ignore if
             if (this.instruction == null) {
                 // TODO user error for non-console interaction.
                 console.log('The label ' + JSON.stringify(this.label) + ' does not exist in this story');
                 this.end();
                 return;
             }
-            // istanbul ignore if
             if (!this['$' + this.instruction.type]) {
                 console.error('Unexpected instruction type: ' + this.instruction.type, this.instruction);
                 this.resume();
@@ -93,7 +87,6 @@ module.exports = class Engine {
 
     goto(label) {
         while (this.top != null && (label == 'ESC' || label === 'RET')) {
-            // istanbul ignore if
             if (this.debug) {
                 console.log(label.toLowerCase());
             }
@@ -113,12 +106,10 @@ module.exports = class Engine {
         }
 
         var next = this.story[label];
-        // istanbul ignore if
         if (!next) {
             console.error('Story missing label', label);
             return this.resume();
         }
-        // istanbul ignore if
         if (!next) {
             console.error('Story missing instruction for label: ' + label);
             return this.resume();
@@ -218,7 +209,6 @@ module.exports = class Engine {
         this.top = closure.scope;
         // There is no known case where gothrough would immediately exit for
         // lack of further instructions, so
-        // istanbul ignore else
         if (this.gothrough(option.answer, 'RET')) {
             this.flush();
             this.continue();
@@ -240,7 +230,6 @@ module.exports = class Engine {
         return this.goto(this.instruction.next);
     }
 
-    // istanbul ignore next
     capture(closure) {
         var label, top;
         if (closure != null) {
@@ -269,7 +258,6 @@ module.exports = class Engine {
         ];
     }
 
-    // istanbul ignore next
     resume(snapshot) {
         this.render.clear();
         this.flush();
@@ -323,7 +311,6 @@ module.exports = class Engine {
         }
     }
 
-    // istanbul ignore next
     log() {
         this.top.log();
         console.log('');
@@ -380,17 +367,14 @@ module.exports = class Engine {
     $call() {
         var label = this.instruction.label;
         var def = this.story[label];
-        // istanbul ignore if
         if (!def) {
             console.error('no such procedure ' + label, this.instruction);
             return this.resume();
         }
-        // istanbul ignore if
         if (def.type !== 'def') {
             console.error('Can\'t call non-procedure ' + label, this.instruction);
             return this.resume();
         }
-        // istanbul ignore if
         if (def.locals.length !== this.instruction.args.length) {
             console.error('Argument length mismatch for ' + label, this.instruction);
             return this.resume();
@@ -439,7 +423,6 @@ module.exports = class Engine {
     $move() {
         var value = evaluate(this.top, this.randomer, this.instruction.source);
         var name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
-        // istanbul ignore if
         if (this.debug) {
             console.log(this.top.at() + '/' + this.label + ' ' + name + ' = ' + value);
         }
@@ -496,7 +479,6 @@ module.exports = class Engine {
             pop(weightExpressions, value);
             nexts.push(next);
         }
-        // istanbul ignore if
         if (this.debug) {
             console.log(this.top.at() + '/' + this.label + ' ' + value + ' -> ' + next);
         }
@@ -550,7 +532,6 @@ class Global {
         }
     }
 
-    // istanbul ignore next
     log() {
         var names = Object.keys(this.scope);
         names.sort();
@@ -562,7 +543,6 @@ class Global {
         console.log('');
     }
 
-    // istanbul ignore next
     at() {
         return '';
     }
@@ -624,7 +604,6 @@ class Frame {
     }
 
     set(name, value) {
-        // istanbul ignore else
         if (this.locals.indexOf(name) >= 0) {
             this.scope[name] = value;
             return;
@@ -632,7 +611,6 @@ class Frame {
         this.parent.set(name, value);
     }
 
-    // istanbul ignore next
     log() {
         this.parent.log();
         console.log('--- ' + this.label + ' -> ' + this.next);
@@ -643,7 +621,6 @@ class Frame {
         }
     }
 
-    // istanbul ignore next
     at() {
         return this.parent.at() + '/' + this.label;
     }

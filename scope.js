@@ -49,7 +49,6 @@ module.exports = class Scope {
         Scope.tie(nodes, this.name());
     }
 
-    // istanbul ignore next
     error(message) {
         this.story.error(message);
     }

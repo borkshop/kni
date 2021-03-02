@@ -52,16 +52,13 @@ class Play {
         if (text === 'quit') {
             console.log('');
             engine.dialog.close();
-        // istanbul ignore next
         } else if (text === 'bt' || text === 'trace') {
             engine.log();
             engine.ask();
-        // istanbul ignore next
         } else if (text === 'capture' || text === 'cap') {
             console.log(JSON.stringify(engine.waypoint));
             console.log('');
             engine.ask();
-        // istanbul ignore next
         } else if (text === 'save') {
             console.log('');
             engine.dialog.ask('file name [' + this.filename + ']> ');

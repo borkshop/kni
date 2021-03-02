@@ -12,7 +12,6 @@ module.exports = class Story {
     create(path, type, arg, position) {
         var name = Path.toName(path);
         var Node = this.constructors[type];
-        // istanbul ignore if
         if (!Node) {
             throw new Error('No node constructor for type: ' + type);
         }
@@ -22,7 +21,6 @@ module.exports = class Story {
         return node;
     }
 
-    // istanbul ignore next
     error(error) {
         this.errors.push(error);
     }
