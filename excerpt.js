@@ -194,6 +194,7 @@ class Conjunction {
     // istanbul ignore next
     stopJoin(drop) {
         if (this.children.length === 0) {
+            // noop
         } else if (this.children.length === 1) {
             this.parent.digest(this.lift, this.children[0].children, drop);
         } else if (this.children.length === 2) {
