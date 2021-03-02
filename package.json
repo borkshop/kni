@@ -19,7 +19,8 @@
     "@babel/plugin-syntax-class-properties": "^7.12.13",
     "eslint": "^7.20.0",
     "nyc": "^15.1.0",
-    "open": "^7.4.2"
+    "open": "^7.4.2",
+    "rimraf": "^3.0.2"
   },
   "files": [
     "console.js",
