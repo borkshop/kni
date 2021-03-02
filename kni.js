@@ -50,7 +50,7 @@ function main() {
 
         var states;
         if (config.fromJson) {
-            states = JSON.parse(knicript);
+            states = JSON.parse(kniscripts[0].content); // TODO test needed
 
         } else {
             var story = new Story();
