@@ -52,7 +52,6 @@
     "cover": "nyc npm test",
     "check-cover": "nyc check-coverage",
     "view-cover": "npm run cover && open ./coverage/index.html",
-    "build": "node kni.js examples/archery.kni -j > examples/archery.json && bundle index.js > bundle.js",
     "usage": "usage2json kni.usage > kni.json"
   },
   "translators": {
