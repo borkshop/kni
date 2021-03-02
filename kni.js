@@ -52,7 +52,12 @@ function run(args, out, done) {
                 done(new Error('must provide (only) one JSON input file'));
                 return;
             }
-            states = JSON.parse(kniscripts[0].content); // TODO test needed
+            try {
+                states = JSON.parse(kniscripts[0].content);
+            } catch (err) {
+                done(err);
+                return;
+            }
         } else {
             var story = new Story();
 
@@ -183,7 +188,12 @@ function run(args, out, done) {
                         done(err);
                         return;
                     }
-                    waypoint = JSON.parse(waypoint);
+                    try {
+                        waypoint = JSON.parse(waypoint);
+                    } catch (err) {
+                        done(err);
+                        return;
+                    }
                     engine.continue(waypoint);
                 });
             } else {
