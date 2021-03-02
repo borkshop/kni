@@ -26,12 +26,12 @@ function evaluate(scope, randomer, args) {
     }
     // istanbul ignore next
     else if (name === 'call') {
-        var name = args[1][1];
-        var f = functions[name];
+        var func = args[1][1];
+        var f = functions[func];
         // istanbul ignore if
         if (!f) {
             // TODO thread line number for containing instruction
-            throw new Error('No function named ' + name);
+            throw new Error('No function named ' + func);
         }
         var values = [];
         for (var i = 2; i < args.length; i++) {
