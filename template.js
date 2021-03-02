@@ -1,38 +1,57 @@
 'use strict';
-var Engine = require('./engine');
-var story = require('./story.json');
-var Document = require('./document');
 
-var reset = document.querySelector(".reset");
-reset.onclick = function onclick() {
-    engine.reset();
+const Engine = require('./engine');
+const story = require('./story.json');
+const Document = require('./document');
+
+const handler = {
+    waypoint(waypoint) {
+        const json = JSON.stringify(waypoint);
+        window.history.pushState(waypoint, '', '#' + btoa(json));
+        localStorage.setItem('kni', json);
+    },
+    goto(label) {
+        console.log(label);
+    },
+    answer(text) {
+        console.log('>', text);
+    },
 };
 
-var doc = new Document(document.body);
-var engine = new Engine({
+const doc = new Document(document.body);
+
+const engine = new Engine({
     story: story,
     render: doc,
     dialog: doc,
-    handler: {
-        waypoint: function waypoint(waypoint) {
-            var json = JSON.stringify(waypoint);
-            window.history.pushState(waypoint, '', '#' + btoa(json));
-            localStorage.setItem('kni', json);
-        },
-        goto: function _goto(label) {
-            console.log(label);
-        },
-        answer: function answer(text) {
-            console.log('>', text);
-        }
-    }
+    handler,
 });
+
+window.onpopstate = (event) => {
+    console.log('> back');
+    engine.resume(event.state);
+};
+
+window.onkeypress = (event) => {
+    const code = event.code;
+    const match = /^Digit(\d+)$/.exec(code);
+    if (match) {
+        engine.answer(match[1]);
+    } else if (code === 'KeyR') {
+        engine.reset();
+    }
+};
+
+const reset = document.querySelector(".reset");
+if (reset) {
+    reset.onclick = () => { engine.reset() };
+}
 
 doc.clear();
 
-var waypoint;
-var json;
-if (waypoint = window.location.hash || null) {
+let waypoint = window.location.hash || null;
+let json = localStorage.getItem('kni');
+if (waypoint) {
     try {
         waypoint = atob(waypoint.slice(1));
         waypoint = JSON.parse(waypoint);
@@ -40,7 +59,7 @@ if (waypoint = window.location.hash || null) {
         console.error(error);
         waypoint = null;
     }
-} else if (json = localStorage.getItem('kni')) {
+} else if (json) {
     try {
         waypoint = JSON.parse(json);
     } catch (error) {
@@ -50,19 +69,4 @@ if (waypoint = window.location.hash || null) {
     window.history.replaceState(waypoint, '', '#' + btoa(json));
 }
 
-window.onpopstate = function onpopstate(event) {
-    console.log('> back');
-    engine.resume(event.state);
-};
-
 engine.resume(waypoint);
-
-window.onkeypress = function onkeypress(event) {
-    var key = event.code;
-    var match = /^Digit(\d+)$/.exec(key);
-    if (match) {
-        engine.answer(match[1]);
-    } else if (key === 'KeyR') {
-        engine.reset();
-    }
-};
