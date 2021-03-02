@@ -5,6 +5,19 @@ const story = require('./story.json');
 const Document = require('./document');
 
 const handler = {
+    load() {
+        if (window.location.hash.length > 1) {
+            const json = atob(window.location.hash.slice(1));
+            return JSON.parse(json);
+        }
+        const json = window.localStorage.getItem('kni');
+        if (json) {
+            const state = JSON.parse(json);
+            window.history.replaceState(state, '', '#' + btoa(json));
+            return state;
+        }
+        return null;
+    },
     waypoint(waypoint) {
         const json = JSON.stringify(waypoint);
         window.history.pushState(waypoint, '', '#' + btoa(json));
@@ -49,24 +62,9 @@ if (reset) {
 
 doc.clear();
 
-let waypoint = window.location.hash || null;
-let json = localStorage.getItem('kni');
-if (waypoint) {
-    try {
-        waypoint = atob(waypoint.slice(1));
-        waypoint = JSON.parse(waypoint);
-    } catch (error) {
-        console.error(error);
-        waypoint = null;
-    }
-} else if (json) {
-    try {
-        waypoint = JSON.parse(json);
-    } catch (error) {
-        console.error(error);
-        waypoint = null;
-    }
-    window.history.replaceState(waypoint, '', '#' + btoa(json));
+try {
+    engine.resume(handler.load());
+} catch (error) {
+    console.error('unable to load prior state, restarting', error);
+    engine.resume(null);
 }
-
-engine.resume(waypoint);
