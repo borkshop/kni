@@ -302,8 +302,7 @@ class MaybeOption {
             this.at.tie([jump]);
         }
 
-        for (let i = 0; i < this.conditions.length; i++) {
-            const condition = this.conditions[i];
+        for (const condition of this.conditions) {
             const jump = this.at.create('jump', ['==', condition, ['val', 0]], scanner.position());
             const jumpBranch = new Branch(jump);
             rets.push(jumpBranch);
@@ -510,8 +509,7 @@ class AfterInitialQA {
         if (consequences.length) {
             this.option.node.answer.push(scope.name());
         }
-        for (let i = 0; i < consequences.length; i++) {
-            const consequence = consequences[i];
+        for (const consequence of consequences) {
             const node = scope.create('move', null, scanner.position());
             node.source = consequence[1];
             node.target = consequence[0];
@@ -1243,8 +1241,7 @@ const precedence = [ // from low to high
 ];
 
 function expression(scope, parent) {
-    for (let i = 0; i < precedence.length; i++) {
-        const operators = precedence[i];
+    for (const operators of precedence) {
         parent = new BinaryExpression(operators, parent);
     }
     return new Unary(scope, parent);
@@ -1589,8 +1586,8 @@ class ThenExpect {
 
     return(scope) {
         const args = [];
-        for (let i = 0; i < arguments.length; i++) {
-            args.push(arguments[i]);
+        for (const arg of arguments) {
+            args.push(arg);
         }
         return new Expect(this.expect, this.text, scope, this.parent, args);
     }
