@@ -20,7 +20,6 @@ module.exports = class OutlineLexer {
     }
 
     next(line, scanner) {
-        // istanbul ignore if
         if (this.debug) {
             console.error(
                 'OLL', scanner.position(),

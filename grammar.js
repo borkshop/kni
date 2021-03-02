@@ -18,7 +18,6 @@ class Stop {
         Object.freeze(this);
     }
 
-    // istanbul ignore next
     next(type, _space, text, scanner) {
         // The only way to reach this method is for there to be a bug in the
         // outline lexer, or a bug in the grammar.
@@ -40,7 +39,6 @@ class End {
         Object.freeze(this);
     }
 
-    // istanbul ignore next
     next(_type, _space, _text, _scanner) {
         return this;
     }
@@ -485,7 +483,6 @@ class AfterInitialQA {
     }
 
     next(type, _space, text, scanner) {
-        // istanbul ignore else
         if (type === 'token' && text === '[') {
             return this.option.thread(scanner, new AfterQorA(this.scope, this, this.rets, this.option));
         } else {
@@ -1110,9 +1107,7 @@ class Program {
                 .next(type, space, text, scanner);
         } else if (text === ',' || type === 'break') {
             return this;
-        }
-        // istanbul ignore next
-        else if (type === 'error') {
+        } else if (type === 'error') {
             // Break out of recursive error loops
             return this.parent.return(this.scope, this.rets, this.escs, scanner);
         } else {
@@ -1136,7 +1131,6 @@ class Assignment {
     }
 
     return(_scope, expression, scanner) {
-        // istanbul ignore else
         if (expression[0] === 'get' || expression[0] === 'var') {
             return new ExpectOperator(this.scope, this.parent, this.rets, this.escs, expression);
         } else {
@@ -1158,7 +1152,6 @@ class ExpectOperator {
     }
 
     next(type, _space, text, scanner) {
-        // istanbul ignore else
         if (text === '=') {
             return expression(this.scope, new ExpectExpression(this.scope, this.parent, this.rets, this.escs, this.left, text));
         } else {
@@ -1294,7 +1287,6 @@ class Close {
     }
 
     next(type, _space, text, scanner) {
-        // istanbul ignore else
         if (type === 'symbol' && text === ')') {
             return this.parent.return(this.scope, this.expression, scanner);
         } else {
@@ -1318,13 +1310,9 @@ class Value {
             return expression(this.scope, new Open(this.parent));
         } else if (text === '{') {
             return expression(this.scope, new GetDynamicVariable(this.parent, [''], []));
-        }
-        // istanbul ignore next
-        else if (type === 'alphanum') {
+        } else if (type === 'alphanum') {
             return new GetStaticVariable(this.scope, new AfterVariable(this.parent), [], [], text, false);
-        }
-        // istanbul ignore next
-        else {
+        } else {
             this.scope.error(scanner.position() + ': Expected expression but got ' + tokenName(type, text) + '.');
             return this.parent.return(this.scope, ['val', 0], scanner)
                 .next(type, space, text, scanner);
@@ -1393,13 +1381,9 @@ class MaybeArgument {
     next(type, space, text, scanner) {
         if (text === ',') {
             return expression(this.scope, this.parent);
-        }
-        // istanbul ignore next
-        else if (text === ')') {
+        } else if (text === ')') {
             return this.parent.next(type, space, text, scanner);
-        }
-        // istanbul ignore next
-        else {
+        } else {
             this.scope.error(scanner.position() + ': Expected "," or ")" to end or argument list but got ' + tokenName(type, text) + '.');
             return this.parent;
         }
@@ -1563,7 +1547,6 @@ class GetStaticVariable {
                 .next(type, space, text, scanner);
         }
 
-        // istanbul ignore next
         if (this.literal === '') {
             this.scope.error(scanner.position() + ': Expected name but got ' + tokenName(type, text));
             return this.parent
@@ -1614,7 +1597,6 @@ class Expect {
 function tokenName(type, text) {
     // It might not be possible to provoke an error at the beginning of a new
     // block.
-    // istanbul ignore if
     if (type === 'start') {
         return 'beginning of a new ' + JSON.stringify(text) + ' block';
     } else if (type === 'stop') {

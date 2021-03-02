@@ -15,7 +15,6 @@ class Excerpt {
     }
 
     break() {
-        // istanbul ignore next
         if (this.children.length === 0) {
             return;
         }
@@ -23,7 +22,6 @@ class Excerpt {
         last.break();
     }
 
-    // istanbul ignore next
     startJoin(lift, delimiter, conjunction) {
         if (this.children.length === 0) {
             return;
@@ -32,7 +30,6 @@ class Excerpt {
         last.startJoin(lift, delimiter, conjunction);
     }
 
-    // istanbul ignore next
     delimit(delimiter) {
         if (this.children.length === 0) {
             return;
@@ -41,7 +38,6 @@ class Excerpt {
         last.delimit(delimiter);
     }
 
-    // istanbul ignore next
     stopJoin() {
         if (this.children.length === 0) {
             return;
@@ -106,17 +102,14 @@ class Stanza {
         this.cursor = new StanzaProxy(this);
     }
 
-    // istanbul ignore next
     startJoin(lift, delimiter, conjunction) {
         this.cursor = this.cursor.startJoin(lift, delimiter, conjunction);
     }
 
-    // istanbul ignore next
     delimit(delimiter) {
         this.cursor.delimit(delimiter);
     }
 
-    // istanbul ignore next
     stopJoin() {
         this.cursor = this.cursor.stopJoin();
     }
@@ -151,17 +144,14 @@ class StanzaProxy {
         this.parent = parent;
     }
 
-    // istanbul ignore next
     startJoin(lift, delimiter, conjunction) {
         return new Conjunction(this, lift, delimiter, conjunction);
     }
 
-    // istanbul ignore next
     delimit(delimiter) {
         this.parent.digest('', [delimiter], ' ');
     }
 
-    // istanbul ignore next
     stopJoin() {
         throw new Error('cannot stop without starting conjunction');
     }
@@ -171,7 +161,6 @@ class StanzaProxy {
     }
 }
 
-// istanbul ignore next
 class Conjunction {
     constructor(parent, lift, delimiter, conjunction) {
         this.children = [];
@@ -191,7 +180,6 @@ class Conjunction {
 
     startJoin = StanzaProxy.prototype.startJoin;
 
-    // istanbul ignore next
     stopJoin(drop) {
         if (this.children.length === 0) {
             // noop

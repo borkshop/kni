@@ -15,7 +15,6 @@ function test(input, output) {
     scanner.return();
     il.next('stop', '', scanner); // induce second flush for coverage
 
-    // istanbul ignore if
     if (!equals(ll.list, output)) {
         console.error('ERROR');
         console.error(input);
@@ -33,7 +32,6 @@ class InlineLexLister {
     }
 
     next(type, space, text, scanner) {
-        // istanbul ignore if
         if (this.debug) {
             console.log("LL", scanner.position(), type, JSON.stringify(space), JSON.stringify(text));
         }

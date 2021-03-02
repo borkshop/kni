@@ -12,7 +12,6 @@ module.exports = class Wrapper {
         this.flush = false;
     }
 
-    // istanbul ignore next
     words(words) {
         var array = words.split(' ');
         for (var i = 0; i < array.length; i++) {
@@ -62,7 +61,6 @@ module.exports = class Wrapper {
     }
 
     // Bring your own break, if you need it.
-    // istanbul ignore next
     bullet() {
         var lead = this.leads[this.leads.length - 1];
         this.target.write(lead);

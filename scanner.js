@@ -37,7 +37,6 @@ module.exports = class Scanner {
         for (var i = 0; i < text.length; i++) {
             var c = text[i];
             var d = text[i + 1];
-            // istanbul ignore if
             if (this.debug) {
                 console.error('SCN', this.position() + ':' + i, JSON.stringify(c + (d || '')));
             }
@@ -82,7 +81,6 @@ module.exports = class Scanner {
 
         // TODO To exercise the following block, you need a file with no final
         // newline.
-        // istanbul ignore if
         if (!this.leading) {
             this.generator.next(text.slice(this.indentStart, i), this);
         }
@@ -104,7 +102,6 @@ module.exports = class Scanner {
         this.generator.return(this);
     }
 
-    // istanbul ignore next
     position() {
         return this.fileName + ':' + (this.lineNo + 1) + ':' + (this.columnStart + 1);
     }

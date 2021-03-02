@@ -49,9 +49,7 @@ function linker(story, context, state) {
                     return candidate;
                 }
             }
-            // istanbul ignore next
             story.error('Could not link ' + role + ' label ' + JSON.stringify(label) + ' at position ' + state.position);
-            // istanbul ignore next
             return label;
         };
     };

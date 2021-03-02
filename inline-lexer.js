@@ -29,7 +29,6 @@ module.exports = class InlineLexer {
     }
 
     next(type, text, scanner) {
-        // istanbul ignore if
         if (this.debug) {
             console.log('ILL', type, JSON.stringify(text));
         }

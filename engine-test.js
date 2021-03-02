@@ -109,14 +109,12 @@ function main() {
             }
         },
         answer: function answer(text) {
-            // istanbul ignore if
             if (text !== '1' && text !== 'mox' && text !== 'mux?') {
                 console.error('Handler test failed with unexpected answer: ', text);
                 process.exitCode = 1;
             }
         },
         choice: function _choice(choice) {
-            // istanbul ignore if
             if (choice.keywords[0] !== 'moxy') {
                 console.error('Handler test failed to call choice with moxy keyword');
                 process.exitCode = 1;
@@ -131,17 +129,14 @@ function main() {
         }
     });
 
-    // istanbul ignore if
     if (!ended) {
         console.error('Handle test failed to call end handler');
         process.exitCode = 1;
     }
-    // istanbul ignore if
     if (!asked) {
         console.error('Handle test failed to call ask handler without cue');
         process.exitCode = 1;
     }
-    // istanbul ignore if
     if (!askedWithCue) {
         console.error('Handle test failed to call ask handler with cue');
         process.exitCode = 1;
@@ -154,7 +149,6 @@ function main() {
             return engine.goto(next);
         },
     });
-    // istanbul ignore if
     if (!cued) {
         console.error('Handler test failed to cue');
         process.exitCode = 1;
@@ -169,7 +163,6 @@ function main() {
         },
     });
 
-    // istanbul ignore if
     if (process.exitCode) {
         console.error('Test failed.');
     }
@@ -180,7 +173,6 @@ function test(kniscript, transcript, handler) {
     var trans = fs.readFileSync(transcript, 'utf8');
     var result = verify(kni, trans, handler, kniscript);
 
-    // istanbul ignore if
     if (!result.pass) {
         process.exitCode |= 1;
         console.log(kniscript, transcript);
