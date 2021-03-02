@@ -5,12 +5,13 @@ const story = require('./story.json');
 const Document = require('./document');
 
 const handler = {
+    storageKey: 'kni',
     load() {
         if (window.location.hash.length > 1) {
             const json = atob(window.location.hash.slice(1));
             return JSON.parse(json);
         }
-        const json = window.localStorage.getItem('kni');
+        const json = window.localStorage.getItem(this.storageKey);
         if (json) {
             const state = JSON.parse(json);
             window.history.replaceState(state, '', '#' + btoa(json));
@@ -21,7 +22,7 @@ const handler = {
     waypoint(waypoint) {
         const json = JSON.stringify(waypoint);
         window.history.pushState(waypoint, '', '#' + btoa(json));
-        localStorage.setItem('kni', json);
+        localStorage.setItem(this.storageKey, json);
     },
     goto(label) {
         console.log(label);
