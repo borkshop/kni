@@ -1,14 +1,14 @@
 'use strict';
 
 
-var Scope = require('./scope');
+const Scope = require('./scope');
 
 exports.start = start;
 
 function start(story, path, base) {
-    var scope = new Scope(story, path, base);
-    var stop = new Stop(scope);
-    var start = scope.create('goto', 'RET', '1:1');
+    const scope = new Scope(story, path, base);
+    const stop = new Stop(scope);
+    const start = scope.create('goto', 'RET', '1:1');
     return new Thread(scope.zerothChild(), stop, [start], []);
 }
 
@@ -74,11 +74,11 @@ class Thread {
                 // Advance the path so that option thread don't appear empty.
                 return new Thread(this.scope.next(), this.parent, [], this.escs);
             } else if (text === '/') {
-                var node = this.scope.create('break', null, scanner.position());
+                const node = this.scope.create('break', null, scanner.position());
                 this.scope.tie(this.rets);
                 return new Thread(this.scope.next(), this.parent, [node], this.escs);
             } else if (text === '//') {
-                var node = this.scope.create('paragraph', null, scanner.position());
+                const node = this.scope.create('paragraph', null, scanner.position());
                 this.scope.tie(this.rets);
                 return new Thread(this.scope.next(), this.parent, [node], this.escs);
             } else if (text === '{"' || text === '{\'' || text === '"}' || text === '\'}') {
@@ -96,14 +96,14 @@ class Thread {
                 // tie off rets to the prompt.
                 this.scope.tie(this.rets);
                 // promote escs to rets, tying them off after the prompt.
-                var rets = this.escs.slice();
+                const rets = this.escs.slice();
                 this.escs.length = 0;
                 return new Ask(this.scope, new ThenExpect('stop', '', this), rets, []);
             } else { // if text === '!') {
                 return new Program(this.scope, new ThenExpect('stop', '', this), this.rets, []);
             }
         } else if (type === 'dash') {
-            var node = this.scope.create('rule', null, scanner.position());
+            const node = this.scope.create('rule', null, scanner.position());
             this.scope.tie(this.rets);
             return new Thread(this.scope.next(), this.parent, [node], this.escs);
         } else if (type === 'break') {
@@ -166,7 +166,7 @@ class Text {
             return this;
         }
         this.scope.tie(this.rets);
-        var node = this.scope.create('text', this.text, scanner.position());
+        const node = this.scope.create('text', this.text, scanner.position());
         node.lift = this.lift;
         node.drop = space;
         return this.parent.return(this.scope.next(), [node], [], scanner)
@@ -212,8 +212,8 @@ class ThreadCondition {
     }
 
     return(scope, args, scanner) {
-        var node = scope.create('jump', invertExpression(args), scanner.position());
-        var branch = new Branch(node);
+        const node = scope.create('jump', invertExpression(args), scanner.position());
+        const branch = new Branch(node);
         scope.tie(this.rets);
         return new MaybeThread(scope.next(), this.parent, [node], this.escs, this.skips.concat([branch]));
     }
@@ -288,30 +288,30 @@ class MaybeOption {
     }
 
     option(scanner) {
-        var variable = this.scope.name();
-        var rets = [];
+        const variable = this.scope.name();
+        const rets = [];
 
         this.at.tie(this.rets);
 
         if (this.leader === '*') {
             this.consequences.push([['get', variable], ['+', ['get', variable], ['val', 1]]]);
-            var jump = this.at.create('jump', ['<>', ['get', variable], ['val', 0]], scanner.position());
-            var jumpBranch = new Branch(jump);
+            const jump = this.at.create('jump', ['<>', ['get', variable], ['val', 0]], scanner.position());
+            const jumpBranch = new Branch(jump);
             rets.push(jumpBranch);
             this.advance();
             this.at.tie([jump]);
         }
 
-        for (var i = 0; i < this.conditions.length; i++) {
-            var condition = this.conditions[i];
-            var jump = this.at.create('jump', ['==', condition, ['val', 0]], scanner.position());
-            var jumpBranch = new Branch(jump);
+        for (let i = 0; i < this.conditions.length; i++) {
+            const condition = this.conditions[i];
+            const jump = this.at.create('jump', ['==', condition, ['val', 0]], scanner.position());
+            const jumpBranch = new Branch(jump);
             rets.push(jumpBranch);
             this.advance();
             this.at.tie([jump]);
         }
 
-        var option = new Option(this.scope, this.parent, rets, this.escs, this.leader, this.consequences);
+        const option = new Option(this.scope, this.parent, rets, this.escs, this.leader, this.consequences);
         option.node = this.at.create('option', null, scanner.position());
         option.node.keywords = Object.keys(this.keywords).sort();
         this.advance();
@@ -412,7 +412,7 @@ class Option {
         if (this.mode !== 'a') {
             // If the answer is reused in the question, create a dedicated jump and
             // add it to the end of the answer.
-            var jump = scope.create('goto', 'RET', scanner.position());
+            const jump = scope.create('goto', 'RET', scanner.position());
             this.node.answer.push(scope.name());
             rets.push(jump);
         }
@@ -428,13 +428,13 @@ class Option {
     thread(scanner, parent) {
         // Creat a dummy node, to replace if necessary, for arcs that begin with a
         // goto/divert arrow that otherwise would have loose rets to forward.
-        var placeholder = this.next.create('goto', 'RET', scanner.position());
+        const placeholder = this.next.create('goto', 'RET', scanner.position());
         return new Thread(this.next, parent, [placeholder], []);
     }
 
     push(scope, mode) {
-        var next = this.next.name();
-        var end = scope.name();
+        const next = this.next.name();
+        const end = scope.name();
         if (next !== end) {
             if (mode === 'q' || mode === 'qa') {
                 this.node.question.push(next);
@@ -506,13 +506,13 @@ class AfterInitialQA {
         rets = [];
 
         // Thread consequences, including incrementing the option variable name
-        var consequences = this.option.consequences;
+        const consequences = this.option.consequences;
         if (consequences.length) {
             this.option.node.answer.push(scope.name());
         }
-        for (var i = 0; i < consequences.length; i++) {
-            var consequence = consequences[i];
-            var node = scope.create('move', null, scanner.position());
+        for (let i = 0; i < consequences.length; i++) {
+            const consequence = consequences[i];
+            const node = scope.create('move', null, scanner.position());
             node.source = consequence[1];
             node.target = consequence[0];
             scope.tie(rets);
@@ -676,26 +676,26 @@ class Label {
 
     return(scope, expression, scanner) {
         if (expression[0] === 'get') {
-            var label = expression[1];
+            const label = expression[1];
             if (label === '...') {
-                var node = scope.create('goto', 'RET', scanner.position());
+                const node = scope.create('goto', 'RET', scanner.position());
                 scope.tie(this.rets);
                 return new Thread(scope, new Loop(scope, this.parent), [node], []);
             } else {
-                var labelScope = scope.label(label);
+                const labelScope = scope.label(label);
                 // place-holder goto thunk
-                var node = labelScope.create('goto', 'RET', scanner.position());
+                const node = labelScope.create('goto', 'RET', scanner.position());
                 scope.tie(this.rets);
                 // rets also forwarded so they can be tied off if the goto is replaced.
                 return this.parent.return(labelScope, this.rets.concat([node]), [], scanner);
             }
         } else if (expression[0] === 'call') {
-            var label = expression[1][1];
-            var labelScope = scope.label(label);
-            var node = labelScope.create('def', null, scanner.position());
-            var params = [];
-            for (var i = 2; i < expression.length; i++) {
-                var arg = expression[i];
+            const label = expression[1][1];
+            const labelScope = scope.label(label);
+            const node = labelScope.create('def', null, scanner.position());
+            const params = [];
+            for (let i = 2; i < expression.length; i++) {
+                const arg = expression[i];
                 if (arg[0] === 'get') {
                     params.push(arg[1]);
                 } else {
@@ -758,8 +758,8 @@ class Goto {
             Scope.tie(this.rets, args[1]);
             return this.parent.return(scope.next(), [], [], scanner);
         } else if (args[0] === 'call') {
-            var label = args[1][1];
-            var node = scope.create('call', label, scanner.position());
+            const label = args[1][1];
+            const node = scope.create('call', label, scanner.position());
             node.args = args.slice(2);
             scope.tie(this.rets);
             return this.parent.return(scope.next(), [node], [new Branch(node)], scanner);
@@ -783,15 +783,15 @@ class Cue {
             scope.error(scanner.position() + ': Expected cue.');
             return this.parent.return(scope, this.rets, this.escs, scanner);
         } else {
-            var cue = expression[1];
-            var node = scope.create('cue', cue, scanner.position());
+            const cue = expression[1];
+            const node = scope.create('cue', cue, scanner.position());
             scope.tie(this.rets);
             return this.parent.return(scope.next(), [node], this.escs, scanner);
         }
     }
 }
 
-var mutators = {
+const mutators = {
     '=': true,
     '+': true,
     '-': true,
@@ -799,18 +799,18 @@ var mutators = {
     '/': true,
 };
 
-var toggles = {
+const toggles = {
     '!': ['val', 1],
     '?': ['val', 0],
 };
 
-var variables = {
+const variables = {
     '@': 'loop',
     '#': 'hash',
     '^': 'pick'
 };
 
-var switches = {
+const switches = {
     '&': 'loop',
     '~': 'rand'
 };
@@ -878,7 +878,7 @@ class MaybeSetVariable {
     }
 
     set(source, target, scanner) {
-        var node = this.scope.create('move', null, scanner.position());
+        const node = this.scope.create('move', null, scanner.position());
         if (this.op === '=') {
             node.source = source;
         } else {
@@ -903,7 +903,7 @@ class ToggleBlock {
     }
 
     return(scope, expression, scanner) {
-        var node = scope.create('move', null, scanner.position());
+        const node = scope.create('move', null, scanner.position());
         node.source = this.source;
         node.target = expression;
         scope.tie(this.rets);
@@ -942,7 +942,7 @@ class AfterExpressionBlock {
             return new SwitchBlock(this.scope, this.parent, this.rets)
                 .start(scanner, invertExpression(this.expression), null, 0, this.mode, 2);
         } else if (text === '}') {
-            var node = this.scope.create('echo', this.expression, scanner.position());
+            const node = this.scope.create('echo', this.expression, scanner.position());
             this.scope.tie(this.rets);
             return this.parent.return(this.scope.next(), [node], [], scanner)
                 .next(type, space, text, scanner);
@@ -970,7 +970,7 @@ class SwitchBlock {
             value = 1;
         }
         expression = expression || ['get', this.scope.name()];
-        var node = this.scope.create('switch', expression, scanner.position());
+        const node = this.scope.create('switch', expression, scanner.position());
         this.node = node;
         node.variable = variable;
         node.value = value;
@@ -1007,9 +1007,9 @@ class Case {
         if (text === '|') {
             return new MaybeWeightedCase(this.scope, this);
         } else {
-            var scope = this.scope;
+            let scope = this.scope;
             while (this.branches.length < this.min) {
-                var node = scope.create('goto', 'RET', scanner.position());
+                const node = scope.create('goto', 'RET', scanner.position());
                 this.rets.push(node);
                 this.branches.push(scope.name());
                 scope = scope.next();
@@ -1021,8 +1021,8 @@ class Case {
 
     case(args, scanner) {
         this.parent.weights.push(args || ['val', 1]);
-        var scope = this.scope.zerothChild();
-        var node = scope.create('goto', 'RET', scanner.position());
+        const scope = this.scope.zerothChild();
+        const node = scope.create('goto', 'RET', scanner.position());
         this.branches.push(scope.name());
         return new Thread(scope, this, [node], []);
     }
@@ -1091,7 +1091,7 @@ class Read {
     }
 
     return(cue, scanner) {
-        var node = this.scope.create('read', this.variable, scanner.position());
+        const node = this.scope.create('read', this.variable, scanner.position());
         node.cue = cue;
         return new Thread(this.scope.next(), this.parent, this.rets.concat([node]), this.escs);
     }
@@ -1182,28 +1182,27 @@ class ExpectExpression {
     }
 
     return(_scope, right, scanner) {
-        var node;
         // TODO validate this.left as a valid move target
         this.scope.tie(this.rets);
-        node = this.scope.create('move', null, scanner.position());
+        const node = this.scope.create('move', null, scanner.position());
         node.target = this.left;
         node.source = right;
         return this.parent.return(this.scope.next(), [node], this.escs, scanner);
     }
 }
 
-var unary = {
+const unary = {
     'not': true,
     '-': true,
     '~': true,
     '#': true
 };
 
-var exponential = {
+const exponential = {
     '**': true // x ** y
 };
 
-var multiplicative = {
+const multiplicative = {
     '*': true,
     '/': true,
     '%': true,
@@ -1211,12 +1210,12 @@ var multiplicative = {
     '~': true,
 };
 
-var arithmetic = {
+const arithmetic = {
     '+': true,
     '-': true,
 };
 
-var comparison = {
+const comparison = {
     '<': true,
     '<=': true,
     '==': true,
@@ -1226,15 +1225,15 @@ var comparison = {
     '#': true
 };
 
-var intersection = {
+const intersection = {
     'and': true
 };
 
-var union = {
+const union = {
     'or': true
 };
 
-var precedence = [ // from low to high
+const precedence = [ // from low to high
     union,
     intersection,
     comparison,
@@ -1244,8 +1243,8 @@ var precedence = [ // from low to high
 ];
 
 function expression(scope, parent) {
-    for (var i = 0; i < precedence.length; i++) {
-        var operators = precedence[i];
+    for (let i = 0; i < precedence.length; i++) {
+        const operators = precedence[i];
         parent = new BinaryExpression(operators, parent);
     }
     return new Unary(scope, parent);
@@ -1259,7 +1258,7 @@ function label(scope, parent) {
     return new GetStaticVariable(scope, new AfterVariable(parent), [], [], '', true);
 }
 
-var inversions = {
+const inversions = {
     '==': '<>',
     '<>': '==',
     '>': '<=',
@@ -1450,9 +1449,9 @@ class MaybeOperator {
 
     next(type, space, text, scanner) {
         if (this.operators[text] === true) {
-            var parent = new MaybeExpression(this.parent, this.operators);
+            let parent = new MaybeExpression(this.parent, this.operators);
             parent = new PartialExpression(parent, text, this.expression);
-            for (var i = precedence.indexOf(this.operators) + 1; i < precedence.length; i++) {
+            for (let i = precedence.indexOf(this.operators) + 1; i < precedence.length; i++) {
                 parent = new MaybeExpression(parent, precedence[i]);
             }
             return new Unary(this.scope, parent);
@@ -1589,8 +1588,8 @@ class ThenExpect {
     }
 
     return(scope) {
-        var args = [];
-        for (var i = 0; i < arguments.length; i++) {
+        const args = [];
+        for (let i = 0; i < arguments.length; i++) {
             args.push(arguments[i]);
         }
         return new Expect(this.expect, this.text, scope, this.parent, args);
