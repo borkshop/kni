@@ -46,14 +46,17 @@ function run(args, out, done) {
             out = tee(config.transcript, out);
         }
 
+        var kniscript;
         var states;
+
         if (config.fromJson) {
             if (kniscripts.length !== 1) {
                 done(new Error('must provide (only) one JSON input file'));
                 return;
             }
             try {
-                states = JSON.parse(kniscripts[0].content);
+                kniscript = kniscripts[0].content;
+                states = JSON.parse(kniscript);
             } catch (err) {
                 done(err);
                 return;
@@ -62,7 +65,7 @@ function run(args, out, done) {
             var story = new Story();
 
             for (var i = 0; i < kniscripts.length; i++) {
-                var kniscript = kniscripts[i].content;
+                kniscript = kniscripts[i].content;
 
                 if (config.debugInput) {
                     console.log(kniscript);
