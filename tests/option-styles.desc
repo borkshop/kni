@@ -1,0 +1,32 @@
+L:C                              AT           DO    S  USING                                     S  GO            
+examples/option-styles.kni:1:1   start        par                                                                 
+examples/option-styles.kni:24:3  start.1      opt      (Q start.1.1 start.1.2) (A start.1.1         -> start.2    
+                                                       start.1.3)                                                 
+examples/option-styles.kni:24:3  start.1.1    text     Hello                                     -  <-            
+examples/option-styles.kni:24:3  start.1.2    text     back!                                        <-            
+examples/option-styles.kni:25:3  start.1.3    text  -  right back to you!                        -  -> start      
+examples/option-styles.kni:27:3  start.2      opt      (Q start.2.1) (A start.2.2)                  -> start.3    
+examples/option-styles.kni:27:3  start.2.1    text     North.                                    -  <-            
+examples/option-styles.kni:28:3  start.2.2    text  -  You head north.                           -  -> start      
+examples/option-styles.kni:31:3  start.3      opt      (Q start.3.2 start.3.3) (A                   -> start.4    
+                                                       start.3.1 start.3.3 start.3.4)                             
+examples/option-styles.kni:31:3  start.3.1    text     You b                                        <-            
+examples/option-styles.kni:31:3  start.3.2    text     B                                            <-            
+examples/option-styles.kni:31:3  start.3.3    text     uy an arrow.                              -  <-            
+examples/option-styles.kni:36:3  start.3.4    goto                                                  -> start      
+examples/option-styles.kni:36:3  start.4      opt      (Q start.4.2 start.4.3 start.4.4) (A         -> start.5    
+                                                       start.4.1 start.4.3 start.4.5)                             
+examples/option-styles.kni:36:3  start.4.1    text     You s                                        <-            
+examples/option-styles.kni:36:3  start.4.2    text     S                                            <-            
+examples/option-styles.kni:36:3  start.4.3    text     hoot an arrow                                <-            
+examples/option-styles.kni:36:3  start.4.4    text     .                                            <-            
+examples/option-styles.kni:36:3  start.4.5    text     , scoring a                               -                
+examples/option-styles.kni:36:3  start.4.6    rand     (start.4.6+0) start.4.6 (start.4.6.1         <-            
+                                                       start.4.6.2) W(1 1)                                        
+examples/option-styles.kni:36:3  start.4.6.1  text     hit                                          -> start.4.7  
+examples/option-styles.kni:36:3  start.4.6.2  text     miss                                                       
+examples/option-styles.kni:37:3  start.4.7    text     !                                         -  -> start      
+examples/option-styles.kni:39:3  start.5      opt      (Q start.5.1) (A start.5.2)                  -> start.6    
+examples/option-styles.kni:39:3  start.5.1    text     Quit.                                     -  <-            
+examples/option-styles.kni:39:3  start.5.2    goto                                                  <-            
+examples/option-styles.kni:40:1  start.6      ask                                                                 

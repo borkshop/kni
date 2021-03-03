@@ -1,0 +1,7 @@
+L:C                             AT         DO    S  USING                                     S  GO        
+examples/distribution.kni:15:1  start      echo     (~ 3 6)                                                
+examples/distribution.kni:15:1  start.1    br                                                              
+examples/distribution.kni:15:1  start.2    move     (+ i 1) -> i                                           
+examples/distribution.kni:15:1  start.3    walk     (< i 100) (start.3.1 start.3.2) W(1 1)       <-        
+examples/distribution.kni:15:1  start.3.1  goto                                                  <-        
+examples/distribution.kni:15:1  start.3.2  goto                                                  -> start  

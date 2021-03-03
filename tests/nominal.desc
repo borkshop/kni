@@ -1,0 +1,109 @@
+L:C                        AT                   DO    S  USING                                     S  GO  
+examples/nominal.kni:1:1   start                par                                                       
+examples/nominal.kni:4:1   start.1              call     nominally((- 0 (** 2 31))) esc ESC               
+examples/nominal.kni:6:3   start.2              text     .                                         -  <-  
+examples/nominal.kni:6:3   nominally            def      (n)                                              
+examples/nominal.kni:7:3   nominally.1          walk     (>= n 0) (nominally.1.1                      <-  
+                                                         nominally.1.2) W(1)                              
+examples/nominal.kni:7:3   nominally.1.1        text  -  minus                                     -      
+examples/nominal.kni:7:3   nominally.1.1.1      call     nominally((- n)) esc                         <-  
+                                                         nominally.2                                      
+examples/nominal.kni:7:3   nominally.1.2        goto                                                      
+examples/nominal.kni:8:3   nominally.2          walk     (< n 1000000000) (nominally.2.1              <-  
+                                                         nominally.2.2) W(1)                              
+examples/nominal.kni:9:5   nominally.2.1        call     nominally((/ n 1000000000)) esc                  
+                                                         nominally.3                                      
+examples/nominal.kni:9:5   nominally.2.1.1      text  -  billion                                          
+examples/nominal.kni:9:5   nominally.2.1.2      walk     (not (% n 1000000000))                       <-  
+                                                         (nominally.2.1.2.1 nominally.2.1.2.2)            
+                                                         W(1)                                             
+examples/nominal.kni:10:5  nominally.2.1.2.1    text     ,                                         -      
+examples/nominal.kni:10:5  nominally.2.1.2.1.1  call     nominally((% n 1000000000)) esc RET          <-  
+examples/nominal.kni:10:5  nominally.2.1.2.2    goto                                                  <-  
+examples/nominal.kni:10:5  nominally.2.2        goto                                                      
+examples/nominal.kni:11:3  nominally.3          walk     (< n 1000000) (nominally.3.1                 <-  
+                                                         nominally.3.2) W(1)                              
+examples/nominal.kni:12:5  nominally.3.1        call     nominally((/ n 1000000)) esc nominally.4         
+examples/nominal.kni:12:5  nominally.3.1.1      text  -  million                                          
+examples/nominal.kni:12:5  nominally.3.1.2      walk     (not (% n 1000000)) (nominally.3.1.2.1       <-  
+                                                         nominally.3.1.2.2) W(1)                          
+examples/nominal.kni:13:5  nominally.3.1.2.1    text     ,                                         -      
+examples/nominal.kni:13:5  nominally.3.1.2.1.1  call     nominally((% n 1000000)) esc RET             <-  
+examples/nominal.kni:13:5  nominally.3.1.2.2    goto                                                  <-  
+examples/nominal.kni:13:5  nominally.3.2        goto                                                      
+examples/nominal.kni:14:3  nominally.4          walk     (< n 1000) (nominally.4.1                    <-  
+                                                         nominally.4.2) W(1)                              
+examples/nominal.kni:15:5  nominally.4.1        call     nominally((/ n 1000)) esc nominally.5            
+examples/nominal.kni:15:5  nominally.4.1.1      text  -  thousand                                         
+examples/nominal.kni:15:5  nominally.4.1.2      walk     (not (% n 1000)) (nominally.4.1.2.1          <-  
+                                                         nominally.4.1.2.2) W(1)                          
+examples/nominal.kni:16:5  nominally.4.1.2.1    text     ,                                         -      
+examples/nominal.kni:16:5  nominally.4.1.2.1.1  call     nominally((% n 1000)) esc RET                <-  
+examples/nominal.kni:16:5  nominally.4.1.2.2    goto                                                  <-  
+examples/nominal.kni:16:5  nominally.4.2        goto                                                      
+examples/nominal.kni:17:3  nominally.5          walk     (< n 100) (nominally.5.1                     <-  
+                                                         nominally.5.2) W(1)                              
+examples/nominal.kni:18:5  nominally.5.1        call     nominally((/ n 100)) esc nominally.6             
+examples/nominal.kni:18:5  nominally.5.1.1      text  -  hundred                                          
+examples/nominal.kni:18:5  nominally.5.1.2      walk     (not (% n 100)) (nominally.5.1.2.1           <-  
+                                                         nominally.5.1.2.2) W(1)                          
+examples/nominal.kni:19:5  nominally.5.1.2.1    text                                                      
+examples/nominal.kni:19:5  nominally.5.1.2.1.1  call     nominally((% n 100)) esc RET                 <-  
+examples/nominal.kni:19:5  nominally.5.1.2.2    goto                                                  <-  
+examples/nominal.kni:19:5  nominally.5.2        goto                                                      
+examples/nominal.kni:20:3  nominally.6          walk     (<> (% n 10) 0) (nominally.6.1               <-  
+                                                         nominally.6.2) W(1)                              
+examples/nominal.kni:21:5  nominally.6.1        walk     (/ n 10) (nominally.6.1.0.1                  <-  
+                                                         nominally.6.1.0.2 nominally.6.1.0.3              
+                                                         nominally.6.1.0.4 nominally.6.1.0.5              
+                                                         nominally.6.1.0.6 nominally.6.1.0.7              
+                                                         nominally.6.1.0.8 nominally.6.1.0.9              
+                                                         nominally.6.1.0.10) W(1 1 1 1 1 1 1 1 1          
+                                                         1)                                               
+examples/nominal.kni:21:5  nominally.6.1.0.1    text     zero                                         <-  
+examples/nominal.kni:21:5  nominally.6.1.0.2    text     ten                                          <-  
+examples/nominal.kni:21:5  nominally.6.1.0.3    text     twenty                                       <-  
+examples/nominal.kni:21:5  nominally.6.1.0.4    text     thirty                                       <-  
+examples/nominal.kni:21:5  nominally.6.1.0.5    text     forty                                        <-  
+examples/nominal.kni:21:5  nominally.6.1.0.6    text     fifty                                        <-  
+examples/nominal.kni:21:5  nominally.6.1.0.7    text     sixty                                        <-  
+examples/nominal.kni:21:5  nominally.6.1.0.8    text     seventy                                      <-  
+examples/nominal.kni:21:5  nominally.6.1.0.9    text     eighty                                       <-  
+examples/nominal.kni:21:5  nominally.6.1.0.10   text     ninety                                       <-  
+examples/nominal.kni:21:5  nominally.6.2        goto                                                      
+examples/nominal.kni:22:3  nominally.7          walk     n (nominally.7.1 nominally.7.2               <-  
+                                                         nominally.7.3 nominally.7.4                      
+                                                         nominally.7.5 nominally.7.6                      
+                                                         nominally.7.7 nominally.7.8                      
+                                                         nominally.7.9 nominally.7.10                     
+                                                         nominally.7.11 nominally.7.12                    
+                                                         nominally.7.13 nominally.7.14                    
+                                                         nominally.7.15 nominally.7.16                    
+                                                         nominally.7.17 nominally.7.18                    
+                                                         nominally.7.19 nominally.7.20                    
+                                                         nominally.7.21) W(1 1 1 1 1 1 1 1 1 1 1          
+                                                         1 1 1 1 1 1 1 1 1 1)                             
+examples/nominal.kni:23:3  nominally.7.1        goto                                                  <-  
+examples/nominal.kni:23:3  nominally.7.2        text     one                                          <-  
+examples/nominal.kni:23:3  nominally.7.3        text     two                                          <-  
+examples/nominal.kni:23:3  nominally.7.4        text     three                                        <-  
+examples/nominal.kni:23:3  nominally.7.5        text     four                                         <-  
+examples/nominal.kni:23:3  nominally.7.6        text     five                                         <-  
+examples/nominal.kni:23:3  nominally.7.7        text     six                                          <-  
+examples/nominal.kni:23:3  nominally.7.8        text     seven                                        <-  
+examples/nominal.kni:23:3  nominally.7.9        text     eight                                        <-  
+examples/nominal.kni:23:3  nominally.7.10       text     nine                                         <-  
+examples/nominal.kni:24:3  nominally.7.11       goto                                                  <-  
+examples/nominal.kni:24:3  nominally.7.12       text     eleven                                       <-  
+examples/nominal.kni:24:3  nominally.7.13       text     twelve                                       <-  
+examples/nominal.kni:24:3  nominally.7.14       text     thirteen                                     <-  
+examples/nominal.kni:24:3  nominally.7.15       text     forteen                                      <-  
+examples/nominal.kni:24:3  nominally.7.16       text     fifteen                                      <-  
+examples/nominal.kni:24:3  nominally.7.17       text     sixteen                                      <-  
+examples/nominal.kni:24:3  nominally.7.18       text     seventeen                                    <-  
+examples/nominal.kni:24:3  nominally.7.19       text     eighteen                                     <-  
+examples/nominal.kni:24:3  nominally.7.20       text     nineteen                                     <-  
+examples/nominal.kni:25:3  nominally.7.21       call     nominally((* (/ n 10) 10)) esc                   
+                                                         RET                                              
+examples/nominal.kni:25:3  nominally.7.21.1     text     -                                                
+examples/nominal.kni:25:3  nominally.7.21.2     call     nominally((% n 10)) esc RET                  <-  

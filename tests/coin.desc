@@ -1,0 +1,31 @@
+L:C                     AT          DO    S  USING                                     S  GO           
+examples/coin.kni:1:1   start       par                                                                
+examples/coin.kni:2:3   start.1     move     0 -> heads                                                
+examples/coin.kni:3:3   start.2     move     1 -> tails                                                
+examples/coin.kni:6:3   start.3     text     This is a coin toss.                      -               
+examples/coin.kni:6:3   start.4     opt      (Q start.4.2 start.4.3) (A                   -> start.5   
+                                             start.4.1 start.4.3 start.4.4)                            
+examples/coin.kni:6:3   start.4.1   text     You c                                        <-           
+examples/coin.kni:6:3   start.4.2   text     C                                            <-           
+examples/coin.kni:6:3   start.4.3   text     all heads.                                -  <-           
+examples/coin.kni:6:3   start.4.4   move     heads -> called                              -> start.7   
+examples/coin.kni:7:3   start.5     opt      (Q start.5.2 start.5.3) (A start.5.1         -> start.6   
+                                             start.5.3 start.5.4)                                      
+examples/coin.kni:7:3   start.5.1   text     You c                                        <-           
+examples/coin.kni:7:3   start.5.2   text     C                                            <-           
+examples/coin.kni:7:3   start.5.3   text     all tails.                                -  <-           
+examples/coin.kni:7:3   start.5.4   move     tails -> called                              -> start.7   
+examples/coin.kni:8:1   start.6     ask                                                                
+examples/coin.kni:11:1  start.7     text     You flip the coin.                        -               
+examples/coin.kni:11:1  start.8     move     (~ 2) -> flipped                                          
+examples/coin.kni:12:1  start.9     text  -  It lands on                               -               
+examples/coin.kni:12:1  start.10    walk     flipped (start.10.1 start.10.2) W(1          <-           
+                                             1)                                                        
+examples/coin.kni:12:1  start.10.1  text     heads                                        -> start.11  
+examples/coin.kni:12:1  start.10.2  text     tails                                                     
+examples/coin.kni:14:1  start.11    text     . You                                     -               
+examples/coin.kni:14:1  start.12    walk     (== called flipped) (start.12.1              <-           
+                                             start.12.2) W(1 1)                                        
+examples/coin.kni:14:1  start.12.1  text     lose                                         -> start.13  
+examples/coin.kni:14:1  start.12.2  text     win                                                       
+examples/coin.kni:15:1  start.13    text     .                                         -  <-           

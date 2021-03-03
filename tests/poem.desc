@@ -1,0 +1,5 @@
+L:C                    AT       DO    S  USING                                     S  GO  
+examples/poem.kni:1:1  start    par                                                       
+examples/poem.kni:1:1  start.1  text     Roses are red                             -      
+examples/poem.kni:1:1  start.2  br                                                        
+examples/poem.kni:3:1  start.3  text  -  Violets are blue                          -  <-  

@@ -1,0 +1,110 @@
+L:C                        AT             DO    S  USING                                     S  GO             
+examples/archery.kni:1:1   start          par                                                                  
+examples/archery.kni:2:3   start.1        move     2 -> gold                                                   
+examples/archery.kni:3:3   start.2        move     0 -> arrow                                                  
+examples/archery.kni:4:3   start.3        move     0 -> score                                                  
+examples/archery.kni:7:1   start.4        text     You enter the fletcher’s shop. The        -                 
+                                                   fletcher beckons, “There are arrows                         
+                                                   for sale and a range out back to                            
+                                                   try your skill and fortune. For                             
+                                                   each score hit, you win more                                
+                                                   gold!”                                                      
+examples/archery.kni:7:1   start.5        par                                                                  
+examples/archery.kni:11:3  shop           text     You have                                  -                 
+examples/archery.kni:11:3  shop.1         call     arrow() esc shop                                            
+examples/archery.kni:12:3  shop.2         walk     arrow (shop.2.1 shop.2.2) W(1                <-             
+                                                   1)                                                          
+examples/archery.kni:12:3  shop.2.1       walk     gold (shop.2.1.0.1 shop.2.1.0.2) W(1 1)      <-             
+examples/archery.kni:12:3  shop.2.1.0.1   text  -  and                                       -  -> shop.3      
+examples/archery.kni:12:3  shop.2.1.0.2   text  -  but                                       -  -> shop.3      
+examples/archery.kni:12:3  shop.2.2       text  -  and                                       -                 
+examples/archery.kni:13:3  shop.3         call     gold() esc shop                                             
+examples/archery.kni:15:3  shop.4         text     .                                         -                 
+examples/archery.kni:15:3  shop.5         walk     (and (not gold) (not arrow)) (shop.5.1       <-             
+                                                   shop.5.2) W(1 1)                                            
+examples/archery.kni:15:3  shop.5.1       goto                                                  -> shop.6      
+examples/archery.kni:15:3  shop.5.2       goto                                                  -> exit        
+examples/archery.kni:18:5  shop.6         jump     shop.7 if (== (>= gold 1) 0)                                
+examples/archery.kni:18:5  shop.6.1       opt      (Q shop.6.3 shop.6.4) (A shop.6.2            -> shop.7      
+                                                   shop.6.4 shop.6.5 shop.6.7)                                 
+examples/archery.kni:18:5  shop.6.2       text     You b                                        <-             
+examples/archery.kni:18:5  shop.6.3       text     B                                            <-             
+examples/archery.kni:18:5  shop.6.4       text     uy 3 arrows for a gold piece.             -  <-             
+examples/archery.kni:18:5  shop.6.5       move     (- gold 1) -> gold                                          
+examples/archery.kni:18:5  shop.6.6       move     (+ arrow 3) -> arrow                         <-             
+examples/archery.kni:19:5  shop.6.7       goto                                                  -> shop        
+examples/archery.kni:20:5  shop.7         jump     shop.8 if (== (>= arrow 4) 0)                               
+examples/archery.kni:20:5  shop.7.1       opt      (Q shop.7.3 shop.7.4) (A shop.7.2            -> shop.8      
+                                                   shop.7.4 shop.7.5 shop.7.7)                                 
+examples/archery.kni:20:5  shop.7.2       text     You s                                        <-             
+examples/archery.kni:20:5  shop.7.3       text     S                                            <-             
+examples/archery.kni:20:5  shop.7.4       text     ell 4 arrows for a gold piece.            -  <-             
+examples/archery.kni:20:5  shop.7.5       move     (+ gold 1) -> gold                                          
+examples/archery.kni:20:5  shop.7.6       move     (- arrow 4) -> arrow                         <-             
+examples/archery.kni:21:5  shop.7.7       goto                                                  -> shop        
+examples/archery.kni:21:5  shop.8         opt      (Q shop.8.2 shop.8.3) (A shop.8.1            -> shop.9      
+                                                   shop.8.3 shop.8.4)                                          
+examples/archery.kni:21:5  shop.8.1       text     You walk through the door to              -  <-             
+examples/archery.kni:21:5  shop.8.2       text     Visit                                        <-             
+examples/archery.kni:21:5  shop.8.3       text  -  the archery range.                        -  <-             
+examples/archery.kni:21:5  shop.8.4       goto                                                  -> range       
+examples/archery.kni:23:5  shop.9         opt      (Q shop.9.1) (A shop.9.2)                    -> shop.10     
+examples/archery.kni:23:5  shop.9.1       text     Leave the store.                          -  <-             
+examples/archery.kni:23:5  shop.9.2       goto                                                  -> exit        
+examples/archery.kni:24:3  shop.10        ask                                                                  
+examples/archery.kni:30:3  range          text     You have                                  -                 
+examples/archery.kni:30:3  range.1        call     arrow() esc range                                           
+examples/archery.kni:32:5  range.2        text     .                                         -                 
+examples/archery.kni:33:5  range.3        jump     range.4 if (== (>= arrow 1) 0)                              
+examples/archery.kni:33:5  range.3.1      opt      (Q range.3.3 range.3.4 range.3.5) (A         -> range.4     
+                                                   range.3.2 range.3.4 range.3.6 range.3.7)                    
+examples/archery.kni:33:5  range.3.2      text     You s                                        <-             
+examples/archery.kni:33:5  range.3.3      text     S                                            <-             
+examples/archery.kni:33:5  range.3.4      text     hoot an arrow                                <-             
+examples/archery.kni:33:5  range.3.5      text     .                                            <-             
+examples/archery.kni:33:5  range.3.6      move     (- arrow 1) -> arrow                         <-             
+examples/archery.kni:34:5  range.3.7      rand     (range.3.7+0) range.3.7 (range.3.7.1         <-             
+                                                   range.3.7.2 range.3.7.3) W(1 1 1)                           
+examples/archery.kni:35:5  range.3.7.1    text  -  and hit the target, winning 1 gold        -                 
+                                                   piece!                                                      
+examples/archery.kni:35:5  range.3.7.1.1  move     (+ gold 1) -> gold                                          
+examples/archery.kni:35:5  range.3.7.1.2  move     (+ score 1) -> score                         -> range       
+examples/archery.kni:35:5  range.3.7.2    goto                                                  -> range.3.8   
+examples/archery.kni:35:5  range.3.7.3    goto                                                                 
+examples/archery.kni:37:5  range.3.8      text  -  and miss.                                 -  -> range       
+examples/archery.kni:37:5  range.4        opt      (Q range.4.2 range.4.3) (A                   -> range.5     
+                                                   range.4.1 range.4.3 range.4.4)                              
+examples/archery.kni:37:5  range.4.1      text     You r                                        <-             
+examples/archery.kni:37:5  range.4.2      text     R                                            <-             
+examples/archery.kni:37:5  range.4.3      text     eturn to the archery shop.                -  <-             
+examples/archery.kni:37:5  range.4.4      goto                                                  -> shop        
+examples/archery.kni:38:3  range.5        ask                                                                  
+examples/archery.kni:42:3  arrow          def      ()                                                          
+examples/archery.kni:43:3  arrow.1        walk     arrow (arrow.1.1 arrow.1.2 arrow.1.3)        <-             
+                                                   W(1 1 1)                                                    
+examples/archery.kni:43:3  arrow.1.1      text     no arrows                                    <-             
+examples/archery.kni:43:3  arrow.1.2      text     an arrow                                     <-             
+examples/archery.kni:43:3  arrow.1.3      echo     arrow                                                       
+examples/archery.kni:43:3  arrow.1.3.1    text  -  arrows                                       <-             
+examples/archery.kni:45:3  gold           def      ()                                                          
+examples/archery.kni:46:3  gold.1         walk     gold (gold.1.1 gold.1.2 gold.1.3) W(1 1      <-             
+                                                   1)                                                          
+examples/archery.kni:46:3  gold.1.1       text     no gold                                      <-             
+examples/archery.kni:46:3  gold.1.2       text     a gold piece                                 <-             
+examples/archery.kni:46:3  gold.1.3       echo     gold                                                        
+examples/archery.kni:46:3  gold.1.3.1     text  -  gold                                         <-             
+examples/archery.kni:49:3  exit           text  -  You depart the store through the          -                 
+                                                   back door with                                              
+examples/archery.kni:49:3  exit.1         call     gold() esc ESC                                              
+examples/archery.kni:50:3  exit.2         text     .                                         -                 
+examples/archery.kni:50:3  exit.3         walk     score (exit.3.1 exit.3.2) W(1 1)             <-             
+examples/archery.kni:50:3  exit.3.1       goto                                                  <-             
+examples/archery.kni:50:3  exit.3.2       text     All told, you scored                      -                 
+examples/archery.kni:50:3  exit.3.2.1     echo     score                                                       
+examples/archery.kni:50:3  exit.3.2.2     text  -  hit                                                         
+examples/archery.kni:50:3  exit.3.2.3     walk     score (exit.3.2.3.1 exit.3.2.3.2             <-             
+                                                   exit.3.2.3.3) W(1 1 1)                                      
+examples/archery.kni:50:3  exit.3.2.3.1   text     s                                            -> exit.3.2.4  
+examples/archery.kni:50:3  exit.3.2.3.2   goto                                                  -> exit.3.2.4  
+examples/archery.kni:50:3  exit.3.2.3.3   text     s                                                           
+examples/archery.kni:50:3  exit.3.2.4     text     .                                            <-             
