@@ -125,10 +125,12 @@ function run(args, out, done) {
         }
 
         if (config.toJson) {
-            console.log(JSON.stringify(states, null, 4), done);
-            interactive = false;
+            // TODO streaming json encoder?
+            out.write(JSON.stringify(states, null, 4), done);
+            return;
+        }
 
-        } else if (config.toHtml) {
+        if (config.toHtml) {
             makeHtml(states, config.toHtml, {
                 title: config.htmlTitle,
                 color: config.htmlColor,
