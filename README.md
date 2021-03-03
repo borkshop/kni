@@ -162,3 +162,5 @@ DON’T PANIC
 
 Copyright © 2016 by Kristopher Kowal.
 All rights reserved.
+
+[![Coverage Status](https://coveralls.io/repos/github/borkshop/kni/badge.svg)](https://coveralls.io/github/borkshop/kni)
