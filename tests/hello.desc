@@ -1,0 +1,18 @@
+L:C             AT        DO    S  USING                                     S  GO         
+hello.kni:1:1   start     par                                                              
+hello.kni:2:1   start.1   text     Hello, “World!”                           -             
+hello.kni:4:3   loop      opt      (Q loop.0.2 loop.0.3) (A loop.0.1            -> loop.1  
+                                   loop.0.3 loop.0.4)                                      
+hello.kni:4:3   loop.0.1  text     You s                                        <-         
+hello.kni:4:3   loop.0.2  text     S                                            <-         
+hello.kni:4:3   loop.0.3  text     ay, “Hello.”                              -  <-         
+hello.kni:6:3   loop.0.4  text  -  You are too kind, hello again to          -  -> loop    
+                                   you too.                                                
+hello.kni:7:3   loop.1    opt      (Q loop.1.2 loop.1.3) (A loop.1.1            -> loop.2  
+                                   loop.1.3 loop.1.4)                                      
+hello.kni:7:3   loop.1.1  text     You s                                        <-         
+hello.kni:7:3   loop.1.2  text     S                                            <-         
+hello.kni:7:3   loop.1.3  text     ay, “Farewell.”                           -  <-         
+hello.kni:8:1   loop.1.4  goto                                                  -> loop.3  
+hello.kni:8:1   loop.2    ask                                                              
+hello.kni:11:1  loop.3    text     The End.                                  -  <-         
