@@ -111,11 +111,12 @@ function run(args, out, done) {
         }
 
         if (config.describe) {
-            describeStory(states);
-            interactive = false;
+            describeStory(states, out, done);
+            return;
+        }
 
-        } else if (config.toJson) {
-            console.log(JSON.stringify(states, null, 4));
+        if (config.toJson) {
+            console.log(JSON.stringify(states, null, 4), done);
             interactive = false;
 
         } else if (config.toHtml) {
@@ -190,7 +191,7 @@ function run(args, out, done) {
     done(null);
 }
 
-function describeStory(states) {
+function describeStory(states, out, done) {
     var keys = Object.keys(states);
     var cells = [['L:C', 'AT', 'DO', 'S', 'USING', 'S', 'GO']];
     for (var i = 0; i < keys.length; i++) {
@@ -212,7 +213,7 @@ function describeStory(states) {
             stripe(i, describeNext(node.next, next))
         ]);
     }
-    console.log(table(cells, {
+    out.write(table(cells, {
         border: getBorderCharacters('void'),
         columnDefault: {
             paddingLeft: 0,
@@ -225,7 +226,7 @@ function describeStory(states) {
             }
         },
         drawHorizontalLine: no
-    }));
+    }), done);
 }
 
 function stripe(index, text) {
