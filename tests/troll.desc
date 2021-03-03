@@ -1,0 +1,10 @@
+L:C                     AT         DO    S  USING                                     S  GO          
+examples/troll.kni:1:1  start      par                                                               
+examples/troll.kni:2:1  start.1    text     And the bridge troll asked, “WHAT… is                    
+                                            your favorite color?” The knight                         
+                                            replied, “Blue                                           
+examples/troll.kni:2:1  start.2    rand     (start.2+0) start.2 (start.2.1               <-          
+                                            start.2.2) W(1 1)                                        
+examples/troll.kni:2:1  start.2.1  text     .                                            -> start.3  
+examples/troll.kni:2:1  start.2.2  text     ,…no, yellow! Aaaaaaah!                                  
+examples/troll.kni:3:1  start.3    text     ”                                         -  <-          

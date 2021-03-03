@@ -1,0 +1,12 @@
+L:C                             AT       DO    S  USING                                     S  GO  
+examples/spacestation.kni:1:1   start    par                                                       
+examples/spacestation.kni:41:9  start.1  text     bridge communications operations          -  <-  
+                                                  engineering tactical science navigation          
+                                                  helm long range sensors stellar                  
+                                                  cartography long range sensors                   
+                                                  communication dish attenuator engine             
+                                                  room weapons torpedo bay missile bay             
+                                                  laser cannon airlock docking collar              
+                                                  shuttle bay cargo bay crew quarters ship         
+                                                  configurations points class science              
+                                                  exploration cargo defense offense                

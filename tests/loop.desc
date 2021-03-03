@@ -1,0 +1,16 @@
+L:C                    AT         DO    S  USING                                     S  GO          
+examples/loop.kni:1:1  start      par                                                               
+examples/loop.kni:1:1  start.1    text     Do a loop:                                -              
+examples/loop.kni:3:3  start.2    opt      (Q start.2.2 start.2.3) (A                   -> start.3  
+                                           start.2.1 start.2.3 start.2.4)                           
+examples/loop.kni:3:3  start.2.1  text     You c                                        <-          
+examples/loop.kni:3:3  start.2.2  text     C                                            <-          
+examples/loop.kni:3:3  start.2.3  text     ontinue...                                -  <-          
+examples/loop.kni:4:3  start.2.4  goto                                                  -> start.2  
+examples/loop.kni:4:3  start.3    opt      (Q start.3.2 start.3.3) (A start.3.1         -> start.4  
+                                           start.3.3 start.3.4)                                     
+examples/loop.kni:4:3  start.3.1  text     You e                                        <-          
+examples/loop.kni:4:3  start.3.2  text     E                                            <-          
+examples/loop.kni:4:3  start.3.3  text     xit the loop.                             -  <-          
+examples/loop.kni:4:3  start.3.4  goto                                                  <-          
+examples/loop.kni:5:1  start.4    ask                                                               

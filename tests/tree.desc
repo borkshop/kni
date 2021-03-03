@@ -1,0 +1,47 @@
+L:C                     AT         DO    S  USING                                     S  GO           
+examples/tree.kni:1:1   start      par                                                                
+examples/tree.kni:2:1   start.1    text     You stand at the base of a tree.          -               
+examples/tree.kni:3:3   start.2    opt      (Q start.2.2 start.2.3) (A                   -> start.3   
+                                            start.2.1 start.2.3 start.2.4)                            
+examples/tree.kni:3:3   start.2.1  text     You climb up                                 <-           
+examples/tree.kni:3:3   start.2.2  text     Climb                                        <-           
+examples/tree.kni:3:3   start.2.3  text  -  the trunk.                                -  <-           
+examples/tree.kni:3:3   start.2.4  call     notch(0) esc ESC                             -> start     
+examples/tree.kni:4:3   start.3    opt      (Q start.3.2 start.3.3) (A start.3.1         -> start.4   
+                                            start.3.3 start.3.4)                                      
+examples/tree.kni:4:3   start.3.1  text     You w                                        <-           
+examples/tree.kni:4:3   start.3.2  text     W                                            <-           
+examples/tree.kni:4:3   start.3.3  text     alk away from the tree.                   -  <-           
+examples/tree.kni:4:3   start.3.4  goto                                                  <-           
+examples/tree.kni:5:1   start.4    ask                                                                
+examples/tree.kni:8:3   notch      def      (side)                                                    
+examples/tree.kni:9:5   notch.1    jump     notch.3 if side                                           
+examples/tree.kni:10:5  notch.2    text  -  You rest in a fork in the trunk of the    -               
+                                            tree.                                                     
+examples/tree.kni:10:5  notch.3    jump     notch.7 if (not side)                                     
+examples/tree.kni:11:5  notch.4    text  -  You rest in a notch in the tree, leaning  -               
+examples/tree.kni:11:5  notch.5    walk     side (notch.5.1 notch.5.2                    <-           
+                                            notch.5.3) W(1 1 1)                                       
+examples/tree.kni:11:5  notch.5.1  goto                                                  -> notch.6   
+examples/tree.kni:11:5  notch.5.2  text     northward                                    -> notch.6   
+examples/tree.kni:11:5  notch.5.3  text     southward                                                 
+examples/tree.kni:12:5  notch.6    text     .                                         -               
+examples/tree.kni:13:5  notch.7    opt      (Q notch.7.2 notch.7.3) (A notch.7.1         -> notch.8   
+                                            notch.7.3 notch.7.4)                                      
+examples/tree.kni:13:5  notch.7.1  text     You c                                        <-           
+examples/tree.kni:13:5  notch.7.2  text     C                                            <-           
+examples/tree.kni:13:5  notch.7.3  text     limb north.                               -  <-           
+examples/tree.kni:13:5  notch.7.4  call     notch(1) esc ESC                             -> notch     
+examples/tree.kni:14:5  notch.8    opt      (Q notch.8.2 notch.8.3) (A                   -> notch.9   
+                                            notch.8.1 notch.8.3 notch.8.4)                            
+examples/tree.kni:14:5  notch.8.1  text     You c                                        <-           
+examples/tree.kni:14:5  notch.8.2  text     C                                            <-           
+examples/tree.kni:14:5  notch.8.3  text     limb south.                               -  <-           
+examples/tree.kni:14:5  notch.8.4  call     notch(2) esc ESC                             -> notch     
+examples/tree.kni:15:5  notch.9    opt      (Q notch.9.2 notch.9.3) (A notch.9.1         -> notch.10  
+                                            notch.9.3 notch.9.4)                                      
+examples/tree.kni:15:5  notch.9.1  text     You c                                        <-           
+examples/tree.kni:15:5  notch.9.2  text     C                                            <-           
+examples/tree.kni:15:5  notch.9.3  text     limb down.                                -  <-           
+examples/tree.kni:15:5  notch.9.4  goto                                                  <-           
+examples/tree.kni:16:3  notch.10   ask                                                                

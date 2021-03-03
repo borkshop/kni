@@ -1,0 +1,29 @@
+L:C                      AT         DO    S  USING                                     S  GO          
+examples/forest.kni:1:1  start      par                                                               
+examples/forest.kni:1:1  start.1    text     There is an                               -              
+examples/forest.kni:1:1  start.2    hash     x (start.2.1 start.2.2 start.2.3             <-          
+                                             start.2.4) W(1 1 1 1)                                    
+examples/forest.kni:1:1  start.2.1  text     an ash                                       -> start.3  
+examples/forest.kni:1:1  start.2.2  text     an oak                                       -> start.3  
+examples/forest.kni:1:1  start.2.3  text     a birch                                      -> start.3  
+examples/forest.kni:1:1  start.2.4  text     a yew                                                    
+examples/forest.kni:2:3  start.3    text  -  here.                                     -              
+examples/forest.kni:2:3  start.4    opt      (Q start.4.2 start.4.3) (A                   -> start.5  
+                                             start.4.1 start.4.3 start.4.4)                           
+examples/forest.kni:2:3  start.4.1  text     You g                                        <-          
+examples/forest.kni:2:3  start.4.2  text     G                                            <-          
+examples/forest.kni:2:3  start.4.3  text     o east.                                      <-          
+examples/forest.kni:2:3  start.4.4  move     (+ x 1) -> x                                 -> start    
+examples/forest.kni:3:3  start.5    opt      (Q start.5.2 start.5.3) (A start.5.1         -> start.6  
+                                             start.5.3 start.5.4)                                     
+examples/forest.kni:3:3  start.5.1  text     You g                                        <-          
+examples/forest.kni:3:3  start.5.2  text     G                                            <-          
+examples/forest.kni:3:3  start.5.3  text     o west.                                      <-          
+examples/forest.kni:3:3  start.5.4  move     (- x 1) -> x                                 -> start    
+examples/forest.kni:4:3  start.6    opt      (Q start.6.2 start.6.3) (A                   -> start.7  
+                                             start.6.1 start.6.3 start.6.4)                           
+examples/forest.kni:4:3  start.6.1  text     You l                                        <-          
+examples/forest.kni:4:3  start.6.2  text     L                                            <-          
+examples/forest.kni:4:3  start.6.3  text     eave the forest.                             <-          
+examples/forest.kni:4:3  start.6.4  goto                                                  <-          
+examples/forest.kni:5:1  start.7    ask                                                               

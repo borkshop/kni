@@ -1,0 +1,51 @@
+L:C                     AT         DO    S  USING                                     S  GO          
+examples/hilo.kni:1:1   start      par                                                               
+examples/hilo.kni:1:1   start.1    rand     (start.1+0) start.1 (start.1.1               <-          
+                                            start.1.2) W(1 1)                                        
+examples/hilo.kni:1:1   start.1.1  text     Choose                                       -> start.2  
+examples/hilo.kni:1:1   start.1.2  text     Pick                                                     
+examples/hilo.kni:1:1   start.2    text  -  a number from 1 to 100.                   -              
+examples/hilo.kni:1:1   start.3    par                                                               
+examples/hilo.kni:4:3   start.4    move     1 -> lo                                                  
+examples/hilo.kni:5:3   start.5    move     100 -> hi                                                
+examples/hilo.kni:9:1   try        move     (+ lo (/ (- hi lo) 2)) -> mid                            
+examples/hilo.kni:9:1   try.1      walk     (<> hi lo) (try.1.1 try.1.2) W(1)            <-          
+examples/hilo.kni:9:1   try.1.1    goto                                                  -> end      
+examples/hilo.kni:9:1   try.1.2    goto                                                              
+examples/hilo.kni:11:1  try.2      text     Is the number less than                   -              
+examples/hilo.kni:11:1  try.3      echo     mid                                                      
+examples/hilo.kni:11:1  try.4      text     ?                                         -              
+examples/hilo.kni:11:1  try.5      move     (+ q 1) -> q                                             
+examples/hilo.kni:12:3  try.6      opt      (Q try.6.1) (A try.6.2)                      -> try.7    
+examples/hilo.kni:12:3  try.6.1    text     Yes                                          <-          
+examples/hilo.kni:12:3  try.6.2    move     (- mid 1) -> hi                              -> try.9    
+examples/hilo.kni:13:3  try.7      opt      (Q try.7.1) (A try.7.2)                      -> try.8    
+examples/hilo.kni:13:3  try.7.1    text     No                                           <-          
+examples/hilo.kni:13:3  try.7.2    move     mid -> lo                                    -> try.9    
+examples/hilo.kni:14:1  try.8      ask                                                               
+examples/hilo.kni:17:1  try.9      move     (+ lo (/ (- hi lo) 2)) -> mid                            
+examples/hilo.kni:17:1  try.10     walk     (<> hi lo) (try.10.1 try.10.2)               <-          
+                                            W(1)                                                     
+examples/hilo.kni:17:1  try.10.1   goto                                                  -> end      
+examples/hilo.kni:17:1  try.10.2   goto                                                              
+examples/hilo.kni:19:1  try.11     text     Is the number greater than                -              
+examples/hilo.kni:19:1  try.12     echo     mid                                                      
+examples/hilo.kni:19:1  try.13     text     ?                                         -              
+examples/hilo.kni:19:1  try.14     move     (+ q 1) -> q                                             
+examples/hilo.kni:20:3  try.15     opt      (Q try.15.1) (A try.15.2)                    -> try.16   
+examples/hilo.kni:20:3  try.15.1   text     Yes                                          <-          
+examples/hilo.kni:20:3  try.15.2   move     (+ mid 1) -> lo                              -> try      
+examples/hilo.kni:21:3  try.16     opt      (Q try.16.1) (A try.16.2)                    -> try.17   
+examples/hilo.kni:21:3  try.16.1   text     No                                           <-          
+examples/hilo.kni:21:3  try.16.2   move     mid -> hi                                    -> try      
+examples/hilo.kni:22:1  try.17     ask                                                               
+examples/hilo.kni:27:1  end        text  -  The number is                             -              
+examples/hilo.kni:27:1  end.1      echo     hi                                                       
+examples/hilo.kni:28:1  end.2      text     . I guessed after asking                  -              
+examples/hilo.kni:28:1  end.3      echo     q                                                        
+examples/hilo.kni:28:1  end.4      text  -  question                                                 
+examples/hilo.kni:28:1  end.5      walk     q (end.5.1 end.5.2 end.5.3) W(1 1 1)         <-          
+examples/hilo.kni:28:1  end.5.1    text     s                                            -> end.6    
+examples/hilo.kni:28:1  end.5.2    goto                                                  -> end.6    
+examples/hilo.kni:28:1  end.5.3    text     s                                                        
+examples/hilo.kni:29:1  end.6      text     .                                         -  <-          

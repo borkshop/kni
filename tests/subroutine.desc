@@ -1,0 +1,34 @@
+L:C                           AT         DO    S  USING                                     S  GO          
+examples/subroutine.kni:1:1   start      par                                                   -> start.1  
+examples/subroutine.kni:2:3   kind       def      (t u)                                                    
+examples/subroutine.kni:3:5   kind.1     opt      (Q kind.1.1) (A kind.1.6)                    <-          
+examples/subroutine.kni:3:5   kind.1.1   text     Choose                                    -              
+examples/subroutine.kni:3:5   kind.1.2   echo     t                                                        
+examples/subroutine.kni:3:5   kind.1.3   text     x                                                        
+examples/subroutine.kni:3:5   kind.1.4   echo     u                                                        
+examples/subroutine.kni:3:5   kind.1.5   text     .                                         -  <-          
+examples/subroutine.kni:3:5   kind.1.6   text  -  Chose                                     -              
+examples/subroutine.kni:3:5   kind.1.7   echo     t                                                        
+examples/subroutine.kni:3:5   kind.1.8   text     x                                                        
+examples/subroutine.kni:3:5   kind.1.9   echo     u                                                        
+examples/subroutine.kni:4:5   kind.1.10  text     .                                         -  <<          
+examples/subroutine.kni:7:3   type       def      (t)                                                      
+examples/subroutine.kni:8:3   type.1     text  -  You may choose from kind                  -              
+examples/subroutine.kni:8:3   type.2     echo     t                                                        
+examples/subroutine.kni:9:3   type.3     text     .                                         -              
+examples/subroutine.kni:9:3   type.4     call     kind(t 1) esc ESC                                        
+examples/subroutine.kni:10:3  type.5     call     kind(t 2) esc ESC                            <-          
+examples/subroutine.kni:12:1  start.1    call     type(1) esc start.5                                      
+examples/subroutine.kni:13:1  start.2    call     type(2) esc start.5                                      
+examples/subroutine.kni:14:3  start.3    opt      (Q start.3.1) (A start.3.2)                  -> start.4  
+examples/subroutine.kni:14:3  start.3.1  text     Skip.                                     -  <-          
+examples/subroutine.kni:14:3  start.3.2  text  -  Skipped.                                  -  <-          
+examples/subroutine.kni:15:1  start.4    ask                                                               
+examples/subroutine.kni:21:3  start.5    text     Your choice is noted.                     -              
+examples/subroutine.kni:21:3  start.6    opt      (Q start.6.1) (A start.6.2)                  -> start.7  
+examples/subroutine.kni:21:3  start.6.1  text     Ask another.                              -  <-          
+examples/subroutine.kni:21:3  start.6.2  text  -  Asking another.                           -  -> start    
+examples/subroutine.kni:22:3  start.7    opt      (Q start.7.1) (A start.7.2)                  -> start.8  
+examples/subroutine.kni:22:3  start.7.1  text     Done.                                     -  <-          
+examples/subroutine.kni:23:1  start.7.2  goto                                                  <-          
+examples/subroutine.kni:23:1  start.8    ask                                                               

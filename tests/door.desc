@@ -1,0 +1,66 @@
+L:C                     AT         DO    S  USING                                     S  GO          
+examples/door.kni:1:1   start      par                                                               
+examples/door.kni:6:1   blue       text     You are in a blue room. There is a door.  -              
+examples/door.kni:8:3   blue2      jump     blue2.4 if (not door)                                    
+examples/door.kni:9:5   blue2.1    text  -  The door is open.                         -              
+examples/door.kni:9:5   blue2.2    opt      (Q blue2.2.2 blue2.2.3) (A                   -> blue2.3  
+                                            blue2.2.1 blue2.2.3 blue2.2.4)                           
+examples/door.kni:9:5   blue2.2.1  text     You w                                        <-          
+examples/door.kni:9:5   blue2.2.2  text     W                                            <-          
+examples/door.kni:9:5   blue2.2.3  text     alk through the open door.                -  <-          
+examples/door.kni:9:5   blue2.2.4  goto                                                  -> red      
+examples/door.kni:10:5  blue2.3    opt      (Q blue2.3.2 blue2.3.3) (A blue2.3.1         -> blue2.4  
+                                            blue2.3.3 blue2.3.4)                                     
+examples/door.kni:10:5  blue2.3.1  text     You c                                        <-          
+examples/door.kni:10:5  blue2.3.2  text     C                                            <-          
+examples/door.kni:10:5  blue2.3.3  text     lose the door.                            -  <-          
+examples/door.kni:11:5  blue2.3.4  move     0 -> door                                    -> blue2    
+examples/door.kni:12:3  blue2.4    jump     blue2.7 if door                                          
+examples/door.kni:13:5  blue2.5    text  -  The door is closed.                       -              
+examples/door.kni:13:5  blue2.6    opt      (Q blue2.6.2 blue2.6.3) (A                   -> blue2.7  
+                                            blue2.6.1 blue2.6.3 blue2.6.4)                           
+examples/door.kni:13:5  blue2.6.1  text     You o                                        <-          
+examples/door.kni:13:5  blue2.6.2  text     O                                            <-          
+examples/door.kni:13:5  blue2.6.3  text     pen the door.                             -  <-          
+examples/door.kni:14:5  blue2.6.4  move     1 -> door                                    -> blue2    
+examples/door.kni:15:3  blue2.7    opt      (Q blue2.7.1) (A blue2.7.2)                  -> blue2.8  
+examples/door.kni:15:3  blue2.7.1  text     Where am I again?                            <-          
+examples/door.kni:15:3  blue2.7.2  goto                                                  -> blue     
+examples/door.kni:16:1  blue2.8    ask                                                               
+examples/door.kni:23:1  red        text  -  You are in a red room. There is a door    -              
+                                            and a bell.                                              
+examples/door.kni:25:3  red2       jump     red2.4 if (not door)                                     
+examples/door.kni:26:5  red2.1     text  -  The door is open.                         -              
+examples/door.kni:26:5  red2.2     opt      (Q red2.2.2 red2.2.3) (A red2.2.1            -> red2.3   
+                                            red2.2.3 red2.2.4)                                       
+examples/door.kni:26:5  red2.2.1   text     You w                                        <-          
+examples/door.kni:26:5  red2.2.2   text     W                                            <-          
+examples/door.kni:26:5  red2.2.3   text     alk through the open door.                -  <-          
+examples/door.kni:26:5  red2.2.4   goto                                                  -> blue     
+examples/door.kni:27:5  red2.3     opt      (Q red2.3.2 red2.3.3) (A red2.3.1            -> red2.4   
+                                            red2.3.3 red2.3.4)                                       
+examples/door.kni:27:5  red2.3.1   text     You c                                        <-          
+examples/door.kni:27:5  red2.3.2   text     C                                            <-          
+examples/door.kni:27:5  red2.3.3   text     lose the door.                            -  <-          
+examples/door.kni:28:5  red2.3.4   move     0 -> door                                    -> red2     
+examples/door.kni:29:3  red2.4     jump     red2.7 if door                                           
+examples/door.kni:30:5  red2.5     text  -  The door is closed.                       -              
+examples/door.kni:30:5  red2.6     opt      (Q red2.6.2 red2.6.3) (A red2.6.1            -> red2.7   
+                                            red2.6.3 red2.6.4)                                       
+examples/door.kni:30:5  red2.6.1   text     You o                                        <-          
+examples/door.kni:30:5  red2.6.2   text     O                                            <-          
+examples/door.kni:30:5  red2.6.3   text     pen the door.                             -  <-          
+examples/door.kni:31:5  red2.6.4   move     1 -> door                                    -> red2     
+examples/door.kni:32:3  red2.7     opt      (Q red2.7.2 red2.7.3) (A red2.7.1            -> red2.8   
+                                            red2.7.3 red2.7.4)                                       
+examples/door.kni:32:3  red2.7.1   text     You r                                        <-          
+examples/door.kni:32:3  red2.7.2   text     R                                            <-          
+examples/door.kni:32:3  red2.7.3   text     ing the bell.                             -  <-          
+examples/door.kni:33:3  red2.7.4   goto                                                  -> red2.10  
+examples/door.kni:33:3  red2.8     opt      (Q red2.8.1) (A red2.8.2)                    -> red2.9   
+examples/door.kni:33:3  red2.8.1   text     Where am I again?                         -  <-          
+examples/door.kni:33:3  red2.8.2   goto                                                  -> red      
+examples/door.kni:34:1  red2.9     ask                                                               
+examples/door.kni:39:1  red2.10    text     A dark portal opens and swallows          -  <-          
+                                            you whole. You lose consciousness.                       
+                                            When you come to, you see…                               

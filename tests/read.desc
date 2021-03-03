@@ -1,0 +1,27 @@
+L:C                     AT          DO    S  USING                                     S  GO           
+examples/read.kni:1:1   start       par                                                                
+examples/read.kni:2:3   start.1     text     What is the bot’s name?                   -               
+examples/read.kni:2:3   start.2     read     Name name                                                 
+examples/read.kni:5:3   start.3     text     What is the bot’s gender?                 -               
+examples/read.kni:5:3   start.4     opt      (Q start.4.1) (A start.4.2)                  -> start.5   
+examples/read.kni:5:3   start.4.1   text     Ladybot.                                     <-           
+examples/read.kni:5:3   start.4.2   move     1 -> Gender                                  -> start.8   
+examples/read.kni:6:3   start.5     opt      (Q start.5.1) (A start.5.2)                  -> start.6   
+examples/read.kni:6:3   start.5.1   text     Gentlebot.                                   <-           
+examples/read.kni:6:3   start.5.2   move     2 -> Gender                                  -> start.8   
+examples/read.kni:7:3   start.6     opt      (Q start.6.1) (A start.6.2)                  -> start.7   
+examples/read.kni:7:3   start.6.1   text     Does not compute.                            <-           
+examples/read.kni:7:3   start.6.2   move     0 -> Gender                                  -> start.8   
+examples/read.kni:8:1   start.7     ask                                                                
+examples/read.kni:11:3  start.8     text     Please enter some entropy to feed         -               
+                                             the bot.                                                  
+examples/read.kni:12:3  start.9     read     Entropy                                                   
+examples/read.kni:14:1  start.10    text     Please meet our new bot.                  -               
+examples/read.kni:14:1  start.11    walk     Gender (start.11.1 start.11.2                <-           
+                                             start.11.3) W(1 1 1)                                      
+examples/read.kni:14:1  start.11.1  text     Their                                        -> start.12  
+examples/read.kni:14:1  start.11.2  text     Her                                          -> start.12  
+examples/read.kni:14:1  start.11.3  text     His                                                       
+examples/read.kni:14:1  start.12    text  -  name is                                   -               
+examples/read.kni:14:1  start.13    echo     Name                                                      
+examples/read.kni:15:1  start.14    text     .                                         -  <-           

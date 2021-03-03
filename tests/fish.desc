@@ -1,0 +1,28 @@
+L:C                    AT         DO    S  USING                                     S  GO          
+examples/fish.kni:1:1  start      par                                                               
+examples/fish.kni:1:3  start.1    jump     start.2 if (<> start.1 0)                                
+examples/fish.kni:1:3  start.1.1  opt      (Q start.1.2) (A start.1.3                   -> start.2  
+                                           start.1.4)                                               
+examples/fish.kni:1:3  start.1.2  text     One Fish                                     <-          
+examples/fish.kni:1:3  start.1.3  move     (+ start.1 1) -> start.1                     <-          
+examples/fish.kni:2:3  start.1.4  goto                                                  -> start    
+examples/fish.kni:2:3  start.2    jump     start.3 if (<> start.2 0)                                
+examples/fish.kni:2:3  start.2.1  opt      (Q start.2.2) (A start.2.3 start.2.4)        -> start.3  
+examples/fish.kni:2:3  start.2.2  text     Two Fish                                     <-          
+examples/fish.kni:2:3  start.2.3  move     (+ start.2 1) -> start.2                     <-          
+examples/fish.kni:3:3  start.2.4  goto                                                  -> start    
+examples/fish.kni:3:3  start.3    jump     start.4 if (<> start.3 0)                                
+examples/fish.kni:3:3  start.3.1  opt      (Q start.3.2) (A start.3.3                   -> start.4  
+                                           start.3.4)                                               
+examples/fish.kni:3:3  start.3.2  text     Red Fish                                     <-          
+examples/fish.kni:3:3  start.3.3  move     (+ start.3 1) -> start.3                     <-          
+examples/fish.kni:4:3  start.3.4  goto                                                  -> start    
+examples/fish.kni:4:3  start.4    jump     start.5 if (<> start.4 0)                                
+examples/fish.kni:4:3  start.4.1  opt      (Q start.4.2) (A start.4.3 start.4.4)        -> start.5  
+examples/fish.kni:4:3  start.4.2  text     Blue Fish                                    <-          
+examples/fish.kni:4:3  start.4.3  move     (+ start.4 1) -> start.4                     <-          
+examples/fish.kni:5:3  start.4.4  goto                                                  -> start    
+examples/fish.kni:5:3  start.5    opt      (Q start.5.1) (A start.5.2)                  -> start.6  
+examples/fish.kni:5:3  start.5.1  text     End                                          <-          
+examples/fish.kni:5:3  start.5.2  goto                                                  <-          
+examples/fish.kni:6:1  start.6    ask                                                               

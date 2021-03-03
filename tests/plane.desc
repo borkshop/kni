@@ -1,0 +1,73 @@
+L:C                      AT          DO    S  USING                                     S  GO          
+examples/plane.kni:1:1   start       par                                                               
+examples/plane.kni:4:1   start.1     text     "This example generates a field of        -              
+                                              values around the origin of a                            
+                                              two-dimensional plane, illustrating how                  
+                                              Kni can assign a consistent hash to                      
+                                              every coordinate in that plane without                   
+                                              symmetry about any axis. This random                     
+                                              variable is useful for procedurally                      
+                                              generated places, people, and things.                    
+examples/plane.kni:4:1   start.2     par                                                               
+examples/plane.kni:10:1  start.3     text     Most of this example involves iterating   -              
+                                              over the (x, y) coordinate plane about                   
+                                              the origin. The "#" block maps the given                 
+                                              expression to consistent hash. The inner                 
+                                              "#" is a binary operator that produces a                 
+                                              Hilbert curve, ensuring that the                         
+                                              consistent hash provides no symmetric                    
+                                              axes, producing a sequence of values                     
+                                              that wends around itself in the plane.                   
+examples/plane.kni:10:1  start.4     par                                                               
+examples/plane.kni:12:1  start.5     move     10 -> s                                                  
+examples/plane.kni:13:1  start.6     move     0 -> y                                                   
+examples/plane.kni:15:3  outer       move     0 -> x                                                   
+examples/plane.kni:18:5  inner       hash     (# (- x (/ s 2)) (- y (/ s 2)))              <-          
+                                              (inner.0.1 inner.0.2 inner.0.3                           
+                                              inner.0.4 inner.0.5 inner.0.6                            
+                                              inner.0.7 inner.0.8 inner.0.9                            
+                                              inner.0.10 inner.0.11 inner.0.12                         
+                                              inner.0.13 inner.0.14 inner.0.15                         
+                                              inner.0.16 inner.0.17 inner.0.18                         
+                                              inner.0.19 inner.0.20 inner.0.21                         
+                                              inner.0.22 inner.0.23 inner.0.24                         
+                                              inner.0.25 inner.0.26) W(1 1 1 1 1                       
+                                              1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1                      
+                                              1 1 1)                                                   
+examples/plane.kni:18:5  inner.0.1   text     A                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.2   text     B                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.3   text     C                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.4   text     D                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.5   text     E                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.6   text     F                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.7   text     G                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.8   text     H                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.9   text     I                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.10  text     J                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.11  text     K                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.12  text     L                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.13  text     M                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.14  text     N                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.15  text     O                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.16  text     P                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.17  text     Q                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.18  text     R                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.19  text     S                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.20  text     T                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.21  text     U                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.22  text     V                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.23  text     W                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.24  text     X                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.25  text     Y                                            -> inner.1  
+examples/plane.kni:18:5  inner.0.26  text     Z                                                        
+examples/plane.kni:19:3  inner.1     text  -  -                                         -              
+examples/plane.kni:19:3  inner.2     move     (+ x 1) -> x                                             
+examples/plane.kni:19:3  inner.3     walk     (<= x s) (inner.3.1 inner.3.2) W(1 1)        <-          
+examples/plane.kni:19:3  inner.3.1   goto                                                  -> inner.4  
+examples/plane.kni:19:3  inner.3.2   goto                                                  -> inner    
+examples/plane.kni:19:3  inner.4     br                                                                
+examples/plane.kni:20:1  inner.5     move     (+ y 1) -> y                                             
+examples/plane.kni:20:1  inner.6     walk     (<= y s) (inner.6.1 inner.6.2) W(1           <-          
+                                              1)                                                       
+examples/plane.kni:20:1  inner.6.1   goto                                                  <-          
+examples/plane.kni:20:1  inner.6.2   goto                                                  -> outer    

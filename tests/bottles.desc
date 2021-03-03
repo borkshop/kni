@@ -1,0 +1,35 @@
+L:C                       AT             DO    S  USING                                     S  GO             
+examples/bottles.kni:1:1  start          par                                                                  
+examples/bottles.kni:2:1  start.1        move     99 -> Bottle                                                
+examples/bottles.kni:3:1  refrain        walk     Bottle (refrain.0.1 refrain.0.2              <-             
+                                                  refrain.0.3) W(1 1 1)                                       
+examples/bottles.kni:3:1  refrain.0.1    goto                                                  -> refrain.1   
+examples/bottles.kni:3:1  refrain.0.2    text     1 bottle                                     -> refrain.1   
+examples/bottles.kni:3:1  refrain.0.3    echo     Bottle                                                      
+examples/bottles.kni:3:1  refrain.0.3.1  text  -  bottles                                                     
+examples/bottles.kni:3:1  refrain.1      text  -  of beer on the wall.                      -                 
+examples/bottles.kni:3:1  refrain.2      br                                                                   
+examples/bottles.kni:4:1  refrain.3      walk     Bottle (refrain.3.1 refrain.3.2              <-             
+                                                  refrain.3.3) W(1 1 1)                                       
+examples/bottles.kni:4:1  refrain.3.1    goto                                                  -> refrain.4   
+examples/bottles.kni:4:1  refrain.3.2    text     1 bottle                                     -> refrain.4   
+examples/bottles.kni:4:1  refrain.3.3    echo     Bottle                                                      
+examples/bottles.kni:4:1  refrain.3.3.1  text  -  bottles                                                     
+examples/bottles.kni:4:1  refrain.4      text  -  of beer.                                  -                 
+examples/bottles.kni:4:1  refrain.5      br                                                                   
+examples/bottles.kni:5:1  refrain.6      text  -  You take one down and pass it             -                 
+                                                  around.                                                     
+examples/bottles.kni:5:1  refrain.7      move     (- Bottle 1) -> Bottle                                      
+examples/bottles.kni:5:1  refrain.8      br                                                                   
+examples/bottles.kni:6:1  refrain.9      walk     Bottle (refrain.9.1 refrain.9.2              <-             
+                                                  refrain.9.3) W(1 1 1)                                       
+examples/bottles.kni:6:1  refrain.9.1    text     No more bottles                              -> refrain.10  
+examples/bottles.kni:6:1  refrain.9.2    text     1 bottle                                     -> refrain.10  
+examples/bottles.kni:6:1  refrain.9.3    echo     Bottle                                                      
+examples/bottles.kni:6:1  refrain.9.3.1  text  -  bottles                                                     
+examples/bottles.kni:6:1  refrain.10     text  -  of beer on the wall.                      -                 
+examples/bottles.kni:6:1  refrain.11     par                                                                  
+examples/bottles.kni:7:1  refrain.12     walk     Bottle (refrain.12.1 refrain.12.2)           <-             
+                                                  W(1 1)                                                      
+examples/bottles.kni:7:1  refrain.12.1   goto                                                  <-             
+examples/bottles.kni:7:1  refrain.12.2   goto                                                  -> refrain     
