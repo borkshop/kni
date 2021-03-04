@@ -1,6 +1,10 @@
+// @ts-check
+
 'use strict';
 
 var Path = require('./path');
+
+/** @typedef {import('./path').Path} PathT */
 
 module.exports = class Scope {
     static tie(ends, name) {
@@ -21,6 +25,7 @@ module.exports = class Scope {
         Object.seal(this);
     }
 
+    /** @returns {string} */
     name() {
         return Path.toName(this.path);
     }
