@@ -3,11 +3,9 @@
 var Path = require('./path');
 
 module.exports = class Story {
-    constructor() {
-        this.states = {};
-        this.errors = [];
-        Object.seal(this);
-    }
+    states = {}
+
+    errors = []
 
     create(path, type, arg, position) {
         var name = Path.toName(path);
