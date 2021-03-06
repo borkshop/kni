@@ -34,7 +34,7 @@ module.exports = class InlineLexer {
         }
 
         if (type !== 'text') {
-            this.flush();
+            this.flush(scanner);
             this.generator.next(type, ' ', text, scanner);
             this.space = '';
             return this;
