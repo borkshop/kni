@@ -60,20 +60,20 @@ exports.firstChild = firstChildPath;
 
 /** Constructs a child path by appending a 1 id to a copy of the given path.
  *
- * @param {Path} path
+ * @param {string|Path} path
  * @returns {Path} -- a copy of path with an added 1 id
  */
 function firstChildPath(path) {
-    return [...path, 1];
+    return typeof path === 'string' ? [path, 1] : [...path, 1];
 }
 
 exports.zerothChild = zerothChildPath;
 
 /** Constructs a child path by appending a 0 id to a copy of the given path.
  *
- * @param {Path} path
+ * @param {string|Path} path
  * @returns {Path} -- a copy of path with an added 0 id
  */
 function zerothChildPath(path) {
-    return [...path, 0];
+    return typeof path === 'string' ? [path, 0] : [...path, 0];
 }
