@@ -1,3 +1,5 @@
+// @ts-check
+
 'use strict';
 
 // Transforms a stream of lines with known indentation levels and leaders like
@@ -12,13 +14,33 @@
 module.exports = class OutlineLexer {
     debug = typeof process === 'object' && process.env.DEBUG_OUTLINE_LEXER
 
+    top = 0
+    broken = false
+
+    /** @typedef {import('./scanner')} Scanner */
+
+    /** Outline lexer state object, which receives typed text tokens, along
+     * with the current scanner. It is expected to return a subsequent state
+     * object, which will be retained by the lexer, and receive the subsequent
+     * token.
+     *
+     * @typedef {object} State
+     * @prop {(type: string, text: string, sc: Scanner) => State} next
+     */
+
+    /**
+     * @param {State} generator
+     */
     constructor(generator) {
         this.generator = generator;
-        this.top = 0;
         this.stack = [this.top];
-        this.broken = false;
     }
 
+    /**
+     * @param {string} line
+     * @param {Scanner} scanner
+     * @returns {OutlineLexer}
+     */
     next(line, scanner) {
         if (this.debug) {
             console.error(
@@ -55,6 +77,10 @@ module.exports = class OutlineLexer {
         return this;
     }
 
+    /**
+     * @param {Scanner} scanner
+     * @returns {OutlineLexer}
+     */
     return(scanner) {
         for (var i = 0; i < this.stack.length; i++) {
             this.generator = this.generator.next('stop', '', scanner);
