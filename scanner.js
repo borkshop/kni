@@ -1,3 +1,5 @@
+// @ts-check
+
 'use strict';
 
 // Transforms a stream of text into a sequence of 'lines', tracking each line's
@@ -8,6 +10,11 @@
 // The scanner feeds into an outline lexer.
 
 const tabWidth = 4;
+
+/**
+ * @param {number} columnNo -- screen column number (logical X coord)
+ * @returns {number} -- column number where the next tab stop starts
+ */
 function nextTabStop(columnNo) {
     // TODO simplify with modulo arithmetic
     return Math.floor((columnNo + tabWidth) / tabWidth) * tabWidth;
@@ -18,21 +25,39 @@ var leaders = '-+*!>';
 module.exports = class Scanner {
     debug = typeof process === 'object' && process.env.DEBUG_SCANNER
 
+    indent = 0
+    lineStart = 0
+    indentStart = 0
+    itemStart = 0
+    lineNo = 0
+    columnNo = 0
+    columnStart = 0
+    leading = true
+    leader = ''
+
+    /** An Iterator-like object that has text pushed into it by a Scanner.
+     *
+     * Its biggest difference from an Iterator<string> is that the Scanner
+     * object itself is passed along as an additional next agument
+     *
+     * @typedef {object} ScanIt
+     * @prop {(text: string, sc: Scanner) => void} next
+     * @prop {(sc: Scanner) => void} return
+     */
+
+    /**
+     * @param {ScanIt} generator
+     * @param {string} fileName
+     */
     constructor(generator, fileName) {
         this.generator = generator;
         this.fileName = fileName || '-';
-        this.indent = 0;
-        this.lineStart = 0;
-        this.indentStart = 0;
-        this.itemStart = 0;
-        this.lineNo = 0;
-        this.columnNo = 0;
-        this.columnStart = 0;
-        this.leading = true;
-        this.leader = '';
-        Object.seal(this);
     }
 
+    /**
+     * @param {string} text
+     * @returns {void}
+     */
     next(text) {
         for (var i = 0; i < text.length; i++) {
             var c = text[i];
@@ -86,6 +111,11 @@ module.exports = class Scanner {
         }
     }
 
+    /**
+     * @param {string} text
+     * @param {number} i
+     * @returns {void}
+     */
     newLine(text, i) {
         if (this.leading) {
             this.indentStart = i;
@@ -98,6 +128,9 @@ module.exports = class Scanner {
         this.leader = '';
     }
 
+    /**
+     * @returns {void}
+     */
     return() {
         this.generator.return(this);
     }
