@@ -1,10 +1,46 @@
-'use strict';
+// @ts-check
 
+'use strict';
 
 const Scope = require('./scope');
 
+/** @typedef {import('./path').Path} Path */
+/** @typedef {import('./story').Arg} Arg */
+/** @typedef {import('./story').Node} Node */
+/** @typedef {import('./story').Expr} Expr */
+/** @typedef {import('./story')} Story */
+
+/** @typedef {import('./scanner')} Scanner */
+
+/** @interface */
+// eslint-disable-next-line no-unused-vars
+class ParserState {
+    /**
+     * @param {string} _type
+     * @param {string} _space
+     * @param {string} _text
+     * @param {Scanner} _scanner
+     * @return {ParserState}
+     */
+    next(_type, _space, _text, _scanner) { return this }
+
+    /**
+     * @param {Scope} _scope
+     * @param {Node[]} _rets
+     * @param {Node[]} _escs
+     * @param {Scanner} _scanner
+     * @return {ParserState}
+     */
+    return(_scope, _rets, _escs, _scanner) { return this }
+}
+
 exports.start = start;
 
+/**
+ * @param {Story} story
+ * @param {Path} path
+ * @param {Path} base
+ */
 function start(story, path, base) {
     const scope = new Scope(story, path, base);
     const stop = new Stop(scope);
@@ -12,12 +48,22 @@ function start(story, path, base) {
     return new Thread(scope.zerothChild(), stop, [start], []);
 }
 
+/** @implements {ParserState} */
 class Stop {
+    /**
+     * @param {Scope} scope
+     */
     constructor(scope) {
         this.scope = scope;
-        Object.freeze(this);
     }
 
+    /**
+     * @param {string} type
+     * @param {string} _space
+     * @param {string} text
+     * @param {Scanner} scanner
+     * @return {ParserState}
+     */
     next(type, _space, text, scanner) {
         // The only way to reach this method is for there to be a bug in the
         // outline lexer, or a bug in the grammar.
@@ -27,6 +73,13 @@ class Stop {
         return new End();
     }
 
+    /**
+     * @param {Scope} _scope
+     * @param {Node[]} rets
+     * @param {Node[]} escs
+     * @param {Scanner} _scanner
+     * @return {ParserState}
+     */
     return(_scope, rets, escs, _scanner) {
         Scope.tie(rets, 'RET');
         Scope.tie(escs, 'ESC');
@@ -34,27 +87,51 @@ class Stop {
     }
 }
 
+/** @implements {ParserState} */
 class End {
-    constructor() {
-        Object.freeze(this);
-    }
-
+    /**
+     * @param {string} _type
+     * @param {string} _space
+     * @param {string} _text
+     * @param {Scanner} _scanner
+     * @return {ParserState}
+     */
     next(_type, _space, _text, _scanner) {
         return this;
     }
+
+    /**
+     * @param {Scope} _scope
+     * @param {Node[]} _rets
+     * @param {Node[]} _escs
+     * @param {Scanner} _scanner
+     * @return {ParserState}
+     */
+    return(_scope, _rets, _escs, _scanner) { return this }
 }
 
-// rets are tied to the next instruction
-// escs are tied off after the next encountered prompt
+/** @implements {ParserState} */
 class Thread {
+    /**
+     * @param {Scope} scope
+     * @param {Thread} parent
+     * @param {Node[]} rets -- are tied to the next instruction
+     * @param {Node[]} escs -- are tied off after the next encountered prompt
+     */
     constructor(scope, parent, rets, escs) {
         this.scope = scope;
         this.parent = parent;
         this.rets = rets;
         this.escs = escs;
-        Object.freeze(this);
     }
 
+    /**
+     * @param {string} type
+     * @param {string} space
+     * @param {string} text
+     * @param {Scanner} scanner
+     * @return {ParserState}
+     */
     next(type, space, text, scanner) {
         if (type === 'symbol'|| type === 'alphanum' || type === 'number' || type === 'literal' || text === '--' || text === '---') {
             return new Text(this.scope, space, text, this, this.rets);
@@ -114,6 +191,13 @@ class Thread {
         return new Text(this.scope, space, text, this, this.rets);
     }
 
+    /**
+     * @param {Scope} scope
+     * @param {Node[]} rets
+     * @param {Node[]} escs
+     * @param {Scanner} _scanner
+     * @return {ParserState}
+     */
     return(scope, rets, escs, _scanner) {
         // All rules above (in next) guarantee that this.rets has been passed to
         // any rule that might use them. If the rule fails to use them, they must
@@ -122,16 +206,30 @@ class Thread {
     }
 }
 
+/** @implements {ParserState} */
 class Text {
+    /**
+     * @param {Scope} scope
+     * @param {string} lift
+     * @param {string} text
+     * @param {ParserState} parent
+     * @param {Node[]} rets
+     */
     constructor(scope, lift, text, parent, rets) {
         this.scope = scope;
         this.lift = lift;
         this.text = text;
         this.parent = parent;
         this.rets = rets;
-        Object.seal(this);
     }
 
+    /**
+     * @param {string} type
+     * @param {string} space
+     * @param {string} text
+     * @param {Scanner} scanner
+     * @return {ParserState}
+     */
     next(type, space, text, scanner) {
         if (type === 'alphanum' || type === 'number' || type === 'symbol' || type === 'literal') {
             this.text += space + text;
@@ -170,19 +268,43 @@ class Text {
         return this.parent.return(this.scope.next(), [node], [], scanner)
             .next(type, space, text, scanner);
     }
+
+    /**
+     * @param {Scope} _scope
+     * @param {Node[]} _rets
+     * @param {Node[]} _escs
+     * @param {Scanner} _scanner
+     * @return {ParserState}
+     */
+    return(_scope, _rets, _escs, _scanner) { return this }
 }
 
+/** @implements {ParserState} */
 class MaybeThread {
-    constructor(scope, parent, rets, escs, skips, space) {
+    /**
+     * @param {Scope} scope
+     * @param {ParserState} parent
+     * @param {Node[]} rets
+     * @param {Node[]} escs
+     * @param {Node[]} skips
+     * @param {string} space
+     */
+    constructor(scope, parent, rets, escs, skips, space='') {
         this.scope = scope;
         this.parent = parent;
         this.rets = rets;
         this.escs = escs;
         this.skips = skips;
-        this.space = space || '';
-        Object.freeze(this);
+        this.space = space;
     }
 
+    /**
+     * @param {string} type
+     * @param {string} space
+     * @param {string} text
+     * @param {Scanner} scanner
+     * @return {ParserState}
+     */
     next(type, space, text, scanner) {
         if (type === 'token') {
             if (text === '{') {
@@ -195,20 +317,37 @@ class MaybeThread {
             .next(type, this.space || space, text, scanner);
     }
 
+    /**
+     * @param {Scope} scope
+     * @param {Node[]} rets
+     * @param {Node[]} escs
+     * @param {Scanner} scanner
+     * @return {ParserState}
+     */
     return(scope, rets, escs, scanner) {
         return this.parent.return(scope, rets.concat(this.skips), escs, scanner);
     }
 }
 
 class ThreadCondition {
+    /**
+     * @param {ParserState} parent
+     * @param {Node[]} rets
+     * @param {Node[]} escs
+     * @param {Node[]} skips
+     */
     constructor(parent, rets, escs, skips) {
         this.parent = parent;
         this.rets = rets;
         this.escs = escs;
         this.skips = skips;
-        Object.freeze(this);
     }
 
+    /**
+     * @param {Scope} scope
+     * @param {Node[]} args
+     * @param {Scanner} scanner
+     */
     return(scope, args, scanner) {
         const node = scope.create('jump', invertExpression(args), scanner.position());
         const branch = new Branch(node);
@@ -218,6 +357,13 @@ class ThreadCondition {
 }
 
 class MaybeOption {
+    /**
+     * @param {Scope} scope
+     * @param {ThenExpect} parent -- FIXME seems too specific
+     * @param {Node[]} rets
+     * @param {Node[]} escs
+     * @param {string} leader
+     */
     constructor(scope, parent, rets, escs, leader) {
         this.scope = scope;
         this.at = scope;
@@ -225,13 +371,25 @@ class MaybeOption {
         this.rets = rets;
         this.escs = escs;
         this.leader = leader;
-        this.conditions = [];
-        this.consequences = [];
-        this.keywords = {};
-        this.descended = false;
-        Object.seal(this);
     }
 
+    /** @type {Arg[]} */
+    conditions = []
+
+    /** @type {Expr[]} */
+    consequences = []
+
+    /** @type {Object<string, boolean>} */
+    keywords = {}
+
+    descended = false
+
+    /**
+     * @param {string} type
+     * @param {string} space
+     * @param {string} text
+     * @param {Scanner} scanner
+     */
     next(type, space, text, scanner) {
         if (type === 'token') {
             if (text === '{') {
@@ -241,7 +399,7 @@ class MaybeOption {
             // Recognize the inequality token as individual keyword tokens with an
             // empty string amid them in this context.
             if (text === '<>') {
-                return this.return(this.scope, 'keyword', '');
+                return this.return(this.scope, 'keyword', '', null, scanner);
             }
             if (text === '<') {
                 return new Keyword(this.scope, this);
@@ -250,30 +408,57 @@ class MaybeOption {
         return this.option(scanner).next(type, space, text, scanner);
     }
 
+    /**
+     * @param {Scope} _scope
+     * @param {string} operator
+     * @param {string} expression
+     * @param {Arg} modifier
+     * @param {Scanner} _scanner
+     */
     return(_scope, operator, expression, modifier, _scanner) {
-        if (operator === '+' || operator === '-' || operator === '!') {
+        switch (operator) {
+
+        case '+':
             modifier = modifier || ['val', 1];
-        }
-        if (operator === '?') {
-            modifier = modifier || ['val', 0];
-        }
-        if (operator === '+' || operator === '-') {
             this.consequences.push([expression, [operator, expression, modifier]]);
-        }
-        if (operator === '-') {
+            return this;
+
+        case '-':
+            modifier = modifier || ['val', 1];
+            this.consequences.push([expression, [operator, expression, modifier]]);
             this.conditions.push(['>=', expression, modifier]);
-        }
-        if (operator === '') {
-            this.conditions.push(expression);
-        }
-        if (operator === '=' || operator === '!' || operator === '?') {
+            return this;
+
+        case '!':
+            modifier = modifier || ['val', 1];
             this.conditions.push(['<>', expression, modifier]);
             this.consequences.push([expression, modifier]);
-        }
-        if (operator === 'keyword') {
+            return this;
+
+        case '?':
+            modifier = modifier || ['val', 0];
+            this.conditions.push(['<>', expression, modifier]);
+            this.consequences.push([expression, modifier]);
+            return this;
+
+        case '':
+            this.conditions.push(expression);
+            return this;
+
+        case '=':
+            this.conditions.push(['<>', expression, modifier]);
+            this.consequences.push([expression, modifier]);
+            return this;
+
+        case 'keyword':
             this.keywords[expression] = true;
+            return this;
+
+        default:
+            // TODO warn or error somehow?
+            return this;
+
         }
-        return this;
     }
 
     advance() {
@@ -285,6 +470,9 @@ class MaybeOption {
         }
     }
 
+    /**
+     * @param {Scanner} scanner
+     */
     option(scanner) {
         const variable = this.scope.name();
         const rets = [];
@@ -292,7 +480,10 @@ class MaybeOption {
         this.at.tie(this.rets);
 
         if (this.leader === '*') {
-            this.consequences.push([['get', variable], ['+', ['get', variable], ['val', 1]]]);
+            this.consequences.push([
+                ['get', variable],
+                ['+', ['get', variable], ['val', 1]]
+            ]);
             const jump = this.at.create('jump', ['<>', ['get', variable], ['val', 0]], scanner.position());
             const jumpBranch = new Branch(jump);
             rets.push(jumpBranch);
