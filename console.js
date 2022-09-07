@@ -39,19 +39,21 @@ module.exports = class Console {
     }
 
     pardon() {
-        this.writer.write('?\n');
+        this.writer.write('!!Invalid Input\n\n');
     }
 
     display() {
         this.excerpt.write(this.wrapper);
         for (var i = 0; i < this.options.length; i++) {
-            var number = i + 1;
-            var lead = (number + '.   ').slice(0, 3) + ' ';
+            var number = String(i + 1);
+            this.writer.write("\x1b]8;;echo:#" + number + "\x1b\\")
+            var lead = (number + '.').padEnd(3, ' ') + ' ';
             this.wrapper.word(lead);
             this.wrapper.flush = true;
             this.wrapper.push('    ', '   ');
             this.options[i].write(this.wrapper);
             this.wrapper.pop();
+            this.writer.write("\x1b]8;;\x1b\\")
         }
     }
 
