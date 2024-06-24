@@ -46,14 +46,26 @@ function run(args, out, done) {
             out = tee(config.transcript, out);
         }
 
+        var kniscript;
         var states;
+
         if (config.fromJson) {
-            states = JSON.parse(kniscripts[0].content); // TODO test needed
+            if (kniscripts.length !== 1) {
+                done(new Error('must provide (only) one JSON input file'));
+                return;
+            }
+            try {
+                kniscript = kniscripts[0].content;
+                states = JSON.parse(kniscript);
+            } catch (err) {
+                done(err);
+                return;
+            }
         } else {
             var story = new Story();
 
             for (var i = 0; i < kniscripts.length; i++) {
-                var kniscript = kniscripts[i].content;
+                kniscript = kniscripts[i].content;
 
                 if (config.debugInput) {
                     console.log(kniscript);
@@ -116,10 +128,12 @@ function run(args, out, done) {
         }
 
         if (config.toJson) {
-            console.log(JSON.stringify(states, null, 4), done);
-            interactive = false;
+            // TODO streaming json encoder?
+            out.write(JSON.stringify(states, null, 4), done);
+            return;
+        }
 
-        } else if (config.toHtml) {
+        if (config.toHtml) {
             makeHtml(states, config.toHtml, {
                 title: config.htmlTitle,
                 color: config.htmlColor,
@@ -179,7 +193,12 @@ function run(args, out, done) {
                         done(err);
                         return;
                     }
-                    waypoint = JSON.parse(waypoint);
+                    try {
+                        waypoint = JSON.parse(waypoint);
+                    } catch (err) {
+                        done(err);
+                        return;
+                    }
                     engine.continue(waypoint);
                 });
             } else {
