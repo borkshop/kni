@@ -1,5 +1,4 @@
 // @ts-check
-'use strict';
 
 // Receives a stream of start, stop, and text tokens from an outline lexer and
 // produces a more comprehensive stream of tokens by breaking text tokens into
@@ -22,7 +21,7 @@ const alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\d_]/;
 /** Receives outline tokens, passing through inter-line structure tokens, and
  * decomposing line tokens along with interstitial space tracking.
  */
-module.exports = class InlineLexer {
+export default class InlineLexer {
   debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER;
 
   space = '';
@@ -190,4 +189,4 @@ module.exports = class InlineLexer {
       this.type = 'symbol';
     }
   }
-};
+}

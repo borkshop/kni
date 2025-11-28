@@ -1,8 +1,6 @@
 // @ts-check
 
-'use strict';
-
-module.exports = class Parser {
+export default class Parser {
   debug = typeof process === 'object' && process.env.DEBUG_PARSER;
 
   /** @typedef {import('./scanner')} Scanner */
@@ -40,4 +38,4 @@ module.exports = class Parser {
     }
     return this;
   }
-};
+}

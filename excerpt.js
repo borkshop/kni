@@ -1,8 +1,7 @@
 // An interface for building excerpts and writing them to a stream.
 // The stream must have the interface of the line wrapper.
-'use strict';
 
-class Excerpt {
+export default class Excerpt {
   constructor() {
     this.children = [];
     this.flag = false;
@@ -67,8 +66,6 @@ class Excerpt {
     }
   }
 }
-
-module.exports = Excerpt;
 
 class Paragraph {
   constructor() {

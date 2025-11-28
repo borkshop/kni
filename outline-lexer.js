@@ -1,7 +1,5 @@
 // @ts-check
 
-'use strict';
-
 // Transforms a stream of lines with known indentation levels and leaders like
 // bullets, and transforms these into a stream of lines with start and stop
 // tokens around changes in indentation depth.
@@ -11,7 +9,7 @@
 
 // TODO remove the break emission feature
 
-module.exports = class OutlineLexer {
+export default class OutlineLexer {
   debug = typeof process === 'object' && process.env.DEBUG_OUTLINE_LEXER;
 
   top = 0;
@@ -93,4 +91,4 @@ module.exports = class OutlineLexer {
     this.stack.length = 0;
     return this;
   }
-};
+}

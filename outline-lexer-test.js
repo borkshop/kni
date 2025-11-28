@@ -1,8 +1,6 @@
-'use strict';
-
-const Scanner = require('./scanner');
-const OutlineLexer = require('./outline-lexer');
-const equals = require('pop-equals');
+import Scanner from './scanner.js';
+import OutlineLexer from './outline-lexer.js';
+import equals from 'pop-equals';
 
 function test(input, output) {
   const text = input.map(enline).join('');

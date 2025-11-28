@@ -1,8 +1,6 @@
-'use strict';
+import * as Path from './path.js';
 
-const Path = require('./path');
-
-module.exports = class Scope {
+export default class Scope {
   static tie(ends, name) {
     for (let i = 0; i < ends.length; i++) {
       const end = ends[i];
@@ -52,4 +50,4 @@ module.exports = class Scope {
   error(message) {
     this.story.error(message);
   }
-};
+}

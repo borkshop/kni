@@ -1,9 +1,7 @@
-'use strict';
+import Excerpt from './excerpt.js';
+import Wrapper from './wrapper.js';
 
-const Excerpt = require('./excerpt');
-const Wrapper = require('./wrapper');
-
-module.exports = class Console {
+export default class Console {
   constructor(writer) {
     this.writer = writer;
     this.wrapper = new Wrapper(writer);
@@ -60,4 +58,4 @@ module.exports = class Console {
     this.options = [];
     this.cursor = this.excerpt;
   }
-};
+}

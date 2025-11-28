@@ -1,6 +1,4 @@
-'use strict';
-
-const Scope = require('./scope');
+import Scope from './scope.js';
 
 const start = (story, path, base) => {
   const scope = new Scope(story, path, base);
@@ -8,7 +6,8 @@ const start = (story, path, base) => {
   const start = scope.create('goto', 'RET', '1:1');
   return new Thread(scope.zerothChild(), stop, [start], []);
 };
-exports.start = start;
+
+export default start;
 
 class Stop {
   constructor(scope) {

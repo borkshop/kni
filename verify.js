@@ -1,16 +1,14 @@
-'use strict';
-
-const xorshift = require('xorshift');
-const Engine = require('./engine');
-const Console = require('./console');
-const Scanner = require('./scanner');
-const OutlineLexer = require('./outline-lexer');
-const InlineLexer = require('./inline-lexer');
-const Parser = require('./parser');
-const Story = require('./story');
-const Path = require('./path');
-const grammar = require('./grammar');
-const link = require('./link');
+import xorshift from 'xorshift';
+import Engine from './engine.js';
+import Console from './console.js';
+import Scanner from './scanner.js';
+import OutlineLexer from './outline-lexer.js';
+import InlineLexer from './inline-lexer.js';
+import Parser from './parser.js';
+import Story from './story.js';
+import * as Path from './path.js';
+import start from './grammar.js';
+import link from './link.js';
 
 const verify = (kni, trans, handler, kniscript) => {
   const lines = trans.split('\n');
@@ -28,7 +26,7 @@ const verify = (kni, trans, handler, kniscript) => {
 
   // build a story from the kni
   const story = new Story();
-  const p = new Parser(grammar.start(story, path, base));
+  const p = new Parser(start(story, path, base));
   const il = new InlineLexer(p);
   const ol = new OutlineLexer(il);
   const s = new Scanner(ol, kniscript);
@@ -96,7 +94,8 @@ const verify = (kni, trans, handler, kniscript) => {
     actual: actual,
   };
 };
-module.exports = verify;
+
+export default verify;
 
 class FakeReadline {
   constructor(writer, answers) {

@@ -1,5 +1,3 @@
-'use strict';
-
 const evaluate = (scope, randomer, args) => {
   const name = args[0];
   if (unary[name] && args.length === 2) {
@@ -33,7 +31,6 @@ const evaluate = (scope, randomer, args) => {
     throw new Error('Unexpected operator ' + JSON.stringify(args));
   }
 };
-module.exports = evaluate;
 
 const nominate = (scope, randomer, args) => {
   if (args[0] === 'get') {
@@ -241,3 +238,5 @@ const hilbert = (x, y) => {
   }
   return scalar;
 };
+
+export default evaluate;

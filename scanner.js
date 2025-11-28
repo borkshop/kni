@@ -1,7 +1,5 @@
 // @ts-check
 
-'use strict';
-
 // Transforms a stream of text into a sequence of 'lines', tracking each line's
 // level of indentation.
 // Trims lines.
@@ -22,7 +20,7 @@ const nextTabStop = columnNo => {
 
 const leaders = '-+*!>';
 
-module.exports = class Scanner {
+export default class Scanner {
   debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
 
   indent = 0;
@@ -133,4 +131,4 @@ module.exports = class Scanner {
   position() {
     return this.fileName + ':' + (this.lineNo + 1) + ':' + (this.columnStart + 1);
   }
-};
+}

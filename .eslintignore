@@ -1,3 +1,2 @@
-/coverage
-/node_modules
-/bundle.js
+# Generated/coverage files
+coverage/

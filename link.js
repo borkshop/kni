@@ -1,6 +1,4 @@
-'use strict';
-
-const link = story => {
+ const link = story => {
   const labels = Object.keys(story.states);
   for (let i = 0; i < labels.length; i++) {
     const label = labels[i];
@@ -25,7 +23,8 @@ const link = story => {
     }
   }
 };
-module.exports = link;
+
+export default link;
 
 const linker = (story, context, state) => {
   const parts = context.split('.');

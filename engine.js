@@ -1,7 +1,5 @@
-'use strict';
-
-const evaluate = require('./evaluate');
-const describe = require('./describe');
+import evaluate from './evaluate.js';
+import describe from './describe.js';
 
 const weigh = (scope, randomer, expressions, weights) => {
   let weight = 0;
@@ -29,7 +27,7 @@ const pop = (array, index) => {
   array.length--;
 };
 
-module.exports = class Engine {
+export default class Engine {
   debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
   constructor(args) {
@@ -508,7 +506,7 @@ module.exports = class Engine {
     this.read();
     return false;
   }
-};
+}
 
 class Global {
   constructor(handler) {

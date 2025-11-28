@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = class Document {
+export default class Document {
   constructor(element, createPage) {
     const self = this;
     this.document = element.ownerDocument;
@@ -153,4 +151,4 @@ module.exports = class Document {
   }
 
   close() {}
-};
+}

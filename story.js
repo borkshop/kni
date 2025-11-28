@@ -1,8 +1,6 @@
-'use strict';
+import * as Path from './path.js';
 
-const Path = require('./path');
-
-module.exports = class Story {
+export default class Story {
   constructor() {
     this.states = {};
     this.errors = [];
@@ -186,4 +184,4 @@ module.exports = class Story {
       }
     },
   };
-};
+}

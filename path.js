@@ -1,11 +1,8 @@
-'use strict';
-
-const start = () => {
+export const start = () => {
   return ['start'];
 };
-exports.start = start;
 
-const pathToName = path => {
+export const toName = path => {
   let name = path[0];
   let i;
   for (i = 1; i < path.length - 1; i++) {
@@ -17,25 +14,21 @@ const pathToName = path => {
   }
   return name;
 };
-exports.toName = pathToName;
 
-const nextPath = path => {
+export const next = path => {
   path = path.slice();
   path[path.length - 1]++;
   return path;
 };
-exports.next = nextPath;
 
-const firstChildPath = path => {
+export const firstChild = path => {
   path = path.slice();
   path.push(1);
   return path;
 };
-exports.firstChild = firstChildPath;
 
-const zerothChildPath = path => {
+export const zerothChild = path => {
   path = path.slice();
   path.push(0);
   return path;
 };
-exports.zerothChild = zerothChildPath;

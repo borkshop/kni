@@ -1,9 +1,7 @@
-'use strict';
+import readline from 'readline';
+import fs from 'fs';
 
-const readline = require('readline');
-const fs = require('fs');
-
-module.exports = class Readline {
+export default class Readline {
   constructor(transcript, filename) {
     const self = this;
     this.readline = readline.createInterface({
@@ -37,7 +35,7 @@ module.exports = class Readline {
     }
     this.readline.close();
   }
-};
+}
 
 class Play {
   constructor(readline, filename) {

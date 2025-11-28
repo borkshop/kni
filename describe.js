@@ -1,11 +1,10 @@
-'use strict';
+const types = {};
 
 const describe = node => {
   return types[node.type](node);
 };
-module.exports = describe;
 
-const types = {};
+export default describe;
 
 types.text = node => {
   return node.text;

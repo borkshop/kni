@@ -1,9 +1,7 @@
-'use strict';
-
-const fs = require('fs');
-const rimraf = require('rimraf'); // TODO fs.rm in node v14
-const runKni = require('./kni');
-const stripAnsi = require('strip-ansi');
+import fs from 'fs';
+import rimraf from 'rimraf'; // TODO fs.rm in node v14
+import runKni from './kni.js';
+import stripAnsi from 'strip-ansi';
 
 // TODO better file diffing
 function diffFiles(a, b, done) {

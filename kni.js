@@ -1,26 +1,27 @@
 #!/usr/bin/env node
-'use strict';
 
-const tee = require('tee');
-const Console = require('./console');
-const Readline = require('./readline');
-const Engine = require('./engine');
-const Scanner = require('./scanner');
-const OutlineLexer = require('./outline-lexer');
-const InlineLexer = require('./inline-lexer');
-const Parser = require('./parser');
-const Story = require('./story');
-const Path = require('./path');
-const grammar = require('./grammar');
-const link = require('./link');
-const verify = require('./verify');
-const exec = require('shon/exec');
-const usage = require('./kni.json');
-const xorshift = require('xorshift');
-const table = require('table').default;
-const getBorderCharacters = require('table').getBorderCharacters;
-const describe = require('./describe');
-const makeHtml = require('./html');
+import {pathToFileURL} from 'url';
+import tee from 'tee';
+import Console from './console.js';
+import Readline from './readline.js';
+import Engine from './engine.js';
+import Scanner from './scanner.js';
+import OutlineLexer from './outline-lexer.js';
+import InlineLexer from './inline-lexer.js';
+import Parser from './parser.js';
+import Story from './story.js';
+import * as Path from './path.js';
+import start from './grammar.js';
+import link from './link.js';
+import verify from './verify.js';
+import exec from 'shon/exec.js';
+import usage from './kni.json' with {type: 'json'};
+import xorshift from 'xorshift';
+import table from 'table';
+import describe from './describe.js';
+import makeHtml from './html.js';
+
+const {default: tableDefault, getBorderCharacters} = table;
 
 const run = (args, out, done) => {
   const config = exec(usage, args);
@@ -65,7 +66,7 @@ const run = (args, out, done) => {
           base = path;
         }
 
-        const p = new Parser(grammar.start(story, path, base));
+        const p = new Parser(start(story, path, base));
         const il = new InlineLexer(p);
         const ol = new OutlineLexer(il);
         const s = new Scanner(ol, kniscripts[i].stream.path);
@@ -211,7 +212,7 @@ const describeStory = (states, out, done) => {
     ]);
   }
   out.write(
-    table(cells, {
+    tableDefault(cells, {
       border: getBorderCharacters('void'),
       columnDefault: {
         paddingLeft: 0,
@@ -306,7 +307,7 @@ const dump = (errors, writer) => {
   }
 };
 
-if (require.main === module) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   run(null, process.stdout, err => {
     if (err) {
       console.error(typeof err === 'object' && err.message ? err.message : err);
@@ -317,6 +318,6 @@ if (require.main === module) {
       process.exit(-1);
     }
   });
-} else {
-  module.exports = run;
 }
+
+export default run;

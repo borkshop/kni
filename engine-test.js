@@ -1,7 +1,5 @@
-'use strict';
-
-const fs = require('fs');
-const verify = require('./verify');
+import fs from 'fs';
+import verify from './verify.js';
 
 function main() {
   test('hello.kni', 'tests/hello.1');

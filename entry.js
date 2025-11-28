@@ -1,8 +1,6 @@
-'use strict';
-
-const Engine = require('./engine');
-const story = require('./story.json');
-const Document = require('./document');
+import Engine from './engine.js';
+import Document from './document.js';
+import story from 'virtual:story';
 
 const handler = {
   storageKey: 'kni',
@@ -79,3 +77,4 @@ try {
   console.error('unable to load prior state, restarting', error);
   engine.resume(null);
 }
+
