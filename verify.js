@@ -15,130 +15,125 @@ var link = require('./link');
 module.exports = verify;
 
 function verify(kni, trans, handler, kniscript) {
-    var lines = trans.split('\n');
+  var lines = trans.split('\n');
 
-    // filter the transcript for given answers
-    var answers = [];
-    for (const line of lines) {
-        if (line.lastIndexOf('>', 0) === 0) {
-            answers.push(line.slice(1).trim());
-        }
+  // filter the transcript for given answers
+  var answers = [];
+  for (const line of lines) {
+    if (line.lastIndexOf('>', 0) === 0) {
+      answers.push(line.slice(1).trim());
+    }
+  }
+
+  var path = Path.start();
+  var base = [];
+
+  // build a story from the kni
+  var story = new Story();
+  var p = new Parser(grammar.start(story, path, base));
+  var il = new InlineLexer(p);
+  var ol = new OutlineLexer(il);
+  var s = new Scanner(ol, kniscript);
+
+  s.next(kni);
+  s.return();
+
+  link(story);
+
+  if (story.errors.length) {
+    var errors = '';
+    for (const err of story.errors) {
+      errors += err + '\n';
     }
 
-    var path = Path.start();
-    var base = [];
-
-    // build a story from the kni
-    var story = new Story();
-    var p = new Parser(grammar.start(story, path, base));
-    var il = new InlineLexer(p);
-    var ol = new OutlineLexer(il);
-    var s = new Scanner(ol, kniscript);
-
-    s.next(kni);
-    s.return();
-
-    link(story);
-
-    if (story.errors.length) {
-        var errors = '';
-        for (const err of story.errors) {
-            errors += err + '\n';
-        }
-
-        if (errors === trans) {
-            return {
-                pass: true,
-                expected: 'errors',
-                actual: 'errors',
-            };
-        }
-
-        for (const err of story.errors) {
-            console.error(err);
-        }
-        return {
-            pass: false,
-            expected: trans,
-            actual: errors,
-        };
+    if (errors === trans) {
+      return {
+        pass: true,
+        expected: 'errors',
+        actual: 'errors',
+      };
     }
 
-    var states = story.states;
-
-    // TODO support alternate seeds
-    var seed = 0;
-    // I rolled 4d64k this morning, for kni.js
-    var randomer = new xorshift.constructor([
-        37615 ^ seed,
-        54552 ^ seed,
-        59156 ^ seed,
-        24695 ^ seed,
-    ]);
-
-    var writer = new StringWriter();
-    var render = new Console(writer);
-    var readline = new FakeReadline(writer, answers);
-    var engine = new Engine({
-        story: states,
-        start: 'start',
-        handler: handler,
-        render: render,
-        dialog: readline,
-        randomer: randomer,
-    });
-    readline.engine = engine;
-    engine.reset();
-
-    var expected = trans.trim();
-    var actual = writer.string.trim();
+    for (const err of story.errors) {
+      console.error(err);
+    }
     return {
-        pass: expected === actual,
-        expected: expected,
-        actual: actual,
+      pass: false,
+      expected: trans,
+      actual: errors,
     };
+  }
+
+  var states = story.states;
+
+  // TODO support alternate seeds
+  var seed = 0;
+  // I rolled 4d64k this morning, for kni.js
+  var randomer = new xorshift.constructor([37615 ^ seed, 54552 ^ seed, 59156 ^ seed, 24695 ^ seed]);
+
+  var writer = new StringWriter();
+  var render = new Console(writer);
+  var readline = new FakeReadline(writer, answers);
+  var engine = new Engine({
+    story: states,
+    start: 'start',
+    handler: handler,
+    render: render,
+    dialog: readline,
+    randomer: randomer,
+  });
+  readline.engine = engine;
+  engine.reset();
+
+  var expected = trans.trim();
+  var actual = writer.string.trim();
+  return {
+    pass: expected === actual,
+    expected: expected,
+    actual: actual,
+  };
 }
 
 class FakeReadline {
-    constructor(writer, answers) {
-        this.writer = writer;
-        this.answers = answers;
-        this.engine = null;
-        this.history = [];
-        Object.seal(this);
+  constructor(writer, answers) {
+    this.writer = writer;
+    this.answers = answers;
+    this.engine = null;
+    this.history = [];
+    Object.seal(this);
+  }
+
+  ask(_question) {
+    var answer = this.answers.shift();
+    if (answer == null) {
+      return;
     }
+    this.writer.write(('> ' + answer).trim() + '\n');
 
-    ask(_question) {
-        var answer = this.answers.shift();
-        if (answer == null) {
-            return;
-        }
-        this.writer.write(('> ' + answer).trim() + '\n');
-
-        if (answer === 'quit') {
-            // noop
-        } else if (answer === 'replay') {
-            this.writer.write('\n');
-            this.engine.resume(this.engine.waypoint);
-        } else if (answer === 'back') {
-            this.writer.write('\n');
-            this.engine.waypoint = this.history.pop();
-            this.engine.resume(this.engine.waypoint);
-        } else {
-            this.history.push(this.engine.waypoint);
-            this.engine.answer(answer);
-        }
+    if (answer === 'quit') {
+      // noop
+    } else if (answer === 'replay') {
+      this.writer.write('\n');
+      this.engine.resume(this.engine.waypoint);
+    } else if (answer === 'back') {
+      this.writer.write('\n');
+      this.engine.waypoint = this.history.pop();
+      this.engine.resume(this.engine.waypoint);
+    } else {
+      this.history.push(this.engine.waypoint);
+      this.engine.answer(answer);
     }
+  }
 
-    close() {}
+  close() {}
 }
 
 class StringWriter {
-    constructor() {
-        this.string = '';
-    }
+  constructor() {
+    this.string = '';
+  }
 
-    write(string) {
-        this.string += string;
-    }
+  write(string) {
+    this.string += string;
+  }
 }
