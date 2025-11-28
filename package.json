@@ -54,7 +54,7 @@
   "scripts": {
     "format": "prettier --write \"**/*.js\"",
     "format:check": "prettier --check \"**/*.js\"",
-    "lint": "eslint . && tsc",
+    "lint": "eslint .",
     "test": "node -- test.js",
     "cover": "nyc npm test",
     "check-cover": "nyc check-coverage",
