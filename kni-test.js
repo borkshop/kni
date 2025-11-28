@@ -1,9 +1,9 @@
 'use strict';
 
-var fs = require('fs');
-var rimraf = require('rimraf'); // TODO fs.rm in node v14
-var runKni = require('./kni');
-var stripAnsi = require('strip-ansi');
+const fs = require('fs');
+const rimraf = require('rimraf'); // TODO fs.rm in node v14
+const runKni = require('./kni');
+const stripAnsi = require('strip-ansi');
 
 // TODO better file diffing
 function diffFiles(a, b, done) {
@@ -29,14 +29,14 @@ function diffFiles(a, b, done) {
 }
 
 function runArgs(args, outfile, done) {
-  var out = fs.createWriteStream(outfile);
+  const out = fs.createWriteStream(outfile);
   runKni(args, out, function runDone(err) {
     done(err ? new Error(JSON.stringify(args) + ' failed: ' + err) : null);
   });
 }
 
 function withTempDir(name, fn, done) {
-  var cleaned = name.replace(/[^\w.]+/, '_');
+  const cleaned = name.replace(/[^\w.]+/, '_');
   fs.mkdtemp(cleaned + '-', function maybeTempDir(err, dir) {
     if (err) {
       done(err);
@@ -54,7 +54,7 @@ function testBasic(kniscript, transcript, done) {
   withTempDir(
     transcript,
     function under(dir, fin) {
-      var outfile = dir + '/out';
+      const outfile = dir + '/out';
       runArgs([kniscript, '-v', transcript], outfile, fin);
     },
     done
@@ -65,7 +65,7 @@ function testDescribe(kniscript, descript, done) {
   withTempDir(
     descript,
     function under(dir, fin) {
-      var outfile = dir + '/out';
+      const outfile = dir + '/out';
       runArgs([kniscript, '-d'], outfile, function runDone(err) {
         if (err) {
           fin(err);
@@ -103,8 +103,8 @@ function main() {
     }
 
     function kniFor(somescript) {
-      var match = /(.+)\./.exec(somescript);
-      var nom = match && match[1];
+      const match = /(.+)\./.exec(somescript);
+      const nom = match && match[1];
       if (!nom) {
         return '';
       }
@@ -117,7 +117,7 @@ function main() {
     // description tests
     files
       .map(function (file) {
-        var kniscript = kniFor(file);
+        const kniscript = kniFor(file);
         if (!kniscript || !/\.desc$/.test(file)) {
           return null;
         }
@@ -127,8 +127,8 @@ function main() {
         return testCase != null;
       })
       .forEach(function eachTestCase(testCase) {
-        var kniscript = testCase[0];
-        var descript = testCase[1];
+        const kniscript = testCase[0];
+        const descript = testCase[1];
         testDescribe(kniscript, descript, function testRunDone(err) {
           if (err) {
             process.exitCode |= 1;
@@ -142,14 +142,14 @@ function main() {
       // TODO also derive from files and/or reconcile with engine-test
       ['basic', testBasic],
     ].forEach(function eachTestMode(testMode) {
-      var testModeName = testMode[0];
-      var runTest = testMode[1];
+      const testModeName = testMode[0];
+      const runTest = testMode[1];
       [
         // TODO reconcile table with engine-test.js
         ['hello.kni', 'tests/hello.1'],
       ].forEach(function eachTestCase(testCase) {
-        var kniscript = testCase[0];
-        var transcript = testCase[1];
+        const kniscript = testCase[0];
+        const transcript = testCase[1];
         runTest(kniscript, transcript, function testRunDone(err) {
           if (err) {
             process.exitCode |= 1;

@@ -103,7 +103,7 @@ class FakeReadline {
   }
 
   ask(_question) {
-    var answer = this.answers.shift();
+    const answer = this.answers.shift();
     if (answer == null) {
       return;
     }

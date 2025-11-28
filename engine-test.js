@@ -1,7 +1,7 @@
 'use strict';
 
-var fs = require('fs');
-var verify = require('./verify');
+const fs = require('fs');
+const verify = require('./verify');
 
 function main() {
   test('hello.kni', 'tests/hello.1');
@@ -96,9 +96,9 @@ function main() {
   test('tests/errors/unterminated-brace.kni', 'tests/errors/unterminated-brace.log');
   test('tests/errors/unterminated-bracket.kni', 'tests/errors/unterminated-bracket.log');
 
-  var asked = false;
-  var askedWithCue = false;
-  var ended = false;
+  let asked = false;
+  let askedWithCue = false;
+  let ended = false;
   test('tests/handler.kni', 'tests/handler.1', {
     moxy: 41,
     has: function has(name) {
@@ -155,7 +155,7 @@ function main() {
     process.exitCode = 1;
   }
 
-  var cued;
+  let cued;
   test('tests/cues.kni', 'tests/cues.1', {
     cue: function (cue, next, engine) {
       cued = cue;
@@ -182,9 +182,9 @@ function main() {
 }
 
 function test(kniscript, transcript, handler) {
-  var kni = fs.readFileSync(kniscript, 'utf8');
-  var trans = fs.readFileSync(transcript, 'utf8');
-  var result = verify(kni, trans, handler, kniscript);
+  const kni = fs.readFileSync(kniscript, 'utf8');
+  const trans = fs.readFileSync(transcript, 'utf8');
+  const result = verify(kni, trans, handler, kniscript);
 
   if (!result.pass) {
     process.exitCode |= 1;

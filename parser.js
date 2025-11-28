@@ -27,7 +27,7 @@ module.exports = class Parser {
    * @returns {Parser}
    */
   next(type, space, text, scanner) {
-    var prior = this.generator.constructor.name;
+    const prior = this.generator.constructor.name;
     this.generator = this.generator.next(type, space, text, scanner);
     if (this.debug) {
       console.error(

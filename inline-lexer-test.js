@@ -1,16 +1,16 @@
 'use strict';
 
-var equals = require('pop-equals');
-var Scanner = require('./scanner');
-var OutlineLexer = require('./outline-lexer');
-var InlineLexer = require('./inline-lexer');
+const equals = require('pop-equals');
+const Scanner = require('./scanner');
+const OutlineLexer = require('./outline-lexer');
+const InlineLexer = require('./inline-lexer');
 
 function test(input, output) {
-  var text = input.map(enline).join('');
-  var ll = new InlineLexLister();
-  var il = new InlineLexer(ll);
-  var ol = new OutlineLexer(il);
-  var scanner = new Scanner(ol);
+  const text = input.map(enline).join('');
+  const ll = new InlineLexLister();
+  const il = new InlineLexer(ll);
+  const ol = new OutlineLexer(il);
+  const scanner = new Scanner(ol);
   scanner.next(text);
   scanner.return();
   il.next('stop', '', scanner); // induce second flush for coverage

@@ -1,14 +1,14 @@
 'use strict';
 
-var Scanner = require('./scanner');
-var OutlineLexer = require('./outline-lexer');
-var equals = require('pop-equals');
+const Scanner = require('./scanner');
+const OutlineLexer = require('./outline-lexer');
+const equals = require('pop-equals');
 
 function test(input, output) {
-  var text = input.map(enline).join('');
-  var lister = new OutlineLexLister();
-  var lexer = new OutlineLexer(lister);
-  var scanner = new Scanner(lexer);
+  const text = input.map(enline).join('');
+  const lister = new OutlineLexLister();
+  const lexer = new OutlineLexer(lister);
+  const scanner = new Scanner(lexer);
   scanner.next(text);
   scanner.return();
   if (!equals(lister.list, output)) {

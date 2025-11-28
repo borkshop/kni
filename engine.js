@@ -66,7 +66,7 @@ module.exports = class Engine {
   }
 
   continue() {
-    var _continue;
+    let _continue;
     do {
       if (this.debug) {
         console.log(this.label + ' ' + this.instruction.type + ' ' + describe(this.instruction));
@@ -105,7 +105,7 @@ module.exports = class Engine {
       return this.end();
     }
 
-    var next = this.story[label];
+    const next = this.story[label];
     if (!next) {
       console.error('Story missing label', label);
       return this.resume();
@@ -123,8 +123,8 @@ module.exports = class Engine {
   }
 
   gothrough(sequence, next) {
-    var prev = this.label;
-    for (var i = sequence.length - 1; i >= 0; i--) {
+    let prev = this.label;
+    for (let i = sequence.length - 1; i >= 0; i--) {
       if (next !== 'RET') {
         this.top = new Frame(this.top, [], next, 'RET', prev);
       }
@@ -151,10 +151,10 @@ module.exports = class Engine {
       }
       this.dialog.ask();
     } else if (this.noOption != null) {
-      var closure = this.noOption;
-      var option = this.story[closure.label];
+      const closure = this.noOption;
+      const option = this.story[closure.label];
       this.top = closure.scope;
-      var answer = option.answer;
+      const answer = option.answer;
       this.flush();
       this.gothrough(answer, 'RET');
       this.continue();
@@ -184,7 +184,7 @@ module.exports = class Engine {
       }
       return;
     }
-    var choice = text - 1;
+    const choice = text - 1;
     if (choice >= 0 && choice < this.options.length) {
       return this.choice(this.options[choice]);
     } else if (this.keywords[text]) {
@@ -196,7 +196,7 @@ module.exports = class Engine {
   }
 
   choice(closure) {
-    var option = this.story[closure.label];
+    const option = this.story[closure.label];
     if (this.handler && this.handler.choice) {
       this.handler.choice(option, this);
     }
@@ -231,7 +231,7 @@ module.exports = class Engine {
   }
 
   capture(closure) {
-    var label, top;
+    let label, top;
     if (closure != null) {
       label = closure.label;
       top = closure.scope;
@@ -240,7 +240,7 @@ module.exports = class Engine {
       top = this.top;
     }
 
-    var stack = [];
+    const stack = [];
     for (; top != this.global; top = top.parent) {
       stack.push(top.capture(this));
     }
@@ -274,20 +274,20 @@ module.exports = class Engine {
     }
 
     // Destructure snapshot
-    var label = this.labelOfIndex(snapshot[0]);
-    var stack = snapshot[1];
-    var global = snapshot[2];
-    var random = snapshot[3];
+    const label = this.labelOfIndex(snapshot[0]);
+    const stack = snapshot[1];
+    const global = snapshot[2];
+    const random = snapshot[3];
 
     // Restore globals
-    var keys = global[0];
-    var values = global[1];
-    for (var i = 0; i < keys.length; i++) {
+    const keys = global[0];
+    const values = global[1];
+    for (let i = 0; i < keys.length; i++) {
       this.global.set(keys[i], values[i]);
     }
 
     // Restore stack
-    var engine = this;
+    const engine = this;
     this.top = stack.reduceRight(function (parent, snapshot) {
       return Frame.restore(engine, snapshot, parent);
     }, this.global);
@@ -298,7 +298,7 @@ module.exports = class Engine {
     this.randomer._state1U = random[2];
     this.randomer._state1L = random[3];
 
-    var instruction = this.story[label];
+    const instruction = this.story[label];
     if (instruction.type === 'opt') {
       if (this.gothrough(instruction.answer, 'RET')) {
         this.flush();
@@ -365,8 +365,8 @@ module.exports = class Engine {
   }
 
   $call() {
-    var label = this.instruction.label;
-    var def = this.story[label];
+    const label = this.instruction.label;
+    const def = this.story[label];
     if (!def) {
       console.error('no such procedure ' + label, this.instruction);
       return this.resume();
@@ -392,9 +392,9 @@ module.exports = class Engine {
       this.instruction.branch,
       this.label
     );
-    for (var i = 0; i < this.instruction.args.length; i++) {
-      var arg = this.instruction.args[i];
-      var value = evaluate(this.top.parent, this.randomer, arg);
+    for (let i = 0; i < this.instruction.args.length; i++) {
+      const arg = this.instruction.args[i];
+      const value = evaluate(this.top.parent, this.randomer, arg);
       this.top.set(def.locals[i], value);
     }
     return this.goto(label);
@@ -407,9 +407,9 @@ module.exports = class Engine {
   }
 
   $opt() {
-    var closure = new Closure(this.top, this.label);
-    for (var i = 0; i < this.instruction.keywords.length; i++) {
-      var keyword = this.instruction.keywords[i];
+    const closure = new Closure(this.top, this.label);
+    for (let i = 0; i < this.instruction.keywords.length; i++) {
+      const keyword = this.instruction.keywords[i];
       // The first option to introduce a keyword wins, not the last.
       if (!this.keywords[keyword]) {
         this.keywords[keyword] = closure;
@@ -427,8 +427,8 @@ module.exports = class Engine {
   }
 
   $move() {
-    var value = evaluate(this.top, this.randomer, this.instruction.source);
-    var name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
+    const value = evaluate(this.top, this.randomer, this.instruction.source);
+    const name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
     if (this.debug) {
       console.log(this.top.at() + '/' + this.label + ' ' + name + ' = ' + value);
     }
@@ -437,7 +437,7 @@ module.exports = class Engine {
   }
 
   $jump() {
-    var j = this.instruction;
+    const j = this.instruction;
     if (evaluate(this.top, this.randomer, j.condition)) {
       return this.goto(this.instruction.branch);
     } else {
@@ -446,17 +446,17 @@ module.exports = class Engine {
   }
 
   $switch() {
-    var branches = this.instruction.branches.slice();
-    var weightExpressions = this.instruction.weights.slice();
-    var samples = 1;
-    var nexts = [];
+    const branches = this.instruction.branches.slice();
+    const weightExpressions = this.instruction.weights.slice();
+    let samples = 1;
+    const nexts = [];
     if (this.instruction.mode === 'pick') {
       samples = evaluate(this.top, this.randomer, this.instruction.expression);
     }
-    for (var i = 0; i < samples; i++) {
-      var value;
-      var weights = [];
-      var weight = weigh(this.top, this.randomer, weightExpressions, weights);
+    let value, next;
+    for (let i = 0; i < samples; i++) {
+      const weights = [];
+      const weight = weigh(this.top, this.randomer, weightExpressions, weights);
       if (this.instruction.mode === 'rand' || this.instruction.mode === 'pick') {
         if (weights.length === weight) {
           value = Math.floor(this.randomer.random() * branches.length);
@@ -480,7 +480,7 @@ module.exports = class Engine {
       }
       value = Math.min(value, branches.length - 1);
       value = Math.max(value, 0);
-      var next = branches[value];
+      next = branches[value];
       pop(branches, value);
       pop(weightExpressions, value);
       nexts.push(next);
@@ -539,11 +539,11 @@ class Global {
   }
 
   log() {
-    var names = Object.keys(this.scope);
+    const names = Object.keys(this.scope);
     names.sort();
-    for (var i = 0; i < names.length; i++) {
-      var name = names[i];
-      var value = this.scope[name];
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i];
+      const value = this.scope[name];
       console.log(name + ' = ' + value);
     }
     console.log('');
@@ -554,9 +554,9 @@ class Global {
   }
 
   capture() {
-    var names = Object.keys(this.scope);
-    var values = [];
-    for (var i = 0; i < names.length; i++) {
+    const names = Object.keys(this.scope);
+    const values = [];
+    for (let i = 0; i < names.length; i++) {
       values[i] = this.scope[names[i]] || 0;
     }
     return [names, values];
@@ -565,23 +565,23 @@ class Global {
 
 class Frame {
   static restore(engine, snapshot, parent) {
-    var label = engine.labelOfIndex(snapshot[0]);
-    var next = engine.labelOfIndex(snapshot[1]);
-    var branch = engine.labelOfIndex(snapshot[2]);
-    var values = snapshot[3];
-    var stopOption = Boolean(snapshot[4]);
+    const label = engine.labelOfIndex(snapshot[0]);
+    const next = engine.labelOfIndex(snapshot[1]);
+    const branch = engine.labelOfIndex(snapshot[2]);
+    const values = snapshot[3];
+    const stopOption = Boolean(snapshot[4]);
 
-    var frame = new Frame(parent, [], next, branch, label, stopOption);
+    const frame = new Frame(parent, [], next, branch, label, stopOption);
 
     // Technically, not all frames correspond to subroutine calls, but all
     // frames that remain when the engine pauses ought to be.
     // The exceptions would be interstitial frames generated by gothrough,
     // but all of these are exhausted before the engine stops to ask a prompt.
-    var call = engine.story[label];
-    var def = engine.story[call.label];
+    const call = engine.story[label];
+    const def = engine.story[call.label];
     frame.locals = def.locals;
-    for (var i = 0; i < values.length; i++) {
-      var name = def.locals[i];
+    for (let i = 0; i < values.length; i++) {
+      const name = def.locals[i];
       frame.scope[name] = values[i];
     }
 
@@ -591,7 +591,7 @@ class Frame {
   constructor(parent, locals, next, branch, label, stopOption) {
     this.locals = locals;
     this.scope = Object.create(null);
-    for (var i = 0; i < locals.length; i++) {
+    for (let i = 0; i < locals.length; i++) {
       this.scope[locals[i]] = 0;
     }
     this.parent = parent;
@@ -620,9 +620,9 @@ class Frame {
   log() {
     this.parent.log();
     console.log('--- ' + this.label + ' -> ' + this.next);
-    for (var i = 0; i < this.locals.length; i++) {
-      var name = this.locals[i];
-      var value = this.scope[name];
+    for (let i = 0; i < this.locals.length; i++) {
+      const name = this.locals[i];
+      const value = this.scope[name];
       console.log(name + ' = ' + value);
     }
   }
@@ -632,9 +632,9 @@ class Frame {
   }
 
   capture(engine) {
-    var values = [];
-    for (var i = 0; i < this.locals.length; i++) {
-      var local = this.locals[i];
+    const values = [];
+    for (let i = 0; i < this.locals.length; i++) {
+      const local = this.locals[i];
       values.push(this.scope[local] || 0);
     }
 

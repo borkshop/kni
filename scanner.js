@@ -59,9 +59,10 @@ module.exports = class Scanner {
    * @returns {void}
    */
   next(text) {
-    for (var i = 0; i < text.length; i++) {
-      var c = text[i];
-      var d = text[i + 1];
+    let i = 0;
+    for (; i < text.length; i++) {
+      let c = text[i];
+      const d = text[i + 1];
       if (this.debug) {
         console.error('SCN', this.position() + ':' + i, JSON.stringify(c + (d || '')));
       }

@@ -87,7 +87,7 @@ module.exports = class OutlineLexer {
    * @returns {OutlineLexer}
    */
   return(scanner) {
-    for (var i = 0; i < this.stack.length; i++) {
+    for (let i = 0; i < this.stack.length; i++) {
       this.generator = this.generator.next('stop', '', scanner);
     }
     this.stack.length = 0;
