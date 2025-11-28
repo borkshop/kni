@@ -167,4 +167,4 @@ const template = (bundle, args) => {
     '    </body>',
     '</html>',
   ].join('\n');
-}
+};

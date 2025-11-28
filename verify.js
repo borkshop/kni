@@ -67,7 +67,12 @@ const verify = (kni, trans, handler, kniscript) => {
   // TODO support alternate seeds
   const seed = 0;
   // I rolled 4d64k this morning, for kni.js
-  const randomer = new xorshift.constructor([37615 ^ seed, 54552 ^ seed, 59156 ^ seed, 24695 ^ seed]);
+  const randomer = new xorshift.constructor([
+    37615 ^ seed,
+    54552 ^ seed,
+    59156 ^ seed,
+    24695 ^ seed,
+  ]);
 
   const writer = new StringWriter();
   const render = new Console(writer);
