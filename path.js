@@ -1,46 +1,41 @@
 'use strict';
 
+const start = () => {
+  return ['start'];
+};
 exports.start = start;
 
-function start() {
-  return ['start'];
-}
-
-exports.toName = pathToName;
-
-function pathToName(path) {
-  var name = path[0];
-  var i;
+const pathToName = (path) => {
+  let name = path[0];
+  let i;
   for (i = 1; i < path.length - 1; i++) {
     name += '.' + path[i];
   }
-  var last = path[i];
+  const last = path[i];
   if (path.length > 1 && last !== 0) {
     name += '.' + last;
   }
   return name;
-}
+};
+exports.toName = pathToName;
 
-exports.next = nextPath;
-
-function nextPath(path) {
+const nextPath = (path) => {
   path = path.slice();
   path[path.length - 1]++;
   return path;
-}
+};
+exports.next = nextPath;
 
-exports.firstChild = firstChildPath;
-
-function firstChildPath(path) {
+const firstChildPath = (path) => {
   path = path.slice();
   path.push(1);
   return path;
-}
+};
+exports.firstChild = firstChildPath;
 
-exports.zerothChild = zerothChildPath;
-
-function zerothChildPath(path) {
+const zerothChildPath = (path) => {
   path = path.slice();
   path.push(0);
   return path;
-}
+};
+exports.zerothChild = zerothChildPath;

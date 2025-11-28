@@ -1,33 +1,33 @@
 'use strict';
 
-var evaluate = require('./evaluate');
-var describe = require('./describe');
+const evaluate = require('./evaluate');
+const describe = require('./describe');
 
-function weigh(scope, randomer, expressions, weights) {
-  var weight = 0;
-  for (var i = 0; i < expressions.length; i++) {
+const weigh = (scope, randomer, expressions, weights) => {
+  let weight = 0;
+  for (let i = 0; i < expressions.length; i++) {
     weights[i] = evaluate(scope, randomer, expressions[i]);
     weight += weights[i];
   }
   return weight;
-}
+};
 
-function pick(weights, weight, randomer) {
-  var offset = Math.floor(randomer.random() * weight);
-  var passed = 0;
-  for (var i = 0; i < weights.length; i++) {
+const pick = (weights, weight, randomer) => {
+  const offset = Math.floor(randomer.random() * weight);
+  let passed = 0;
+  for (let i = 0; i < weights.length; i++) {
     passed += weights[i];
     if (offset < passed) {
       return i;
     }
   }
   return null;
-}
+};
 
-function pop(array, index) {
+const pop = (array, index) => {
   array[index] = array[array.length - 1];
   array.length--;
-}
+};
 
 module.exports = class Engine {
   debug = typeof process === 'object' && process.env.DEBUG_ENGINE;

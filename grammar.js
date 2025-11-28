@@ -2,14 +2,13 @@
 
 const Scope = require('./scope');
 
-exports.start = start;
-
-function start(story, path, base) {
+const start = (story, path, base) => {
   const scope = new Scope(story, path, base);
   const stop = new Stop(scope);
   const start = scope.create('goto', 'RET', '1:1');
   return new Thread(scope.zerothChild(), stop, [start], []);
-}
+};
+exports.start = start;
 
 class Stop {
   constructor(scope) {
@@ -1356,20 +1355,20 @@ const precedence = [
   exponential,
 ];
 
-function expression(scope, parent) {
+const expression = (scope, parent) => {
   for (const operators of precedence) {
     parent = new BinaryExpression(operators, parent);
   }
   return new Unary(scope, parent);
-}
+};
 
-function variable(scope, parent) {
+const variable = (scope, parent) => {
   return new GetStaticVariable(scope, parent, [], [], '', true);
-}
+};
 
-function label(scope, parent) {
+const label = (scope, parent) => {
   return new GetStaticVariable(scope, new AfterVariable(parent), [], [], '', true);
-}
+};
 
 const inversions = {
   '==': '<>',
@@ -1380,7 +1379,7 @@ const inversions = {
   '<=': '>',
 };
 
-function invertExpression(expression) {
+const invertExpression = (expression) => {
   if (expression[0] === 'not') {
     return expression[1];
   } else if (inversions[expression[0]]) {
@@ -1388,7 +1387,7 @@ function invertExpression(expression) {
   } else {
     return ['not', expression];
   }
-}
+};
 
 class Open {
   constructor(parent) {
@@ -1739,7 +1738,7 @@ class Expect {
   }
 }
 
-function tokenName(type, text) {
+const tokenName = (type, text) => {
   // It might not be possible to provoke an error at the beginning of a new
   // block.
   if (type === 'start') {
@@ -1749,4 +1748,4 @@ function tokenName(type, text) {
   } else {
     return JSON.stringify(text);
   }
-}
+};

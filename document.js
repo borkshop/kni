@@ -2,7 +2,7 @@
 
 module.exports = class Document {
   constructor(element, createPage) {
-    var self = this;
+    const self = this;
     this.document = element.ownerDocument;
     this.parent = element;
     this.frame = null;
@@ -18,16 +18,15 @@ module.exports = class Document {
     this.options = null;
     this.p = false;
     this.br = false;
-    this.onclick = onclick;
-    this.createPage = createPage || this.createPage;
-    function onclick(event) {
+    this.onclick = (event) => {
       self.answer(event.target.number);
-    }
+    };
+    this.createPage = createPage || this.createPage;
     Object.seal(this);
   }
 
   write(lift, text, drop) {
-    var document = this.document;
+    const document = this.document;
     lift = this.carry || lift;
     if (this.p) {
       this.cursor = document.createElement('p');
@@ -56,13 +55,13 @@ module.exports = class Document {
 
   startOption() {
     this.optionIndex++;
-    var document = this.document;
-    var tr = document.createElement('tr');
+    const document = this.document;
+    const tr = document.createElement('tr');
     this.options.appendChild(tr);
-    var th = document.createElement('th');
+    const th = document.createElement('th');
     tr.appendChild(th);
     th.innerText = this.optionIndex + '.';
-    var td = document.createElement('td');
+    const td = document.createElement('td');
     td.number = this.optionIndex;
     td.onclick = this.onclick;
     td.setAttribute('aria-role', 'button');
@@ -92,8 +91,8 @@ module.exports = class Document {
     this.parent.appendChild(this.frame);
 
     // TODO not this
-    var frame = this.frame;
-    setTimeout(function () {
+    const frame = this.frame;
+    setTimeout(() => {
       frame.style.opacity = 1;
       frame.style.transform = 'translateX(0)';
     }, 10);
@@ -120,15 +119,15 @@ module.exports = class Document {
     this.frame.classList.add('kni-frame');
     this.frame.style.opacity = 0;
 
-    var A = document.createElement('div');
+    const A = document.createElement('div');
     A.classList.add('kni-frame-a');
     this.frame.appendChild(A);
 
-    var B = document.createElement('div');
+    const B = document.createElement('div');
     B.classList.add('kni-frame-b');
     A.appendChild(B);
 
-    var C = document.createElement('div');
+    const C = document.createElement('div');
     C.classList.add('kni-frame-c');
     B.appendChild(C);
 

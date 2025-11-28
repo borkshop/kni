@@ -13,14 +13,14 @@ module.exports = class Wrapper {
   }
 
   words(words) {
-    var array = words.split(' ');
-    for (var i = 0; i < array.length; i++) {
+    const array = words.split(' ');
+    for (let i = 0; i < array.length; i++) {
       this.word(array[i]);
     }
   }
 
   push(indent, lead) {
-    var prefix = this.indents[this.indents.length - 1];
+    const prefix = this.indents[this.indents.length - 1];
     this.indents.push(prefix + indent);
     this.leads.push(prefix + lead);
   }
@@ -31,7 +31,7 @@ module.exports = class Wrapper {
   }
 
   word(word) {
-    var indent = this.indents[this.indents.length - 1];
+    const indent = this.indents[this.indents.length - 1];
     if (this.index === 0) {
       this.target.write(indent);
       this.index += indent.length;
@@ -61,7 +61,7 @@ module.exports = class Wrapper {
 
   // Bring your own break, if you need it.
   bullet() {
-    var lead = this.leads[this.leads.length - 1];
+    const lead = this.leads[this.leads.length - 1];
     this.target.write(lead);
     this.index = lead.length;
     this.flush = true;

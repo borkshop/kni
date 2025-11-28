@@ -1,43 +1,41 @@
 #!/usr/bin/env node
 'use strict';
 
-var tee = require('tee');
-var Console = require('./console');
-var Readline = require('./readline');
-var Engine = require('./engine');
-var Scanner = require('./scanner');
-var OutlineLexer = require('./outline-lexer');
-var InlineLexer = require('./inline-lexer');
-var Parser = require('./parser');
-var Story = require('./story');
-var Path = require('./path');
-var grammar = require('./grammar');
-var link = require('./link');
-var verify = require('./verify');
-var exec = require('shon/exec');
-var usage = require('./kni.json');
-var xorshift = require('xorshift');
-var table = require('table').default;
-var getBorderCharacters = require('table').getBorderCharacters;
-var describe = require('./describe');
-var makeHtml = require('./html');
+const tee = require('tee');
+const Console = require('./console');
+const Readline = require('./readline');
+const Engine = require('./engine');
+const Scanner = require('./scanner');
+const OutlineLexer = require('./outline-lexer');
+const InlineLexer = require('./inline-lexer');
+const Parser = require('./parser');
+const Story = require('./story');
+const Path = require('./path');
+const grammar = require('./grammar');
+const link = require('./link');
+const verify = require('./verify');
+const exec = require('shon/exec');
+const usage = require('./kni.json');
+const xorshift = require('xorshift');
+const table = require('table').default;
+const getBorderCharacters = require('table').getBorderCharacters;
+const describe = require('./describe');
+const makeHtml = require('./html');
 
-function run(args, out, done) {
-  var config = exec(usage, args);
+const run = (args, out, done) => {
+  const config = exec(usage, args);
   if (!config) {
     done(null);
     return;
   }
 
-  serial(config.scripts, readAndKeep, onKniscripts);
-
-  function onKniscripts(err, kniscripts) {
+  serial(config.scripts, readAndKeep, (err, kniscripts) => {
     if (err) {
       done(err);
       return;
     }
 
-    var interactive = true;
+    let interactive = true;
 
     if (config.transcript === out) {
       config.transcript = null;
@@ -46,31 +44,31 @@ function run(args, out, done) {
       out = tee(config.transcript, out);
     }
 
-    var states;
+    let states;
     if (config.fromJson) {
       states = JSON.parse(kniscripts[0].content); // TODO test needed
     } else {
-      var story = new Story();
+      const story = new Story();
 
-      for (var i = 0; i < kniscripts.length; i++) {
-        var kniscript = kniscripts[i].content;
+      for (let i = 0; i < kniscripts.length; i++) {
+        const kniscript = kniscripts[i].content;
 
         if (config.debugInput) {
           console.log(kniscript);
         }
 
-        var path = Path.start();
-        var base = [];
+        let path = Path.start();
+        let base = [];
         if (kniscripts.length > 1) {
           path = kniscripts[i].stream.path;
           path = [path.split('/').pop().split('.').shift()];
           base = path;
         }
 
-        var p = new Parser(grammar.start(story, path, base));
-        var il = new InlineLexer(p);
-        var ol = new OutlineLexer(il);
-        var s = new Scanner(ol, kniscripts[i].stream.path);
+        const p = new Parser(grammar.start(story, path, base));
+        const il = new InlineLexer(p);
+        const ol = new OutlineLexer(il);
+        const s = new Scanner(ol, kniscripts[i].stream.path);
 
         // Kick off each file with a fresh paragraph.
         p.next('token', '', '//', s);
@@ -103,7 +101,7 @@ function run(args, out, done) {
         if (config.transcript != null) {
           dump(story.errors, config.transcript);
         }
-        var storyError = new Error('internal story error');
+        const storyError = new Error('internal story error');
         storyError.story = story;
         done(storyError);
         return;
@@ -127,7 +125,7 @@ function run(args, out, done) {
       interactive = false;
     }
 
-    var randomer = xorshift;
+    let randomer = xorshift;
 
     if (config.transcript || config.seed) {
       // I rolled 4d64k this morning.
@@ -140,13 +138,13 @@ function run(args, out, done) {
     }
 
     if (config.expected) {
-      read(config.expected, function onTypescript(err, typescript) {
+      read(config.expected, (err, typescript) => {
         if (err) {
           done(err);
           return;
         }
 
-        var result = verify(kniscript, typescript);
+        const result = verify(kniscripts[0].content, typescript);
         if (!result.pass) {
           console.log(result.actual);
           done(new Error('verification failed'));
@@ -158,9 +156,9 @@ function run(args, out, done) {
     }
 
     if (interactive) {
-      var readline = new Readline(config.transcript);
-      var render = new Console(out);
-      var engine = new Engine({
+      const readline = new Readline(config.transcript);
+      const render = new Console(out);
+      const engine = new Engine({
         story: states,
         start: config.start,
         render: render,
@@ -173,7 +171,7 @@ function run(args, out, done) {
       }
 
       if (config.waypoint) {
-        read(config.waypoint, function onWaypoint(err, waypoint) {
+        read(config.waypoint, (err, waypoint) => {
           if (err) {
             done(err);
             return;
@@ -185,18 +183,18 @@ function run(args, out, done) {
         engine.continue();
       }
     }
-  }
+  });
 
   done(null);
-}
+};
 
-function describeStory(states, out, done) {
-  var keys = Object.keys(states);
-  var cells = [['L:C', 'AT', 'DO', 'S', 'USING', 'S', 'GO']];
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    var node = states[key];
-    var next;
+const describeStory = (states, out, done) => {
+  const keys = Object.keys(states);
+  const cells = [['L:C', 'AT', 'DO', 'S', 'USING', 'S', 'GO']];
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const node = states[key];
+    let next;
     if (i === keys.length - 1) {
       next = null;
     } else {
@@ -229,17 +227,17 @@ function describeStory(states, out, done) {
     }),
     done
   );
-}
+};
 
-function stripe(index, text) {
+const stripe = (index, text) => {
   if (index % 2 === 1) {
     return text;
   } else {
     return '\x1b[90m' + text + '\x1b[0m';
   }
-}
+};
 
-function describeNext(jump, next) {
+const describeNext = (jump, next) => {
   if (jump === undefined) {
     return '';
   } else if (jump === next) {
@@ -251,72 +249,69 @@ function describeNext(jump, next) {
   } else {
     return '-> ' + jump;
   }
-}
+};
 
-function no() {
+const no = () => {
   return false;
-}
+};
 
-function readAndKeep(stream, callback) {
-  read(stream, function onRead(err, content) {
+const readAndKeep = (stream, callback) => {
+  read(stream, (err, content) => {
     if (err != null) {
       return callback(err);
     }
     callback(null, {stream: stream, content: content});
   });
-}
+};
 
-function read(stream, callback) {
+const read = (stream, callback) => {
   stream.setEncoding('utf8');
-  var string = '';
-  stream.on('data', onData);
-  stream.on('end', onEnd);
-  stream.on('error', onEnd);
-  function onData(chunk) {
+  let string = '';
+  const onData = (chunk) => {
     string += chunk;
-  }
-  function onEnd(err) {
+  };
+  const onEnd = (err) => {
     if (err) {
       callback(err);
       return;
     }
     callback(null, string);
-  }
-}
+  };
+  stream.on('data', onData);
+  stream.on('end', onEnd);
+  stream.on('error', onEnd);
+};
 
-function serial(array, eachback, callback) {
-  var values = [];
-  next(0);
-
-  function next(i) {
+const serial = (array, eachback, callback) => {
+  const values = [];
+  const next = (i) => {
     if (i >= array.length) {
       return callback(null, values);
     }
 
-    eachback(array[i], onEach);
-
-    function onEach(err, value) {
+    eachback(array[i], (err, value) => {
       if (err != null) {
         return callback(err, null);
       }
       values.push(value);
       next(i + 1);
-    }
-  }
-}
+    });
+  };
+  next(0);
+};
 
-function dump(errors, writer) {
-  for (var i = 0; i < errors.length; i++) {
+const dump = (errors, writer) => {
+  for (let i = 0; i < errors.length; i++) {
     writer.write(errors[i] + '\n');
   }
-}
+};
 
 if (require.main === module) {
-  run(null, process.stdout, function runDone(err) {
+  run(null, process.stdout, (err) => {
     if (err) {
       console.error(typeof err === 'object' && err.message ? err.message : err);
       if (typeof err.story === 'object' && err.story) {
-        var story = err.story;
+        const story = err.story;
         dump(story.errors, process.stderr);
       }
       process.exit(-1);

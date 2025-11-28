@@ -18,7 +18,7 @@ class Excerpt {
     if (this.children.length === 0) {
       return;
     }
-    var last = this.children[this.children.length - 1];
+    const last = this.children[this.children.length - 1];
     last.break();
   }
 
@@ -26,7 +26,7 @@ class Excerpt {
     if (this.children.length === 0) {
       return;
     }
-    var last = this.children[this.children.length - 1];
+    const last = this.children[this.children.length - 1];
     last.startJoin(lift, delimiter, conjunction);
   }
 
@@ -34,7 +34,7 @@ class Excerpt {
     if (this.children.length === 0) {
       return;
     }
-    var last = this.children[this.children.length - 1];
+    const last = this.children[this.children.length - 1];
     last.delimit(delimiter);
   }
 
@@ -42,7 +42,7 @@ class Excerpt {
     if (this.children.length === 0) {
       return;
     }
-    var last = this.children[this.children.length - 1];
+    const last = this.children[this.children.length - 1];
     last.stopJoin();
   }
 
@@ -54,12 +54,12 @@ class Excerpt {
       this.children.push(new this.Child());
       this.flag = false;
     }
-    var last = this.children[this.children.length - 1];
+    const last = this.children[this.children.length - 1];
     last.digest(lift, words, drop);
   }
 
   write(wrapper) {
-    for (var i = 0; i < this.children.length; i++) {
+    for (let i = 0; i < this.children.length; i++) {
       if (i > 0) {
         wrapper.break();
       }
@@ -88,7 +88,7 @@ class Paragraph {
   digest = Excerpt.prototype.digest;
 
   write(wrapper) {
-    for (var i = 0; i < this.children.length; i++) {
+    for (let i = 0; i < this.children.length; i++) {
       this.children[i].write(wrapper);
     }
   }
@@ -119,7 +119,7 @@ class Stanza {
   }
 
   write(wrapper) {
-    for (var i = 0; i < this.children.length; i++) {
+    for (let i = 0; i < this.children.length; i++) {
       wrapper.word(this.children[i]);
     }
     wrapper.break();
@@ -127,7 +127,7 @@ class Stanza {
 
   proxyDigest(lift, words, drop) {
     lift = this.lift || lift;
-    var i = 0;
+    let i = 0;
     if (!lift && words.length && this.children.length) {
       this.children[this.children.length - 1] += words[i++];
     }
@@ -190,12 +190,12 @@ class Conjunction {
       this.parent.digest(' ', [this.conjunction], ' ');
       this.parent.digest(' ', this.children[1].children, drop);
     } else {
-      for (var i = 0; i < this.children.length - 1; i++) {
+      for (let i = 0; i < this.children.length - 1; i++) {
         this.parent.digest('', this.children[i].children, '');
         this.parent.digest('', [this.delimiter], ' ');
       }
       this.parent.digest('', [this.conjunction], ' ');
-      this.parent.digest('', this.children[i].children, '');
+      this.parent.digest('', this.children[this.children.length - 1].children, '');
     }
     return this.parent;
   }

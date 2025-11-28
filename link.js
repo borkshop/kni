@@ -1,14 +1,12 @@
 'use strict';
 
-module.exports = link;
+const link = (story) => {
+  const labels = Object.keys(story.states);
+  for (let i = 0; i < labels.length; i++) {
+    const label = labels[i];
+    const state = story.states[label];
 
-function link(story) {
-  var labels = Object.keys(story.states);
-  for (var i = 0; i < labels.length; i++) {
-    var label = labels[i];
-    var state = story.states[label];
-
-    var link = linker(story, label, state);
+    const link = linker(story, label, state);
 
     if (state.label != null) {
       state.label = link('label')(state.label);
@@ -26,23 +24,24 @@ function link(story) {
       state.answer = state.answer.map(link('answer'));
     }
   }
-}
+};
+module.exports = link;
 
-function linker(story, context, state) {
-  var parts = context.split('.');
-  var ancestry = [];
+const linker = (story, context, state) => {
+  const parts = context.split('.');
+  const ancestry = [];
   while (parts.length > 0) {
     ancestry.push(parts.slice());
     parts.pop();
   }
   ancestry.push([]);
-  return function (role) {
-    return function (label) {
+  return (role) => {
+    return (label) => {
       if (label === 'RET' || label === 'ESC') {
         return label;
       }
-      for (var i = 0; i < ancestry.length; i++) {
-        var candidate = ancestry[i].slice();
+      for (let i = 0; i < ancestry.length; i++) {
+        let candidate = ancestry[i].slice();
         candidate.push(label);
         candidate = candidate.join('.');
         if (story.states[candidate] != null) {
@@ -60,4 +59,4 @@ function linker(story, context, state) {
       return label;
     };
   };
-}
+};

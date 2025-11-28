@@ -1,11 +1,11 @@
 'use strict';
 
-var Path = require('./path');
+const Path = require('./path');
 
 module.exports = class Scope {
   static tie(ends, name) {
-    for (var i = 0; i < ends.length; i++) {
-      var end = ends[i];
+    for (let i = 0; i < ends.length; i++) {
+      const end = ends[i];
       if (end.type === 'branch') {
         end.node.branch = name;
       } else {

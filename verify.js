@@ -1,39 +1,37 @@
 'use strict';
 
-var xorshift = require('xorshift');
-var Engine = require('./engine');
-var Console = require('./console');
-var Scanner = require('./scanner');
-var OutlineLexer = require('./outline-lexer');
-var InlineLexer = require('./inline-lexer');
-var Parser = require('./parser');
-var Story = require('./story');
-var Path = require('./path');
-var grammar = require('./grammar');
-var link = require('./link');
+const xorshift = require('xorshift');
+const Engine = require('./engine');
+const Console = require('./console');
+const Scanner = require('./scanner');
+const OutlineLexer = require('./outline-lexer');
+const InlineLexer = require('./inline-lexer');
+const Parser = require('./parser');
+const Story = require('./story');
+const Path = require('./path');
+const grammar = require('./grammar');
+const link = require('./link');
 
-module.exports = verify;
-
-function verify(kni, trans, handler, kniscript) {
-  var lines = trans.split('\n');
+const verify = (kni, trans, handler, kniscript) => {
+  const lines = trans.split('\n');
 
   // filter the transcript for given answers
-  var answers = [];
+  const answers = [];
   for (const line of lines) {
     if (line.lastIndexOf('>', 0) === 0) {
       answers.push(line.slice(1).trim());
     }
   }
 
-  var path = Path.start();
-  var base = [];
+  const path = Path.start();
+  const base = [];
 
   // build a story from the kni
-  var story = new Story();
-  var p = new Parser(grammar.start(story, path, base));
-  var il = new InlineLexer(p);
-  var ol = new OutlineLexer(il);
-  var s = new Scanner(ol, kniscript);
+  const story = new Story();
+  const p = new Parser(grammar.start(story, path, base));
+  const il = new InlineLexer(p);
+  const ol = new OutlineLexer(il);
+  const s = new Scanner(ol, kniscript);
 
   s.next(kni);
   s.return();
@@ -41,7 +39,7 @@ function verify(kni, trans, handler, kniscript) {
   link(story);
 
   if (story.errors.length) {
-    var errors = '';
+    let errors = '';
     for (const err of story.errors) {
       errors += err + '\n';
     }
@@ -64,17 +62,17 @@ function verify(kni, trans, handler, kniscript) {
     };
   }
 
-  var states = story.states;
+  const states = story.states;
 
   // TODO support alternate seeds
-  var seed = 0;
+  const seed = 0;
   // I rolled 4d64k this morning, for kni.js
-  var randomer = new xorshift.constructor([37615 ^ seed, 54552 ^ seed, 59156 ^ seed, 24695 ^ seed]);
+  const randomer = new xorshift.constructor([37615 ^ seed, 54552 ^ seed, 59156 ^ seed, 24695 ^ seed]);
 
-  var writer = new StringWriter();
-  var render = new Console(writer);
-  var readline = new FakeReadline(writer, answers);
-  var engine = new Engine({
+  const writer = new StringWriter();
+  const render = new Console(writer);
+  const readline = new FakeReadline(writer, answers);
+  const engine = new Engine({
     story: states,
     start: 'start',
     handler: handler,
@@ -85,14 +83,15 @@ function verify(kni, trans, handler, kniscript) {
   readline.engine = engine;
   engine.reset();
 
-  var expected = trans.trim();
-  var actual = writer.string.trim();
+  const expected = trans.trim();
+  const actual = writer.string.trim();
   return {
     pass: expected === actual,
     expected: expected,
     actual: actual,
   };
-}
+};
+module.exports = verify;
 
 class FakeReadline {
   constructor(writer, answers) {

@@ -1,7 +1,7 @@
 'use strict';
 
-var Excerpt = require('./excerpt');
-var Wrapper = require('./wrapper');
+const Excerpt = require('./excerpt');
+const Wrapper = require('./wrapper');
 
 module.exports = class Console {
   constructor(writer) {
@@ -25,7 +25,7 @@ module.exports = class Console {
   }
 
   startOption() {
-    var option = new Excerpt();
+    const option = new Excerpt();
     this.cursor = option;
     this.options.push(option);
   }
@@ -44,9 +44,9 @@ module.exports = class Console {
 
   display() {
     this.excerpt.write(this.wrapper);
-    for (var i = 0; i < this.options.length; i++) {
-      var number = i + 1;
-      var lead = (number + '.   ').slice(0, 3) + ' ';
+    for (let i = 0; i < this.options.length; i++) {
+      const number = i + 1;
+      const lead = (number + '.   ').slice(0, 3) + ' ';
       this.wrapper.word(lead);
       this.wrapper.flush = true;
       this.wrapper.push('    ', '   ');

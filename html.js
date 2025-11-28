@@ -1,52 +1,52 @@
 'use strict';
 
-var System = require('system');
-var bundleSystemId = require('system/bundle').bundleSystemId;
-var Location = require('system/location');
+const System = require('system');
+const bundleSystemId = require('system/bundle').bundleSystemId;
+const Location = require('system/location');
 
-module.exports = makeHtml;
-function makeHtml(story, output, templateArgs) {
-  var location = Location.fromDirectory(__dirname);
-  var id = './template';
+const makeHtml = (story, output, templateArgs) => {
+  const location = Location.fromDirectory(__dirname);
+  const id = './template';
 
   return System.load(location, {
     node: true,
   })
-    .then(function (buildSystem) {
+    .then((buildSystem) => {
       return System.load(location, {
         browser: true,
         buildSystem: buildSystem,
-      }).then(function (system) {
+      }).then((system) => {
         // Preempt the loader with a the prepared story:
-        var module = system.lookup('./story.json');
+        const module = system.lookup('./story.json');
         module.text = 'module.exports = ' + JSON.stringify(story, null, 4);
-        module.factory = function () {};
+        module.factory = () => {};
 
         return bundleSystemId(system, id);
       });
     })
-    .then(function (script) {
+    .then((script) => {
       return template(script, templateArgs);
     })
-    .then(function (bundle) {
+    .then((bundle) => {
       output.end(bundle);
     })
-    .catch(function (error) {
+    .catch((error) => {
       console.error(error);
       process.exit(-1);
     });
-}
+};
+module.exports = makeHtml;
 
-function template(bundle, args) {
-  var title = '';
+const template = (bundle, args) => {
+  let title = '';
   if (args.title != null) {
     title = '<title>' + title + '</title>';
   }
-  var bgcolor = 'hsla(60, 42.00%, 66.00%, 1)';
+  let bgcolor = 'hsla(60, 42.00%, 66.00%, 1)';
   if (args.backgroundColor != null) {
     bgcolor = args.backgroundColor;
   }
-  var color = 'hsla(240, 42.00%, 25.00%, 1)';
+  let color = 'hsla(240, 42.00%, 25.00%, 1)';
   if (args.color != null) {
     color = args.color;
   }

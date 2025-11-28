@@ -15,12 +15,12 @@ const tabWidth = 4;
  * @param {number} columnNo -- screen column number (logical X coord)
  * @returns {number} -- column number where the next tab stop starts
  */
-function nextTabStop(columnNo) {
+const nextTabStop = (columnNo) => {
   // TODO simplify with modulo arithmetic
   return Math.floor((columnNo + tabWidth) / tabWidth) * tabWidth;
-}
+};
 
-var leaders = '-+*!>';
+const leaders = '-+*!>';
 
 module.exports = class Scanner {
   debug = typeof process === 'object' && process.env.DEBUG_SCANNER;

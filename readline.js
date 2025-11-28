@@ -1,24 +1,23 @@
 'use strict';
 
-var readline = require('readline');
-var fs = require('fs');
+const readline = require('readline');
+const fs = require('fs');
 
 module.exports = class Readline {
   constructor(transcript, filename) {
-    var self = this;
+    const self = this;
     this.readline = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
     this.engine = null;
-    this.boundAnswer = answer;
+    this.boundAnswer = (text) => {
+      self.answer(text);
+    };
     this.transcript = transcript;
     this.history = [];
     this.state = new Play(this, filename);
     Object.seal(this);
-    function answer(text) {
-      self.answer(text);
-    }
   }
 
   ask(cue) {
@@ -47,7 +46,7 @@ class Play {
   }
 
   answer(text) {
-    var engine = this.readline.engine;
+    const engine = this.readline.engine;
 
     if (text === 'quit') {
       console.log('');
@@ -91,7 +90,7 @@ class Play {
   }
 
   saved(filename) {
-    var engine = this.readline.engine;
+    const engine = this.readline.engine;
 
     this.filename = filename;
     engine.ask();
@@ -99,7 +98,7 @@ class Play {
   }
 
   loaded(waypoint) {
-    var engine = this.readline.engine;
+    const engine = this.readline.engine;
 
     engine.resume(waypoint);
     return this;
@@ -114,7 +113,7 @@ class Save {
   }
 
   answer(filename) {
-    var waypoint = JSON.stringify(this.waypoint);
+    const waypoint = JSON.stringify(this.waypoint);
     filename = filename || this.filename;
     fs.writeFileSync(filename, waypoint, 'utf8');
 
@@ -135,7 +134,7 @@ class Load {
   answer(filename) {
     filename = filename || this.filename;
 
-    var waypoint = fs.readFileSync(filename, 'utf8');
+    const waypoint = fs.readFileSync(filename, 'utf8');
     console.log('');
     console.log('Loaded from ' + filename);
     console.log(waypoint);

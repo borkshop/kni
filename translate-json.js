@@ -1,5 +1,5 @@
 'use strict';
-module.exports = translate;
-function translate(module) {
+const translate = (module) => {
   module.text = 'module.exports = ' + module.text;
-}
+};
+module.exports = translate;
