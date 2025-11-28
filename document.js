@@ -18,7 +18,7 @@ module.exports = class Document {
     this.options = null;
     this.p = false;
     this.br = false;
-    this.onclick = (event) => {
+    this.onclick = event => {
       self.answer(event.target.number);
     };
     this.createPage = createPage || this.createPage;

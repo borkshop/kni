@@ -1,6 +1,6 @@
 'use strict';
 
-const link = (story) => {
+const link = story => {
   const labels = Object.keys(story.states);
   for (let i = 0; i < labels.length; i++) {
     const label = labels[i];
@@ -35,8 +35,8 @@ const linker = (story, context, state) => {
     parts.pop();
   }
   ancestry.push([]);
-  return (role) => {
-    return (label) => {
+  return role => {
+    return label => {
       if (label === 'RET' || label === 'ESC') {
         return label;
       }

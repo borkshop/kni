@@ -267,10 +267,10 @@ const readAndKeep = (stream, callback) => {
 const read = (stream, callback) => {
   stream.setEncoding('utf8');
   let string = '';
-  const onData = (chunk) => {
+  const onData = chunk => {
     string += chunk;
   };
-  const onEnd = (err) => {
+  const onEnd = err => {
     if (err) {
       callback(err);
       return;
@@ -284,7 +284,7 @@ const read = (stream, callback) => {
 
 const serial = (array, eachback, callback) => {
   const values = [];
-  const next = (i) => {
+  const next = i => {
     if (i >= array.length) {
       return callback(null, values);
     }
@@ -307,7 +307,7 @@ const dump = (errors, writer) => {
 };
 
 if (require.main === module) {
-  run(null, process.stdout, (err) => {
+  run(null, process.stdout, err => {
     if (err) {
       console.error(typeof err === 'object' && err.message ? err.message : err);
       if (typeof err.story === 'object' && err.story) {

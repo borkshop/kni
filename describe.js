@@ -1,41 +1,41 @@
 'use strict';
 
-const describe = (node) => {
+const describe = node => {
   return types[node.type](node);
 };
 module.exports = describe;
 
 const types = {};
 
-types.text = (node) => {
+types.text = node => {
   return node.text;
 };
 
-types.echo = (node) => {
+types.echo = node => {
   return S(node.expression);
 };
 
-types.opt = (node) => {
+types.opt = node => {
   return '(Q ' + node.question.join(' ') + ') (A ' + node.answer.join(' ') + ')';
 };
 
-types.goto = (_node) => {
+types.goto = _node => {
   return '';
 };
 
-types.call = (node) => {
+types.call = node => {
   return node.label + '(' + node.args.map(S).join(' ') + ') esc ' + node.branch;
 };
 
-types.def = (node) => {
+types.def = node => {
   return '(' + node.locals.join(' ') + ')';
 };
 
-types.jump = (node) => {
+types.jump = node => {
   return node.branch + ' if ' + S(node.condition);
 };
 
-types.switch = (node) => {
+types.switch = node => {
   let desc = '';
   if (node.variable) {
     desc += '(' + node.variable + '+' + node.value + ') ' + S(node.expression);
@@ -46,47 +46,47 @@ types.switch = (node) => {
   return desc;
 };
 
-types.set = (node) => {
+types.set = node => {
   return node.variable + ' ' + S(node.expression);
 };
 
-types.move = (node) => {
+types.move = node => {
   return S(node.source) + ' -> ' + S(node.target);
 };
 
-types.cue = (node) => {
+types.cue = node => {
   return node.cue;
 };
 
-types.br = (_node) => {
+types.br = _node => {
   return '';
 };
 
-types.par = (_node) => {
+types.par = _node => {
   return '';
 };
 
-types.rule = (_node) => {
+types.rule = _node => {
   return '';
 };
 
-types.startJoin = (_node) => {
+types.startJoin = _node => {
   return '';
 };
 
-types.stopJoin = (_node) => {
+types.stopJoin = _node => {
   return '';
 };
 
-types.delimit = (_node) => {
+types.delimit = _node => {
   return '';
 };
 
-types.ask = (_node) => {
+types.ask = _node => {
   return '';
 };
 
-types.read = (node) => {
+types.read = node => {
   let label = node.variable;
   if (node.cue != null) {
     label += ' ' + node.cue;
@@ -94,7 +94,7 @@ types.read = (node) => {
   return label;
 };
 
-const S = (args) => {
+const S = args => {
   if (args[0] === 'val' || args[0] === 'get') {
     return args[1];
   } else if (args[0] === 'var') {

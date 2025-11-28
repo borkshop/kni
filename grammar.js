@@ -1379,7 +1379,7 @@ const inversions = {
   '<=': '>',
 };
 
-const invertExpression = (expression) => {
+const invertExpression = expression => {
   if (expression[0] === 'not') {
     return expression[1];
   } else if (inversions[expression[0]]) {

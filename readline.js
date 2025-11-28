@@ -11,7 +11,7 @@ module.exports = class Readline {
       output: process.stdout,
     });
     this.engine = null;
-    this.boundAnswer = (text) => {
+    this.boundAnswer = text => {
       self.answer(text);
     };
     this.transcript = transcript;

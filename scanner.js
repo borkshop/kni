@@ -15,7 +15,7 @@ const tabWidth = 4;
  * @param {number} columnNo -- screen column number (logical X coord)
  * @returns {number} -- column number where the next tab stop starts
  */
-const nextTabStop = (columnNo) => {
+const nextTabStop = columnNo => {
   // TODO simplify with modulo arithmetic
   return Math.floor((columnNo + tabWidth) / tabWidth) * tabWidth;
 };

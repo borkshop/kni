@@ -69,7 +69,7 @@ const functions = {
   ceil: Math.ceil,
   round: Math.round,
 
-  sign: (x) => {
+  sign: x => {
     if (x < 0) {
       return -1;
     }
@@ -185,23 +185,23 @@ const binary = {
 };
 
 const unary = {
-  not: (x) => {
+  not: x => {
     return x ? 0 : 1;
   },
-  '-': (x) => {
+  '-': x => {
     return -x;
   },
   '~': (x, _scope, randomer) => {
     return Math.floor(randomer.random() * x);
   },
-  '#': (x) => {
+  '#': x => {
     return hash(x);
   },
 };
 
 // Robert Jenkins's 32 bit hash function
 // https://gist.github.com/badboy/6267743
-const hash = (a) => {
+const hash = a => {
   a = a + 0x7ed55d16 + (a << 12);
   a = a ^ 0xc761c23c ^ (a >>> 19);
   a = a + 0x165667b1 + (a << 5);

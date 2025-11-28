@@ -11,11 +11,11 @@ const makeHtml = (story, output, templateArgs) => {
   return System.load(location, {
     node: true,
   })
-    .then((buildSystem) => {
+    .then(buildSystem => {
       return System.load(location, {
         browser: true,
         buildSystem: buildSystem,
-      }).then((system) => {
+      }).then(system => {
         // Preempt the loader with a the prepared story:
         const module = system.lookup('./story.json');
         module.text = 'module.exports = ' + JSON.stringify(story, null, 4);
@@ -24,13 +24,13 @@ const makeHtml = (story, output, templateArgs) => {
         return bundleSystemId(system, id);
       });
     })
-    .then((script) => {
+    .then(script => {
       return template(script, templateArgs);
     })
-    .then((bundle) => {
+    .then(bundle => {
       output.end(bundle);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error(error);
       process.exit(-1);
     });
