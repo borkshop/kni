@@ -23,17 +23,17 @@ function nextTabStop(columnNo) {
 var leaders = '-+*!>';
 
 module.exports = class Scanner {
-    debug = typeof process === 'object' && process.env.DEBUG_SCANNER
+    debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
 
-    indent = 0
-    lineStart = 0
-    indentStart = 0
-    itemStart = 0
-    lineNo = 0
-    columnNo = 0
-    columnStart = 0
-    leading = true
-    leader = ''
+    indent = 0;
+    lineStart = 0;
+    indentStart = 0;
+    itemStart = 0;
+    lineNo = 0;
+    columnNo = 0;
+    columnStart = 0;
+    leading = true;
+    leader = '';
 
     /** An Iterator-like object that has text pushed into it by a Scanner.
      *
@@ -65,10 +65,7 @@ module.exports = class Scanner {
             if (this.debug) {
                 console.error('SCN', this.position() + ':' + i, JSON.stringify(c + (d || '')));
             }
-            if (
-                ((c === '\t' || c === ' ') && d === '#') ||
-                (this.columnNo === 0 && c === '#')
-            ) {
+            if (((c === '\t' || c === ' ') && d === '#') || (this.columnNo === 0 && c === '#')) {
                 this.newLine(text, i);
                 for (i++; i < text.length; i++) {
                     c = text[i];
@@ -82,10 +79,7 @@ module.exports = class Scanner {
                 this.newLine(text, i);
             } else if (c === ' ') {
                 this.columnNo++;
-            } else if (
-                this.leading && leaders.indexOf(c) >= 0 &&
-                (d === ' ' || d === '\t')
-            ) {
+            } else if (this.leading && leaders.indexOf(c) >= 0 && (d === ' ' || d === '\t')) {
                 this.leader += c;
                 this.columnNo++;
             } else if (this.leading && leaders.indexOf(c) >= 0 && d === '\n') {
@@ -138,4 +132,4 @@ module.exports = class Scanner {
     position() {
         return this.fileName + ':' + (this.lineNo + 1) + ':' + (this.columnStart + 1);
     }
-}
+};

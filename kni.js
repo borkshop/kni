@@ -118,7 +118,6 @@ function run(args, out, done) {
         if (config.toJson) {
             console.log(JSON.stringify(states, null, 4), done);
             interactive = false;
-
         } else if (config.toHtml) {
             makeHtml(states, config.toHtml, {
                 title: config.htmlTitle,
@@ -136,7 +135,7 @@ function run(args, out, done) {
                 37615 ^ config.seed,
                 54552 ^ config.seed,
                 59156 ^ config.seed,
-                24695 ^ config.seed
+                24695 ^ config.seed,
             ]);
         }
 
@@ -166,7 +165,7 @@ function run(args, out, done) {
                 start: config.start,
                 render: render,
                 dialog: readline,
-                randomer: randomer
+                randomer: randomer,
             });
 
             if (config.debugRuntime) {
@@ -210,23 +209,26 @@ function describeStory(states, out, done) {
             stripe(i, node.lift ? '-' : ' '),
             stripe(i, describe(node)),
             stripe(i, node.drop ? '-' : ' '),
-            stripe(i, describeNext(node.next, next))
+            stripe(i, describeNext(node.next, next)),
         ]);
     }
-    out.write(table(cells, {
-        border: getBorderCharacters('void'),
-        columnDefault: {
-            paddingLeft: 0,
-            paddingRight: 2
-        },
-        columns: {
-            4: {
-                width: 40,
-                wrapWord: true
-            }
-        },
-        drawHorizontalLine: no
-    }), done);
+    out.write(
+        table(cells, {
+            border: getBorderCharacters('void'),
+            columnDefault: {
+                paddingLeft: 0,
+                paddingRight: 2,
+            },
+            columns: {
+                4: {
+                    width: 40,
+                    wrapWord: true,
+                },
+            },
+            drawHorizontalLine: no,
+        }),
+        done
+    );
 }
 
 function stripe(index, text) {
@@ -298,7 +300,7 @@ function serial(array, eachback, callback) {
                 return callback(err, null);
             }
             values.push(value);
-            next(i+1);
+            next(i + 1);
         }
     }
 }

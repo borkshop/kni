@@ -49,12 +49,12 @@ const engine = new Engine({
     handler,
 });
 
-window.onpopstate = (event) => {
+window.onpopstate = event => {
     handler.log('>', 'back');
     engine.resume(event.state);
 };
 
-window.onkeypress = (event) => {
+window.onkeypress = event => {
     const code = event.code;
     const match = /^Digit(\d+)$/.exec(code);
     if (match) {
@@ -64,9 +64,11 @@ window.onkeypress = (event) => {
     }
 };
 
-const reset = document.querySelector(".reset");
+const reset = document.querySelector('.reset');
 if (reset) {
-    reset.onclick = () => { engine.reset() };
+    reset.onclick = () => {
+        engine.reset();
+    };
 }
 
 doc.clear();

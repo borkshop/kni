@@ -39,7 +39,7 @@ types.jump = function jump(node) {
 types.switch = function _switch(node) {
     var desc = '';
     if (node.variable) {
-        desc += '(' + node.variable + '+' +  node.value + ') ' + S(node.expression);
+        desc += '(' + node.variable + '+' + node.value + ') ' + S(node.expression);
     } else {
         desc += S(node.expression);
     }

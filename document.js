@@ -30,14 +30,14 @@ module.exports = class Document {
         var document = this.document;
         lift = this.carry || lift;
         if (this.p) {
-            this.cursor = document.createElement("p");
+            this.cursor = document.createElement('p');
             this.cursorParent.insertBefore(this.cursor, this.afterCursor);
             this.p = false;
             this.br = false;
             lift = '';
         }
         if (this.br) {
-            this.cursor.appendChild(document.createElement("br"));
+            this.cursor.appendChild(document.createElement('br'));
             this.br = false;
             lift = '';
         }
@@ -57,15 +57,15 @@ module.exports = class Document {
     startOption() {
         this.optionIndex++;
         var document = this.document;
-        var tr = document.createElement("tr");
+        var tr = document.createElement('tr');
         this.options.appendChild(tr);
-        var th = document.createElement("th");
+        var th = document.createElement('th');
         tr.appendChild(th);
         th.innerText = this.optionIndex + '.';
-        var td = document.createElement("td");
+        var td = document.createElement('td');
         td.number = this.optionIndex;
         td.onclick = this.onclick;
-        td.setAttribute("aria-role", "button");
+        td.setAttribute('aria-role', 'button');
         tr.appendChild(td);
         this.cursor = td;
         this.p = false;
@@ -103,7 +103,7 @@ module.exports = class Document {
         if (this.frame) {
             this.frame.style.opacity = 0;
             this.frame.style.transform = 'translateX(-2ex)';
-            this.frame.addEventListener("transitionend", this);
+            this.frame.addEventListener('transitionend', this);
         }
         this.createPage(this.document, this);
         this.cursor = null;
@@ -116,27 +116,27 @@ module.exports = class Document {
     }
 
     createPage(document) {
-        this.frame = document.createElement("div");
-        this.frame.classList.add("kni-frame");
+        this.frame = document.createElement('div');
+        this.frame.classList.add('kni-frame');
         this.frame.style.opacity = 0;
 
-        var A = document.createElement("div");
-        A.classList.add("kni-frame-a");
+        var A = document.createElement('div');
+        A.classList.add('kni-frame-a');
         this.frame.appendChild(A);
 
-        var B = document.createElement("div");
-        B.classList.add("kni-frame-b");
+        var B = document.createElement('div');
+        B.classList.add('kni-frame-b');
         A.appendChild(B);
 
-        var C = document.createElement("div");
-        C.classList.add("kni-frame-c");
+        var C = document.createElement('div');
+        C.classList.add('kni-frame-c');
         B.appendChild(C);
 
-        this.body = document.createElement("div");
-        this.body.classList.add("kni-body");
+        this.body = document.createElement('div');
+        this.body.classList.add('kni-body');
         C.appendChild(this.body);
 
-        this.options = document.createElement("table");
+        this.options = document.createElement('table');
         this.body.appendChild(this.options);
         this.afterBody = this.options;
     }
@@ -147,13 +147,11 @@ module.exports = class Document {
         }
     }
 
-    ask(_cue) {
-    }
+    ask(_cue) {}
 
     answer(text) {
         this.engine.answer(text);
     }
 
-    close() {
-    }
-}
+    close() {}
+};

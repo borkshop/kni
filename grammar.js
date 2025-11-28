@@ -1,6 +1,5 @@
 'use strict';
 
-
 const Scope = require('./scope');
 
 exports.start = start;
@@ -22,7 +21,9 @@ class Stop {
         // The only way to reach this method is for there to be a bug in the
         // outline lexer, or a bug in the grammar.
         if (type !== 'stop') {
-            this.scope.error(scanner.position() + ': Expected end of file, got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() + ': Expected end of file, got ' + tokenName(type, text) + '.'
+            );
         }
         return new End();
     }
@@ -56,9 +57,16 @@ class Thread {
     }
 
     next(type, space, text, scanner) {
-        if (type === 'symbol'|| type === 'alphanum' || type === 'number' || type === 'literal' || text === '--' || text === '---') {
+        if (
+            type === 'symbol' ||
+            type === 'alphanum' ||
+            type === 'number' ||
+            type === 'literal' ||
+            text === '--' ||
+            text === '---'
+        ) {
             return new Text(this.scope, space, text, this, this.rets);
-        }  else if (type === 'token') {
+        } else if (type === 'token') {
             if (text === '{') {
                 return new Block(this.scope, new ThenExpect('token', '}', this), this.rets);
             } else if (text === '@') {
@@ -79,17 +87,37 @@ class Thread {
                 const node = this.scope.create('paragraph', null, scanner.position());
                 this.scope.tie(this.rets);
                 return new Thread(this.scope.next(), this.parent, [node], this.escs);
-            } else if (text === '{"' || text === '{\'' || text === '"}' || text === '\'}') {
-                return new Text(this.scope, space, '', this, this.rets)
-                    .next(type, '', text, scanner);
+            } else if (text === '{"' || text === "{'" || text === '"}' || text === "'}") {
+                return new Text(this.scope, space, '', this, this.rets).next(
+                    type,
+                    '',
+                    text,
+                    scanner
+                );
             } else if (text === '<') {
-                return label(this.scope, new ThenExpect('token', '>', new Cue(this, this.rets, this.escs)));
+                return label(
+                    this.scope,
+                    new ThenExpect('token', '>', new Cue(this, this.rets, this.escs))
+                );
             }
         } else if (type === 'start') {
             if (text === '+' || text === '*') {
-                return new MaybeOption(this.scope, new ThenExpect('stop', '', this), this.rets, [], text);
+                return new MaybeOption(
+                    this.scope,
+                    new ThenExpect('stop', '', this),
+                    this.rets,
+                    [],
+                    text
+                );
             } else if (text === '-') {
-                return new MaybeThread(this.scope, new ThenExpect('stop', '', this), this.rets, [], [], ' ');
+                return new MaybeThread(
+                    this.scope,
+                    new ThenExpect('stop', '', this),
+                    this.rets,
+                    [],
+                    [],
+                    ' '
+                );
             } else if (text === '>') {
                 // tie off rets to the prompt.
                 this.scope.tie(this.rets);
@@ -97,7 +125,8 @@ class Thread {
                 const rets = this.escs.slice();
                 this.escs.length = 0;
                 return new Ask(this.scope, new ThenExpect('stop', '', this), rets, []);
-            } else { // if text === '!') {
+            } else {
+                // if text === '!') {
                 return new Program(this.scope, new ThenExpect('stop', '', this), this.rets, []);
             }
         } else if (type === 'dash') {
@@ -108,7 +137,8 @@ class Thread {
             return this;
         }
         if (type === 'stop' || text === '|' || text === ']' || text === '[' || text === '}') {
-            return this.parent.return(this.scope, this.rets, this.escs, scanner)
+            return this.parent
+                .return(this.scope, this.rets, this.escs, scanner)
                 .next(type, space, text, scanner);
         }
         return new Text(this.scope, space, text, this, this.rets);
@@ -143,10 +173,10 @@ class Text {
             } else if (text === '"}') {
                 this.text += space + '”';
                 return this;
-            } else if (text === '{\'') {
+            } else if (text === "{'") {
                 this.text += space + '‘';
                 return this;
-            } else if (text === '\'}') {
+            } else if (text === "'}") {
                 this.text += space + '’';
                 return this;
             } else if ((text === '/' || text === '//') && space === '') {
@@ -167,7 +197,8 @@ class Text {
         const node = this.scope.create('text', this.text, scanner.position());
         node.lift = this.lift;
         node.drop = space;
-        return this.parent.return(this.scope.next(), [node], [], scanner)
+        return this.parent
+            .return(this.scope.next(), [node], [], scanner)
             .next(type, space, text, scanner);
     }
 }
@@ -186,13 +217,22 @@ class MaybeThread {
     next(type, space, text, scanner) {
         if (type === 'token') {
             if (text === '{') {
-                return expression(this.scope,
-                    new ThenExpect('token', '}',
-                        new ThreadCondition(this.parent, this.rets, this.escs, this.skips)));
+                return expression(
+                    this.scope,
+                    new ThenExpect(
+                        'token',
+                        '}',
+                        new ThreadCondition(this.parent, this.rets, this.escs, this.skips)
+                    )
+                );
             }
         }
-        return new Thread(this.scope, this, this.rets, this.escs)
-            .next(type, this.space || space, text, scanner);
+        return new Thread(this.scope, this, this.rets, this.escs).next(
+            type,
+            this.space || space,
+            text,
+            scanner
+        );
     }
 
     return(scope, rets, escs, scanner) {
@@ -213,7 +253,13 @@ class ThreadCondition {
         const node = scope.create('jump', invertExpression(args), scanner.position());
         const branch = new Branch(node);
         scope.tie(this.rets);
-        return new MaybeThread(scope.next(), this.parent, [node], this.escs, this.skips.concat([branch]));
+        return new MaybeThread(
+            scope.next(),
+            this.parent,
+            [node],
+            this.escs,
+            this.skips.concat([branch])
+        );
     }
 }
 
@@ -235,8 +281,7 @@ class MaybeOption {
     next(type, space, text, scanner) {
         if (type === 'token') {
             if (text === '{') {
-                return new OptionOperator(this.scope,
-                    new ThenExpect('token', '}', this));
+                return new OptionOperator(this.scope, new ThenExpect('token', '}', this));
             }
             // Recognize the inequality token as individual keyword tokens with an
             // empty string amid them in this context.
@@ -292,8 +337,15 @@ class MaybeOption {
         this.at.tie(this.rets);
 
         if (this.leader === '*') {
-            this.consequences.push([['get', variable], ['+', ['get', variable], ['val', 1]]]);
-            const jump = this.at.create('jump', ['<>', ['get', variable], ['val', 0]], scanner.position());
+            this.consequences.push([
+                ['get', variable],
+                ['+', ['get', variable], ['val', 1]],
+            ]);
+            const jump = this.at.create(
+                'jump',
+                ['<>', ['get', variable], ['val', 0]],
+                scanner.position()
+            );
             const jumpBranch = new Branch(jump);
             rets.push(jumpBranch);
             this.advance();
@@ -308,14 +360,23 @@ class MaybeOption {
             this.at.tie([jump]);
         }
 
-        const option = new Option(this.scope, this.parent, rets, this.escs, this.leader, this.consequences);
+        const option = new Option(
+            this.scope,
+            this.parent,
+            rets,
+            this.escs,
+            this.leader,
+            this.consequences
+        );
         option.node = this.at.create('option', null, scanner.position());
         option.node.keywords = Object.keys(this.keywords).sort();
         this.advance();
 
         option.next = this.at;
-        return option.thread(scanner,
-            new OptionThread(this.at, option, [], option, 'qa', AfterInitialQA));
+        return option.thread(
+            scanner,
+            new OptionThread(this.at, option, [], option, 'qa', AfterInitialQA)
+        );
     }
 }
 
@@ -349,12 +410,14 @@ class OptionOperator {
 
     next(type, space, text, scanner) {
         if (text === '+' || text === '-' || text === '=' || text === '!' || text === '?') {
-            return expression(this.scope,
-                new OptionArgument(this.parent, text));
+            return expression(this.scope, new OptionArgument(this.parent, text));
         } else {
-            return expression(this.scope,
-                new OptionArgument2(this.parent, ''))
-                    .next(type, space, text, scanner);
+            return expression(this.scope, new OptionArgument2(this.parent, '')).next(
+                type,
+                space,
+                text,
+                scanner
+            );
         }
     }
 }
@@ -370,8 +433,7 @@ class OptionArgument {
         if (args[0] === 'get' || args[0] === 'var') {
             return this.parent.return(scope, this.operator, args, this.args, scanner);
         } else {
-            return expression(scope,
-                new OptionArgument2(this.parent, this.operator, args));
+            return expression(scope, new OptionArgument2(this.parent, this.operator, args));
         }
     }
 }
@@ -484,9 +546,17 @@ class AfterInitialQA {
 
     next(type, _space, text, scanner) {
         if (type === 'token' && text === '[') {
-            return this.option.thread(scanner, new AfterQorA(this.scope, this, this.rets, this.option));
+            return this.option.thread(
+                scanner,
+                new AfterQorA(this.scope, this, this.rets, this.option)
+            );
         } else {
-            this.scope.error(scanner.position() + ': Expected "[]" brackets in option but got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() +
+                    ': Expected "[]" brackets in option but got ' +
+                    tokenName(type, text) +
+                    '.'
+            );
             return this.return(this.scope, this.rets, [], scanner);
         }
     }
@@ -516,8 +586,10 @@ class AfterInitialQA {
         }
 
         this.option.next = scope;
-        return this.option.thread(scanner,
-            new OptionThread(scope, this.parent, rets, this.option, 'a', AfterFinalA));
+        return this.option.thread(
+            scanner,
+            new OptionThread(scope, this.parent, rets, this.option, 'a', AfterFinalA)
+        );
     }
 }
 
@@ -534,15 +606,24 @@ class DecideQorA {
     }
 
     next(type, _space, text, scanner) {
-        if (type === 'token' && text === '[') { // A
+        if (type === 'token' && text === '[') {
+            // A
             this.option.push(this.scope, 'a');
-            return this.option.thread(scanner,
-                new OptionThread(this.scope, this, this.rets, this.option, 'q', ExpectFinalBracket));
-        } else if (type === 'token' && text === ']') { // Q
+            return this.option.thread(
+                scanner,
+                new OptionThread(this.scope, this, this.rets, this.option, 'q', ExpectFinalBracket)
+            );
+        } else if (type === 'token' && text === ']') {
+            // Q
             this.option.push(this.scope, 'q');
             return this.parent.return(this.scope, this.rets, [], scanner);
         } else {
-            this.scope.error(scanner.position() + ': Expected "]" to end option but got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() +
+                    ': Expected "]" to end option but got ' +
+                    tokenName(type, text) +
+                    '.'
+            );
             return this.parent.return(this.scope, this.rets, [], scanner);
         }
     }
@@ -552,8 +633,10 @@ class DecideQorA {
     return(scope, rets, escs, scanner) {
         // TODO no test exercises these escs.
         Scope.tie(escs, 'ESC');
-        return this.option.thread(scanner,
-            new OptionThread(scope, this.parent, rets, this.option, 'qa', AfterQA));
+        return this.option.thread(
+            scanner,
+            new OptionThread(scope, this.parent, rets, this.option, 'qa', AfterQA)
+        );
     }
 }
 
@@ -571,12 +654,19 @@ class AfterQA {
 
     next(type, _space, text, scanner) {
         if (type === 'token' && text === '[') {
-            return this.option.thread(scanner,
-                new OptionThread(this.scope, this, this.rets, this.option, 'q', ExpectFinalBracket));
+            return this.option.thread(
+                scanner,
+                new OptionThread(this.scope, this, this.rets, this.option, 'q', ExpectFinalBracket)
+            );
         } else if (type === 'token' && text === ']') {
             return this.parent.return(this.scope, this.rets, [], scanner);
         } else {
-            this.scope.error(scanner.position() + ': Expected "]" to end option but got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() +
+                    ': Expected "]" to end option but got ' +
+                    tokenName(type, text) +
+                    '.'
+            );
             return this.parent.return(this.scope, this.rets, [], scanner);
         }
     }
@@ -585,8 +675,10 @@ class AfterQA {
         // TODO terminate returned scope
         // TODO no test exercises these escapes.
         Scope.tie(escs, 'ESC');
-        return this.option.thread(scanner,
-            new OptionThread(this.scope, this.parent, rets, this.option, 'qa', ExpectFinalBracket));
+        return this.option.thread(
+            scanner,
+            new OptionThread(this.scope, this.parent, rets, this.option, 'qa', ExpectFinalBracket)
+        );
     }
 }
 
@@ -626,7 +718,8 @@ class ExpectFinalBracket {
     next(type, space, text, scanner) {
         if (type !== 'token' || text !== ']') {
             this.scope.error(scanner.position() + ': Expected "]" to end option.');
-            return this.parent.return(this.scope, this.rets, [], scanner)
+            return this.parent
+                .return(this.scope, this.rets, [], scanner)
                 .next('token', space, ']', scanner);
         }
         return this.parent.return(this.scope, this.rets, [], scanner);
@@ -645,7 +738,8 @@ class AfterFinalA {
     }
 
     next(type, space, text, scanner) {
-        return this.parent.return(this.scope, this.rets, [], scanner)
+        return this.parent
+            .return(this.scope, this.rets, [], scanner)
             .next(type, space, text, scanner);
     }
 }
@@ -694,13 +788,18 @@ class Label {
                 if (arg[0] === 'get') {
                     params.push(arg[1]);
                 } else {
-                    scope.error(scanner.position() + ': Expected parameter name but got expression.');
+                    scope.error(
+                        scanner.position() + ': Expected parameter name but got expression.'
+                    );
                 }
             }
             node.locals = params;
-            return new Thread(labelScope.next(),
+            return new Thread(
+                labelScope.next(),
                 new ConcludeProcedure(scope, this.parent, this.rets),
-                [node], []);
+                [node],
+                []
+            );
         } else {
             scope.error(scanner.position() + ': Expected label after "@".');
             return new Thread(scope, this.parent, this.rets, []);
@@ -759,7 +858,9 @@ class Goto {
             scope.tie(this.rets);
             return this.parent.return(scope.next(), [node], [new Branch(node)], scanner);
         } else {
-            scope.error(scanner.position() + ': Expected label after goto arrow but got expression.');
+            scope.error(
+                scanner.position() + ': Expected label after goto arrow but got expression.'
+            );
             return new Thread(scope, this.parent, this.rets, []);
         }
     }
@@ -802,12 +903,12 @@ const toggles = {
 const variables = {
     '@': 'loop',
     '#': 'hash',
-    '^': 'pick'
+    '^': 'pick',
 };
 
 const switches = {
     '&': 'loop',
-    '~': 'rand'
+    '~': 'rand',
 };
 
 class Block {
@@ -821,17 +922,30 @@ class Block {
     next(type, space, text, scanner) {
         if (type !== 'start') {
             if (text === '(') {
-                return expression(this.scope, new ExpressionBlock(this.parent, this.rets, 'walk'))
-                    .next(type, space, text, scanner);
+                return expression(
+                    this.scope,
+                    new ExpressionBlock(this.parent, this.rets, 'walk')
+                ).next(type, space, text, scanner);
             } else if (mutators[text]) {
                 return expression(this.scope, new SetBlock(this.parent, this.rets, text));
             } else if (toggles[text]) {
-                return expression(this.scope, new ToggleBlock(this.parent, this.rets, toggles[text]));
+                return expression(
+                    this.scope,
+                    new ToggleBlock(this.parent, this.rets, toggles[text])
+                );
             } else if (variables[text]) {
-                return expression(this.scope, new ExpressionBlock(this.parent, this.rets, variables[text]));
+                return expression(
+                    this.scope,
+                    new ExpressionBlock(this.parent, this.rets, variables[text])
+                );
             } else if (switches[text]) {
-                return new SwitchBlock(this.scope, this.parent, this.rets)
-                    .start(scanner, null, this.scope.name(), null, switches[text]);
+                return new SwitchBlock(this.scope, this.parent, this.rets).start(
+                    scanner,
+                    null,
+                    this.scope.name(),
+                    null,
+                    switches[text]
+                );
             }
         }
         return new SwitchBlock(this.scope, this.parent, this.rets)
@@ -865,11 +979,9 @@ class MaybeSetVariable {
 
     next(type, space, text, scanner) {
         if (type === 'token' && text === '}') {
-            return this.set(['val', 1], this.expression, scanner)
-                .next(type, space, text, scanner);
+            return this.set(['val', 1], this.expression, scanner).next(type, space, text, scanner);
         }
-        return expression(this.scope, this)
-            .next(type, space, text, scanner);
+        return expression(this.scope, this).next(type, space, text, scanner);
     }
 
     set(source, target, scanner) {
@@ -931,18 +1043,35 @@ class AfterExpressionBlock {
 
     next(type, space, text, scanner) {
         if (text === '|') {
-            return new SwitchBlock(this.scope, this.parent, this.rets)
-                .start(scanner, this.expression, null, 0, this.mode);
+            return new SwitchBlock(this.scope, this.parent, this.rets).start(
+                scanner,
+                this.expression,
+                null,
+                0,
+                this.mode
+            );
         } else if (text === '?') {
-            return new SwitchBlock(this.scope, this.parent, this.rets)
-                .start(scanner, invertExpression(this.expression), null, 0, this.mode, 2);
+            return new SwitchBlock(this.scope, this.parent, this.rets).start(
+                scanner,
+                invertExpression(this.expression),
+                null,
+                0,
+                this.mode,
+                2
+            );
         } else if (text === '}') {
             const node = this.scope.create('echo', this.expression, scanner.position());
             this.scope.tie(this.rets);
-            return this.parent.return(this.scope.next(), [node], [], scanner)
+            return this.parent
+                .return(this.scope.next(), [node], [], scanner)
                 .next(type, space, text, scanner);
         } else {
-            this.scope.error(scanner.position() + ': Expected "|", "?", or "}" after expression but got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() +
+                    ': Expected "|", "?", or "}" after expression but got ' +
+                    tokenName(type, text) +
+                    '.'
+            );
             return this.parent.return(this.scope, [], [], scanner);
         }
     }
@@ -973,7 +1102,10 @@ class SwitchBlock {
         this.scope.tie(this.rets);
         node.branches = this.branches;
         node.weights = this.weights;
-        return new MaybeWeightedCase(this.scope, new Case(this.scope.firstChild(), this, [], this.branches, min || 0));
+        return new MaybeWeightedCase(
+            this.scope,
+            new Case(this.scope.firstChild(), this, [], this.branches, min || 0)
+        );
     }
 
     return(_scope, rets, escs, scanner) {
@@ -1009,7 +1141,8 @@ class Case {
                 this.branches.push(scope.name());
                 scope = scope.next();
             }
-            return this.parent.return(scope, this.rets, [], scanner)
+            return this.parent
+                .return(scope, this.rets, [], scanner)
                 .next(type, space, text, scanner);
         }
     }
@@ -1023,7 +1156,13 @@ class Case {
     }
 
     return(_scope, rets, escs, _scanner) {
-        return new Case(this.scope.next(), this.parent, this.rets.concat(rets, escs), this.branches, this.min);
+        return new Case(
+            this.scope.next(),
+            this.parent,
+            this.rets.concat(rets, escs),
+            this.branches,
+            this.min
+        );
     }
 }
 
@@ -1036,11 +1175,9 @@ class MaybeWeightedCase {
 
     next(type, space, text, scanner) {
         if (text === '(') {
-            return expression(this.scope, this)
-                .next(type, space, text, scanner);
+            return expression(this.scope, this).next(type, space, text, scanner);
         } else {
-            return this.parent.case(null, scanner)
-                .next(type, space, text, scanner);
+            return this.parent.case(null, scanner).next(type, space, text, scanner);
         }
     }
 
@@ -1063,8 +1200,12 @@ class Ask {
             return new Read(text, this.scope, this.parent, this.rets, this.escs);
         }
         this.scope.create('ask', null, scanner.position());
-        return new Thread(this.scope.next(), this.parent, this.rets, this.escs)
-            .next(type, space, text, scanner);
+        return new Thread(this.scope.next(), this.parent, this.rets, this.escs).next(
+            type,
+            space,
+            text,
+            scanner
+        );
     }
 }
 
@@ -1103,7 +1244,8 @@ class Program {
 
     next(type, space, text, scanner) {
         if (type === 'stop' || text === '}') {
-            return this.parent.return(this.scope, this.rets, this.escs, scanner)
+            return this.parent
+                .return(this.scope, this.rets, this.escs, scanner)
                 .next(type, space, text, scanner);
         } else if (text === ',' || type === 'break') {
             return this;
@@ -1111,8 +1253,10 @@ class Program {
             // Break out of recursive error loops
             return this.parent.return(this.scope, this.rets, this.escs, scanner);
         } else {
-            return variable(this.scope, new Assignment(this.scope, this, this.rets, this.escs))
-                .next(type, space, text, scanner);
+            return variable(
+                this.scope,
+                new Assignment(this.scope, this, this.rets, this.escs)
+            ).next(type, space, text, scanner);
         }
     }
 
@@ -1134,8 +1278,14 @@ class Assignment {
         if (expression[0] === 'get' || expression[0] === 'var') {
             return new ExpectOperator(this.scope, this.parent, this.rets, this.escs, expression);
         } else {
-            this.scope.error(scanner.position() + ': Expected variable to assign but got ' + JSON.stringify(expression) + '.');
-            return this.parent.return(this.scope, this.rets, this.escs, scanner)
+            this.scope.error(
+                scanner.position() +
+                    ': Expected variable to assign but got ' +
+                    JSON.stringify(expression) +
+                    '.'
+            );
+            return this.parent
+                .return(this.scope, this.rets, this.escs, scanner)
                 .next('error', '', '', scanner);
         }
     }
@@ -1153,9 +1303,17 @@ class ExpectOperator {
 
     next(type, _space, text, scanner) {
         if (text === '=') {
-            return expression(this.scope, new ExpectExpression(this.scope, this.parent, this.rets, this.escs, this.left, text));
+            return expression(
+                this.scope,
+                new ExpectExpression(this.scope, this.parent, this.rets, this.escs, this.left, text)
+            );
         } else {
-            this.scope.error(scanner.position() + ': Expected "=" operator but got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() +
+                    ': Expected "=" operator but got ' +
+                    tokenName(type, text) +
+                    '.'
+            );
             return this.parent.return(this.scope, this.rets, this.escs, scanner);
         }
     }
@@ -1183,21 +1341,21 @@ class ExpectExpression {
 }
 
 const unary = {
-    'not': true,
+    not: true,
     '-': true,
     '~': true,
-    '#': true
+    '#': true,
 };
 
 const exponential = {
-    '**': true // x ** y
+    '**': true, // x ** y
 };
 
 const multiplicative = {
     '*': true,
     '/': true,
     '%': true,
-    'rem': true,
+    rem: true,
     '~': true,
 };
 
@@ -1213,18 +1371,19 @@ const comparison = {
     '<>': true,
     '>=': true,
     '>': true,
-    '#': true
+    '#': true,
 };
 
 const intersection = {
-    'and': true
+    and: true,
 };
 
 const union = {
-    'or': true
+    or: true,
 };
 
-const precedence = [ // from low to high
+const precedence = [
+    // from low to high
     union,
     intersection,
     comparison,
@@ -1254,7 +1413,7 @@ const inversions = {
     '>': '<=',
     '<': '>=',
     '>=': '<',
-    '<=': '>'
+    '<=': '>',
 };
 
 function invertExpression(expression) {
@@ -1290,7 +1449,12 @@ class Close {
         if (type === 'symbol' && text === ')') {
             return this.parent.return(this.scope, this.expression, scanner);
         } else {
-            this.scope.error(scanner.position() + ': Expected parenthetical expression to end with ")" or continue with operator but got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() +
+                    ': Expected parenthetical expression to end with ")" or continue with operator but got ' +
+                    tokenName(type, text) +
+                    '.'
+            );
             return this.parent.return(this.scope, this.expression, scanner);
         }
     }
@@ -1311,10 +1475,20 @@ class Value {
         } else if (text === '{') {
             return expression(this.scope, new GetDynamicVariable(this.parent, [''], []));
         } else if (type === 'alphanum') {
-            return new GetStaticVariable(this.scope, new AfterVariable(this.parent), [], [], text, false);
+            return new GetStaticVariable(
+                this.scope,
+                new AfterVariable(this.parent),
+                [],
+                [],
+                text,
+                false
+            );
         } else {
-            this.scope.error(scanner.position() + ': Expected expression but got ' + tokenName(type, text) + '.');
-            return this.parent.return(this.scope, ['val', 0], scanner)
+            this.scope.error(
+                scanner.position() + ': Expected expression but got ' + tokenName(type, text) + '.'
+            );
+            return this.parent
+                .return(this.scope, ['val', 0], scanner)
                 .next(type, space, text, scanner);
         }
     }
@@ -1343,7 +1517,8 @@ class MaybeCall {
         if (space === '' && text === '(') {
             return new Arguments(this.scope, this.parent, this.expression);
         } else {
-            return this.parent.return(this.scope, this.expression, scanner)
+            return this.parent
+                .return(this.scope, this.expression, scanner)
                 .next(type, space, text, scanner);
         }
     }
@@ -1360,8 +1535,7 @@ class Arguments {
         if (text === ')') {
             return this.parent.return(this.scope, this.args, scanner);
         } else {
-            return expression(this.scope, this)
-                .next(type, space, text, scanner);
+            return expression(this.scope, this).next(type, space, text, scanner);
         }
     }
 
@@ -1384,7 +1558,12 @@ class MaybeArgument {
         } else if (text === ')') {
             return this.parent.next(type, space, text, scanner);
         } else {
-            this.scope.error(scanner.position() + ': Expected "," or ")" to end or argument list but got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() +
+                    ': Expected "," or ")" to end or argument list but got ' +
+                    tokenName(type, text) +
+                    '.'
+            );
             return this.parent;
         }
     }
@@ -1399,11 +1578,9 @@ class Unary {
 
     next(type, space, text, scanner) {
         if (unary[text] === true) {
-            return new Unary(this.scope,
-                new UnaryOperator(this.parent, text));
+            return new Unary(this.scope, new UnaryOperator(this.parent, text));
         } else {
-            return new Value(this.scope, this.parent)
-                .next(type, space, text, scanner);
+            return new Value(this.scope, this.parent).next(type, space, text, scanner);
         }
     }
 }
@@ -1437,7 +1614,8 @@ class MaybeOperator {
             }
             return new Unary(this.scope, parent);
         } else {
-            return this.parent.return(this.scope, this.expression, scanner)
+            return this.parent
+                .return(this.scope, this.expression, scanner)
                 .next(type, space, text, scanner);
         }
     }
@@ -1488,12 +1666,17 @@ class GetDynamicVariable {
     }
 
     return(scope, expression, _scanner) {
-        return new Expect('token', '}', scope, new ContinueVariable(
+        return new Expect(
+            'token',
+            '}',
             scope,
-            this.parent,
-            this.literals,
-            this.expressions.concat([expression])
-        ));
+            new ContinueVariable(
+                scope,
+                this.parent,
+                this.literals,
+                this.expressions.concat([expression])
+            )
+        );
     }
 }
 
@@ -1526,11 +1709,14 @@ class GetStaticVariable {
         if (type !== 'literal' && (space === '' || this.fresh)) {
             this.fresh = false;
             if (text === '{') {
-                return expression(this.scope, new GetDynamicVariable(
-                    this.parent,
-                    this.literals.concat([this.literal]),
-                    this.expressions
-                ));
+                return expression(
+                    this.scope,
+                    new GetDynamicVariable(
+                        this.parent,
+                        this.literals.concat([this.literal]),
+                        this.expressions
+                    )
+                );
             } else if (text === '.') {
                 this.literal += text;
                 return this;
@@ -1540,17 +1726,21 @@ class GetStaticVariable {
             }
         }
 
-        if (this.literals.length !== 0 ||
-            this.expressions.length !== 0) {
+        if (this.literals.length !== 0 || this.expressions.length !== 0) {
             return this.parent
-                .return(this.scope, ['var', this.literals.concat([this.literal]), this.expressions], scanner)
+                .return(
+                    this.scope,
+                    ['var', this.literals.concat([this.literal]), this.expressions],
+                    scanner
+                )
                 .next(type, space, text, scanner);
         }
 
         if (this.literal === '') {
-            this.scope.error(scanner.position() + ': Expected name but got ' + tokenName(type, text));
-            return this.parent
-                .return(this.scope, [], scanner);
+            this.scope.error(
+                scanner.position() + ': Expected name but got ' + tokenName(type, text)
+            );
+            return this.parent.return(this.scope, [], scanner);
         }
 
         return this.parent
@@ -1588,7 +1778,14 @@ class Expect {
 
     next(type, _space, text, scanner) {
         if (type !== this.expect || text !== this.text) {
-            this.scope.error(scanner.position() + ': Expected ' + tokenName(this.expect, this.text) + ' but got ' + tokenName(type, text) + '.');
+            this.scope.error(
+                scanner.position() +
+                    ': Expected ' +
+                    tokenName(this.expect, this.text) +
+                    ' but got ' +
+                    tokenName(type, text) +
+                    '.'
+            );
         }
         return this.parent.return.apply(this.parent, this.args);
     }

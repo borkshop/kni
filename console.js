@@ -60,4 +60,4 @@ module.exports = class Console {
         this.options = [];
         this.cursor = this.excerpt;
     }
-}
+};

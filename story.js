@@ -26,7 +26,6 @@ module.exports = class Story {
     }
 
     constructors = {
-
         text: class Text {
             constructor(text) {
                 this.type = 'text';
@@ -186,6 +185,5 @@ module.exports = class Story {
                 Object.seal(this);
             }
         },
-
-    }
-}
+    };
+};

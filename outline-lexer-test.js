@@ -21,7 +21,7 @@ function test(input, output) {
 }
 
 class OutlineLexLister {
-    debug = process.env.DEBUG_OUTLINE_LEXER
+    debug = process.env.DEBUG_OUTLINE_LEXER;
 
     constructor() {
         this.list = [];
@@ -29,7 +29,7 @@ class OutlineLexLister {
 
     next(type, text, scanner) {
         if (this.debug) {
-            console.log("OLL", scanner.position(), type, JSON.stringify(text));
+            console.log('OLL', scanner.position(), type, JSON.stringify(text));
         }
         if (type !== 'text') {
             this.list.push(type.toUpperCase());
@@ -45,187 +45,75 @@ function enline(line) {
     return line + '\n';
 }
 
-test([
-    'a',
-    'b',
-], [
-    'a',
-    'b',
-    'STOP'
-]);
+test(['a', 'b'], ['a', 'b', 'STOP']);
 
-test([
-    'a',
-    '  b',
-], [
-    'a',
-    'b',
-    'STOP'
-]);
+test(['a', '  b'], ['a', 'b', 'STOP']);
 
-test([
-    'a',
-    '  b',
-    ' c'
-], [
-    'a',
-    'b',
-    'c',
-    'STOP'
-]);
+test(['a', '  b', ' c'], ['a', 'b', 'c', 'STOP']);
 
-test([
-    'a',
-    '  b',
-    '  c'
-], [
-    'a',
-    'b',
-    'c',
-    'STOP'
-]);
+test(['a', '  b', '  c'], ['a', 'b', 'c', 'STOP']);
 
-test([
-    'a',
-    '  b',
-    ' ',
-    '  c'
-], [
-    'a',
-    'b',
-    'BREAK',
-    'c',
-    'STOP'
-]);
+test(['a', '  b', ' ', '  c'], ['a', 'b', 'BREAK', 'c', 'STOP']);
 
-test([
-    'a',
-    '    b',
-    '   \tc'
-], [
-    'a',
-    'b',
-    'c',
-    'STOP'
-]);
+test(['a', '    b', '   \tc'], ['a', 'b', 'c', 'STOP']);
 
-test([
-    'a',
-    '- b',
-    '- c'
-], [
-    'a',
-    'START', '-',
-    'b',
-    'STOP',
-    'START', '-',
-    'c',
-    'STOP',
-    'STOP'
-]);
+test(['a', '- b', '- c'], ['a', 'START', '-', 'b', 'STOP', 'START', '-', 'c', 'STOP', 'STOP']);
 
-test([
-    'a',
-    '- b',
-    'c',
-    '- d'
-], [
-    'a',
-    'START', '-',
-    'b',
-    'STOP',
-    'c',
-    'START', '-',
-    'd',
-    'STOP',
-    'STOP'
-]);
+test(
+    ['a', '- b', 'c', '- d'],
+    ['a', 'START', '-', 'b', 'STOP', 'c', 'START', '-', 'd', 'STOP', 'STOP']
+);
 
-test([
-    'a',
-    '- b',
-    '   c'
-], [
-    'a',
-    'START', '-',
-    'b',
-    'c',
-    'STOP',
-    'STOP'
-]);
+test(['a', '- b', '   c'], ['a', 'START', '-', 'b', 'c', 'STOP', 'STOP']);
 
-test([
-    'a',
-    '- b',
-    ' - * c',
-    '     d'
-], [
-    'a',
-    'START', '-',
-    'b',
-    'START', '-*',
-    'c',
-    'd',
-    'STOP',
-    'STOP',
-    'STOP'
-]);
+test(
+    ['a', '- b', ' - * c', '     d'],
+    ['a', 'START', '-', 'b', 'START', '-*', 'c', 'd', 'STOP', 'STOP', 'STOP']
+);
 
-test([
-    'a',
-    '   b',
-    '  c',
-    ' d',
-    'e'
-], [
-    'a',
-    'b',
-    'c',
-    'd',
-    'e',
-    'STOP'
-]);
+test(['a', '   b', '  c', ' d', 'e'], ['a', 'b', 'c', 'd', 'e', 'STOP']);
 
-test([
-    'Alpha',
-    '+ Bravo',
-    '',
-    '  Charlie',
-    '+ Delta',
-    '',
-    '  Echo',
-    'Foxtrot'
-], [
-    'Alpha',
-    'START', '+',
-    'Bravo',
-    'BREAK',
-    'Charlie',
-    'STOP',
-    'START', '+',
-    'Delta',
-    'BREAK',
-    'Echo',
-    'STOP',
-    'Foxtrot',
-    'STOP'
-]);
-
-test([
-    '+ A',
-    '  + B',
-    '  >',
-    '>',
-    'B'
-], [
-    'START', '+',
-        'A',
-        'START', '+',
-            'B',
+test(
+    ['Alpha', '+ Bravo', '', '  Charlie', '+ Delta', '', '  Echo', 'Foxtrot'],
+    [
+        'Alpha',
+        'START',
+        '+',
+        'Bravo',
+        'BREAK',
+        'Charlie',
         'STOP',
-        'START', '>', 'BREAK', 'STOP',
-    'STOP',
-    'START', '>', 'BREAK', 'STOP',
-    'B',
-    'STOP'
-]);
+        'START',
+        '+',
+        'Delta',
+        'BREAK',
+        'Echo',
+        'STOP',
+        'Foxtrot',
+        'STOP',
+    ]
+);
+
+test(
+    ['+ A', '  + B', '  >', '>', 'B'],
+    [
+        'START',
+        '+',
+        'A',
+        'START',
+        '+',
+        'B',
+        'STOP',
+        'START',
+        '>',
+        'BREAK',
+        'STOP',
+        'STOP',
+        'START',
+        '>',
+        'BREAK',
+        'STOP',
+        'B',
+        'STOP',
+    ]
+);

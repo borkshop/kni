@@ -73,7 +73,7 @@ function verify(kni, trans, handler, kniscript) {
         37615 ^ seed,
         54552 ^ seed,
         59156 ^ seed,
-        24695 ^ seed
+        24695 ^ seed,
     ]);
 
     var writer = new StringWriter();
@@ -85,7 +85,7 @@ function verify(kni, trans, handler, kniscript) {
         handler: handler,
         render: render,
         dialog: readline,
-        randomer: randomer
+        randomer: randomer,
     });
     readline.engine = engine;
     engine.reset();
@@ -95,7 +95,7 @@ function verify(kni, trans, handler, kniscript) {
     return {
         pass: expected === actual,
         expected: expected,
-        actual: actual
+        actual: actual,
     };
 }
 
@@ -130,8 +130,7 @@ class FakeReadline {
         }
     }
 
-    close() {
-    }
+    close() {}
 }
 
 class StringWriter {

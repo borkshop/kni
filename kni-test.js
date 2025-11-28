@@ -51,44 +51,51 @@ function withTempDir(name, fn, done) {
 }
 
 function testBasic(kniscript, transcript, done) {
-    withTempDir(transcript, function under(dir, fin) {
-        var outfile = dir + '/out';
-        runArgs([kniscript, '-v', transcript], outfile, fin);
-    }, done);
+    withTempDir(
+        transcript,
+        function under(dir, fin) {
+            var outfile = dir + '/out';
+            runArgs([kniscript, '-v', transcript], outfile, fin);
+        },
+        done
+    );
 }
 
 function testDescribe(kniscript, descript, done) {
-    withTempDir(descript, function under(dir, fin) {
-        var outfile = dir + '/out';
-        runArgs([kniscript, '-d'], outfile, function runDone(err) {
-            if (err) {
-                fin(err);
-                return;
-            }
-            diffFiles(descript, outfile, function diffed(err, res) {
+    withTempDir(
+        descript,
+        function under(dir, fin) {
+            var outfile = dir + '/out';
+            runArgs([kniscript, '-d'], outfile, function runDone(err) {
                 if (err) {
                     fin(err);
                     return;
                 }
-                if (!res.same) {
+                diffFiles(descript, outfile, function diffed(err, res) {
+                    if (err) {
+                        fin(err);
+                        return;
+                    }
+                    if (!res.same) {
+                        console.log('aBytes', res.aData.length);
+                        console.log('bBytes', res.bData.length);
 
-                    console.log('aBytes', res.aData.length);
-                    console.log('bBytes', res.bData.length);
+                        console.log('aLines', res.aData.split(/\n/));
+                        console.log('bLines', res.bData.split(/\n/));
 
-                    console.log('aLines', res.aData.split(/\n/));
-                    console.log('bLines', res.bData.split(/\n/));
-
-                    fin(new Error('output does not match'));
-                    return;
-                }
-                fin(null);
+                        fin(new Error('output does not match'));
+                        return;
+                    }
+                    fin(null);
+                });
             });
-        });
-    }, done);
+        },
+        done
+    );
 }
 
 function main() {
-    fs.readdir('tests', function(err, files) {
+    fs.readdir('tests', function (err, files) {
         if (err) {
             process.exitCode |= 1;
             console.error('unable to read tests dir');
@@ -109,14 +116,16 @@ function main() {
 
         // description tests
         files
-            .map(function(file) {
+            .map(function (file) {
                 var kniscript = kniFor(file);
                 if (!kniscript || !/\.desc$/.test(file)) {
                     return null;
                 }
                 return [kniscript, 'tests/' + file];
             })
-            .filter(function(testCase) { return testCase != null })
+            .filter(function (testCase) {
+                return testCase != null;
+            })
             .forEach(function eachTestCase(testCase) {
                 var kniscript = testCase[0];
                 var descript = testCase[1];
@@ -149,7 +158,6 @@ function main() {
                 });
             });
         });
-
     });
 }
 

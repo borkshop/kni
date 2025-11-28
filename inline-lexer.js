@@ -13,7 +13,7 @@
 // The final parse state captures the entire syntax tree.
 
 const L1 = '@[]{}|/<>';
-const L2 = ['->', '<-', '==', '<>', '>=', '<=', '{"', '"}', '{\'', '\'}', '//', '**'];
+const L2 = ['->', '<-', '==', '<>', '>=', '<=', '{"', '"}', "{'", "'}", '//', '**'];
 const num = /\d/;
 
 // alphanumerics including non-english
@@ -23,11 +23,11 @@ const alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\d_]/;
  * decomposing line tokens along with interstitial space tracking.
  */
 module.exports = class InlineLexer {
-    debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER
+    debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER;
 
-    space = ''
-    accumulator = ''
-    type = 'symbol'
+    space = '';
+    accumulator = '';
+    type = 'symbol';
 
     /** @typedef {import('./scanner')} Scanner */
 
@@ -190,4 +190,4 @@ module.exports = class InlineLexer {
             this.type = 'symbol';
         }
     }
-}
+};

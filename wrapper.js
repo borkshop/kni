@@ -40,18 +40,17 @@ module.exports = class Wrapper {
         if (this.index + word.length + 1 > this.width) {
             this.break();
             this.target.write(indent + word);
-                    this.index += indent.length + word.length + 1;
+            this.index += indent.length + word.length + 1;
             this.flush = false;
         } else if (this.flush) {
             this.target.write(word);
-                    this.index += word.length;
+            this.index += word.length;
             this.flush = false;
         } else {
             this.target.write(' ' + word);
-                    this.index += word.length + 1;
+            this.index += word.length + 1;
             this.flush = false;
-            }
-
+        }
     }
 
     break() {
@@ -67,4 +66,4 @@ module.exports = class Wrapper {
         this.index = lead.length;
         this.flush = true;
     }
-}
+};

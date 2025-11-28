@@ -5,11 +5,7 @@ module.exports = evaluate;
 function evaluate(scope, randomer, args) {
     var name = args[0];
     if (unary[name] && args.length === 2) {
-        return unary[name](
-            evaluate(scope, randomer, args[1]),
-            scope,
-            randomer
-        );
+        return unary[name](evaluate(scope, randomer, args[1]), scope, randomer);
     } else if (binary[name] && args.length === 3) {
         return binary[name](
             evaluate(scope, randomer, args[1]),
@@ -130,7 +126,6 @@ var functions = {
     //     }
     //     return -Math.log(ratio, Math.E);
     // },
-
 };
 
 var binary = {
@@ -152,10 +147,10 @@ var binary = {
     '**': function (x, y) {
         return Math.pow(x, y);
     },
-    'or': function (x, y) {
+    or: function (x, y) {
         return x || y ? 1 : 0;
     },
-    'and': function (x, y) {
+    and: function (x, y) {
         return x && y ? 1 : 0;
     },
     '>=': function (x, y) {
@@ -185,11 +180,11 @@ var binary = {
             r += randomer.random() * y;
         }
         return Math.floor(r);
-    }
+    },
 };
 
 var unary = {
-    'not': function (x) {
+    not: function (x) {
         return x ? 0 : 1;
     },
     '-': function (x) {
@@ -200,19 +195,19 @@ var unary = {
     },
     '#': function (x) {
         return hash(x);
-    }
+    },
 };
 
 // Robert Jenkins's 32 bit hash function
 // https://gist.github.com/badboy/6267743
 evaluate.hash = hash;
 function hash(a) {
-    a = (a+0x7ed55d16) + (a<<12);
-    a = (a^0xc761c23c) ^ (a>>>19);
-    a = (a+0x165667b1) + (a<<5);
-    a = (a+0xd3a2646c) ^ (a<<9);
-    a = (a+0xfd7046c5) + (a<<3);
-    a = (a^0xb55a4f09) ^ (a>>>16);
+    a = a + 0x7ed55d16 + (a << 12);
+    a = a ^ 0xc761c23c ^ (a >>> 19);
+    a = a + 0x165667b1 + (a << 5);
+    a = (a + 0xd3a2646c) ^ (a << 9);
+    a = a + 0xfd7046c5 + (a << 3);
+    a = a ^ 0xb55a4f09 ^ (a >>> 16);
     return a;
 }
 

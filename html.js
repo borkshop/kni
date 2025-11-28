@@ -1,40 +1,40 @@
-"use strict";
+'use strict';
 
-var System = require("system");
-var bundleSystemId = require("system/bundle").bundleSystemId;
-var Location = require("system/location");
+var System = require('system');
+var bundleSystemId = require('system/bundle').bundleSystemId;
+var Location = require('system/location');
 
 module.exports = makeHtml;
 function makeHtml(story, output, templateArgs) {
     var location = Location.fromDirectory(__dirname);
-    var id = "./template";
+    var id = './template';
 
     return System.load(location, {
-        node: true
-    }).then(function (buildSystem) {
-        return System.load(location, {
-            browser: true,
-            buildSystem: buildSystem,
-        }).then(function (system) {
+        node: true,
+    })
+        .then(function (buildSystem) {
+            return System.load(location, {
+                browser: true,
+                buildSystem: buildSystem,
+            }).then(function (system) {
+                // Preempt the loader with a the prepared story:
+                var module = system.lookup('./story.json');
+                module.text = 'module.exports = ' + JSON.stringify(story, null, 4);
+                module.factory = function () {};
 
-            // Preempt the loader with a the prepared story:
-            var module = system.lookup("./story.json");
-            module.text = 'module.exports = ' + JSON.stringify(story, null, 4);
-            module.factory = function () {};
-
-            return bundleSystemId(system, id);
+                return bundleSystemId(system, id);
+            });
+        })
+        .then(function (script) {
+            return template(script, templateArgs);
+        })
+        .then(function (bundle) {
+            output.end(bundle);
+        })
+        .catch(function (error) {
+            console.error(error);
+            process.exit(-1);
         });
-    })
-    .then(function (script) {
-        return template(script, templateArgs);
-    })
-    .then(function (bundle) {
-        output.end(bundle);
-    })
-    .catch(function (error) {
-        console.error(error);
-        process.exit(-1);
-    });
 }
 
 function template(bundle, args) {
@@ -66,8 +66,12 @@ function template(bundle, args) {
         '',
         '            body {',
         '                font-size: 200%;',
-        '                background-color: ', bgcolor, ';',
-        '                color: ', color, ';',
+        '                background-color: ',
+        bgcolor,
+        ';',
+        '                color: ',
+        color,
+        ';',
         '                overflow: none;',
         '            }',
         '',

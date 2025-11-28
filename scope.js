@@ -52,4 +52,4 @@ module.exports = class Scope {
     error(message) {
         this.story.error(message);
     }
-}
+};

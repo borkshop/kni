@@ -12,10 +12,10 @@
 // TODO remove the break emission feature
 
 module.exports = class OutlineLexer {
-    debug = typeof process === 'object' && process.env.DEBUG_OUTLINE_LEXER
+    debug = typeof process === 'object' && process.env.DEBUG_OUTLINE_LEXER;
 
-    top = 0
-    broken = false
+    top = 0;
+    broken = false;
 
     /** @typedef {import('./scanner')} Scanner */
 
@@ -44,12 +44,17 @@ module.exports = class OutlineLexer {
     next(line, scanner) {
         if (this.debug) {
             console.error(
-                'OLL', scanner.position(),
+                'OLL',
+                scanner.position(),
                 JSON.stringify(line),
-                'indent', scanner.indent,
-                'leader', JSON.stringify(scanner.leader),
-                'stack', this.stack,
-                'top', this.top
+                'indent',
+                scanner.indent,
+                'leader',
+                JSON.stringify(scanner.leader),
+                'stack',
+                this.stack,
+                'top',
+                this.top
             );
         }
         while (scanner.indent < this.top) {
@@ -88,4 +93,4 @@ module.exports = class OutlineLexer {
         this.stack.length = 0;
         return this;
     }
-}
+};

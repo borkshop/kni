@@ -25,7 +25,7 @@ function test(input, output) {
 }
 
 class InlineLexLister {
-    debug = process.env.DEBUG_INLINE_LEXER
+    debug = process.env.DEBUG_INLINE_LEXER;
 
     constructor() {
         this.list = [];
@@ -33,7 +33,13 @@ class InlineLexLister {
 
     next(type, space, text, scanner) {
         if (this.debug) {
-            console.log("LL", scanner.position(), type, JSON.stringify(space), JSON.stringify(text));
+            console.log(
+                'LL',
+                scanner.position(),
+                type,
+                JSON.stringify(space),
+                JSON.stringify(text)
+            );
         }
         if (space.length) {
             this.list.push(space);
@@ -52,243 +58,160 @@ function enline(line) {
     return line + '\n';
 }
 
-test([
-    'x',
-    'y'
-], [
-    'x', ' ', 'y',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['x', 'y'], ['x', ' ', 'y', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    'x '
-], [
-    'x',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['x '], ['x', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    'You s[S]ay,', // the line break implies a single space
-    '"Hello." -> bye',
-], [
-    'You', ' ', 's',
-    'TOKEN', '[',
-    'S',
-    'TOKEN', ']',
-    'ay', 'SYMBOL', ',', ' ', 'SYMBOL', '"', 'Hello', 'SYMBOL', '.', 'SYMBOL', '"',
-    ' ', 'TOKEN', '->',
-    ' ', 'bye',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(
+    [
+        'You s[S]ay,', // the line break implies a single space
+        '"Hello." -> bye',
+    ],
+    [
+        'You',
+        ' ',
+        's',
+        'TOKEN',
+        '[',
+        'S',
+        'TOKEN',
+        ']',
+        'ay',
+        'SYMBOL',
+        ',',
+        ' ',
+        'SYMBOL',
+        '"',
+        'Hello',
+        'SYMBOL',
+        '.',
+        'SYMBOL',
+        '"',
+        ' ',
+        'TOKEN',
+        '->',
+        ' ',
+        'bye',
+        ' ',
+        'STOP',
+        ' ',
+        'STOP',
+    ]
+);
 
-test([
-    '[Alpha] Omega'
-], [
-    'TOKEN', '[',
-    'Alpha',
-    'TOKEN', ']',
-    ' ', 'Omega',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(
+    ['[Alpha] Omega'],
+    ['TOKEN', '[', 'Alpha', 'TOKEN', ']', ' ', 'Omega', ' ', 'STOP', ' ', 'STOP']
+);
 
-test([
-    '[Alpha]',
-    'Omega'
-], [
-    'TOKEN', '[',
-    'Alpha',
-    'TOKEN', ']',
-    ' ', 'Omega',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(
+    ['[Alpha]', 'Omega'],
+    ['TOKEN', '[', 'Alpha', 'TOKEN', ']', ' ', 'Omega', ' ', 'STOP', ' ', 'STOP']
+);
 
-test([
-    'And they lived happily ever after.',
-    '',
-    '',
-    'The End'
-], [
-    'And', ' ', 'they', ' ', 'lived', ' ', 'happily', ' ', 'ever', ' ', 'after', 'SYMBOL', '.',
-    ' ', 'BREAK',
-    'The', ' ', 'End',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(
+    ['And they lived happily ever after.', '', '', 'The End'],
+    [
+        'And',
+        ' ',
+        'they',
+        ' ',
+        'lived',
+        ' ',
+        'happily',
+        ' ',
+        'ever',
+        ' ',
+        'after',
+        'SYMBOL',
+        '.',
+        ' ',
+        'BREAK',
+        'The',
+        ' ',
+        'End',
+        ' ',
+        'STOP',
+        ' ',
+        'STOP',
+    ]
+);
 
-test([
-    '-> hi',
-], [
-    'TOKEN', '->',
-    ' ', 'hi',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['-> hi'], ['TOKEN', '->', ' ', 'hi', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '{(gold)|no gold|{(gold)} gold}'
-], [
-    'TOKEN', '{',
-    'SYMBOL', '(', 'gold', 'SYMBOL', ')',
-    'TOKEN', '|',
-    'no', ' ', 'gold',
-    'TOKEN', '|',
-    'TOKEN', '{',
-    'SYMBOL', '(', 'gold', 'SYMBOL', ')',
-    'TOKEN', '}',
-    ' ', 'gold',
-    'TOKEN', '}',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(
+    ['{(gold)|no gold|{(gold)} gold}'],
+    [
+        'TOKEN',
+        '{',
+        'SYMBOL',
+        '(',
+        'gold',
+        'SYMBOL',
+        ')',
+        'TOKEN',
+        '|',
+        'no',
+        ' ',
+        'gold',
+        'TOKEN',
+        '|',
+        'TOKEN',
+        '{',
+        'SYMBOL',
+        '(',
+        'gold',
+        'SYMBOL',
+        ')',
+        'TOKEN',
+        '}',
+        ' ',
+        'gold',
+        'TOKEN',
+        '}',
+        ' ',
+        'STOP',
+        ' ',
+        'STOP',
+    ]
+);
 
-test([
-    '0'
-], [
-    'NUMBER', '0',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['0'], ['NUMBER', '0', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '10'
-], [
-    'NUMBER', '10',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['10'], ['NUMBER', '10', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    'hello10'
-], [
-    'hello10',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['hello10'], ['hello10', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '10hello'
-], [
-    'NUMBER', '10',
-    'hello',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['10hello'], ['NUMBER', '10', 'hello', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '10hel_lo10'
-], [
-    'NUMBER', '10', 'hel_lo10',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['10hel_lo10'], ['NUMBER', '10', 'hel_lo10', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '10hel_lo10 20'
-], [
-    'NUMBER', '10', 'hel_lo10',
-    ' ', 'NUMBER', '20',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(
+    ['10hel_lo10 20'],
+    ['NUMBER', '10', 'hel_lo10', ' ', 'NUMBER', '20', ' ', 'STOP', ' ', 'STOP']
+);
 
-test([
-    '10hel_lo10|20alpha'
-], [
-    'NUMBER', '10', 'hel_lo10',
-    'TOKEN', '|', 'NUMBER', '20', 'alpha',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(
+    ['10hel_lo10|20alpha'],
+    ['NUMBER', '10', 'hel_lo10', 'TOKEN', '|', 'NUMBER', '20', 'alpha', ' ', 'STOP', ' ', 'STOP']
+);
 
-test([
-    '---'
-], [
-    'DASH', '---',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['---'], ['DASH', '---', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '--- x'
-], [
-    'DASH', '---',
-    ' ', 'x',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['--- x'], ['DASH', '---', ' ', 'x', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '10)'
-], [
-    'NUMBER', '10',
-    'SYMBOL', ')',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['10)'], ['NUMBER', '10', 'SYMBOL', ')', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '\\-'
-], [
-    'LITERAL', '-',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['\\-'], ['LITERAL', '-', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    'Fahren\\',
-    'vergnügen'
-], [
-    'Fahrenvergnügen',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['Fahren\\', 'vergnügen'], ['Fahrenvergnügen', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    'Fahren\\   ',
-    'vergnügen'
-], [
-    'Fahrenvergnügen',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['Fahren\\   ', 'vergnügen'], ['Fahrenvergnügen', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    'Space\\ Lord'
-], [
-    'Space', 'LITERAL', ' ', 'Lord',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['Space\\ Lord'], ['Space', 'LITERAL', ' ', 'Lord', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    'Space \\ Lord'
-], [
-    'Space', 'LITERAL', ' ', 'Lord',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['Space \\ Lord'], ['Space', 'LITERAL', ' ', 'Lord', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '\\}',
-    'X'
-], [
-    'LITERAL', '}',
-    ' ', 'X',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['\\}', 'X'], ['LITERAL', '}', ' ', 'X', ' ', 'STOP', ' ', 'STOP']);
 
-test([
-    '\\}',
-    'X\\',
-], [
-    'LITERAL', '}',
-    ' ', 'X',
-    ' ', 'STOP',
-    ' ', 'STOP'
-]);
+test(['\\}', 'X\\'], ['LITERAL', '}', ' ', 'X', ' ', 'STOP', ' ', 'STOP']);

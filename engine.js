@@ -30,7 +30,7 @@ function pop(array, index) {
 }
 
 module.exports = class Engine {
-    debug = typeof process === 'object' && process.env.DEBUG_ENGINE
+    debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
     constructor(args) {
         this.story = args.story;
@@ -69,16 +69,23 @@ module.exports = class Engine {
         var _continue;
         do {
             if (this.debug) {
-                console.log(this.label + ' ' +  this.instruction.type + ' ' + describe(this.instruction));
+                console.log(
+                    this.label + ' ' + this.instruction.type + ' ' + describe(this.instruction)
+                );
             }
             if (this.instruction == null) {
                 // TODO user error for non-console interaction.
-                console.log('The label ' + JSON.stringify(this.label) + ' does not exist in this story');
+                console.log(
+                    'The label ' + JSON.stringify(this.label) + ' does not exist in this story'
+                );
                 this.end();
                 return;
             }
             if (!this['$' + this.instruction.type]) {
-                console.error('Unexpected instruction type: ' + this.instruction.type, this.instruction);
+                console.error(
+                    'Unexpected instruction type: ' + this.instruction.type,
+                    this.instruction
+                );
                 this.resume();
             }
             _continue = this['$' + this.instruction.type](this.instruction);
@@ -253,7 +260,7 @@ module.exports = class Engine {
                 this.randomer._state0U | 0,
                 this.randomer._state0L | 0,
                 this.randomer._state1U | 0,
-                this.randomer._state1L | 0
+                this.randomer._state1L | 0,
             ],
         ];
     }
@@ -372,7 +379,7 @@ module.exports = class Engine {
             return this.resume();
         }
         if (def.type !== 'def') {
-            console.error('Can\'t call non-procedure ' + label, this.instruction);
+            console.error("Can't call non-procedure " + label, this.instruction);
             return this.resume();
         }
         if (def.locals.length !== this.instruction.args.length) {
@@ -385,7 +392,13 @@ module.exports = class Engine {
         // capturing locals. As such the parser will need to retain a reference to
         // the enclosing procedure and note all of the child procedures as they are
         // encountered.
-        this.top = new Frame(this.top, def.locals, this.instruction.next, this.instruction.branch, this.label);
+        this.top = new Frame(
+            this.top,
+            def.locals,
+            this.instruction.next,
+            this.instruction.branch,
+            this.label
+        );
         for (var i = 0; i < this.instruction.args.length; i++) {
             var arg = this.instruction.args[i];
             var value = evaluate(this.top.parent, this.randomer, arg);
@@ -502,7 +515,7 @@ module.exports = class Engine {
         this.read();
         return false;
     }
-}
+};
 
 class Global {
     constructor(handler) {

@@ -3,10 +3,10 @@
 'use strict';
 
 module.exports = class Parser {
-    debug = typeof process === 'object' && process.env.DEBUG_PARSER
+    debug = typeof process === 'object' && process.env.DEBUG_PARSER;
 
     /** @typedef {import('./scanner')} Scanner */
-    
+
     /**
      * @typedef {object} State
      * @prop {(type: string, space: string, text: string, sc: Scanner) => State} next
@@ -15,7 +15,7 @@ module.exports = class Parser {
     /**
      * @param {State} generator
      */
-    constructor (generator) {
+    constructor(generator) {
         this.generator = generator;
     }
 
@@ -33,10 +33,11 @@ module.exports = class Parser {
             console.error(
                 'PAR',
                 scanner.position(),
-                type, JSON.stringify(text),
+                type,
+                JSON.stringify(text),
                 prior + '->' + this.generator.constructor.name
             );
         }
         return this;
     }
-}
+};

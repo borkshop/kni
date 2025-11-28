@@ -49,7 +49,14 @@ function linker(story, context, state) {
                     return candidate;
                 }
             }
-            story.error('Could not link ' + role + ' label ' + JSON.stringify(label) + ' at position ' + state.position);
+            story.error(
+                'Could not link ' +
+                    role +
+                    ' label ' +
+                    JSON.stringify(label) +
+                    ' at position ' +
+                    state.position
+            );
             return label;
         };
     };

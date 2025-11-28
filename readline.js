@@ -8,7 +8,7 @@ module.exports = class Readline {
         var self = this;
         this.readline = readline.createInterface({
             input: process.stdin,
-            output: process.stdout
+            output: process.stdout,
         });
         this.engine = null;
         this.boundAnswer = answer;
@@ -38,7 +38,7 @@ module.exports = class Readline {
         }
         this.readline.close();
     }
-}
+};
 
 class Play {
     constructor(readline, filename) {

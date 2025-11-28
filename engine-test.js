@@ -71,13 +71,28 @@ function main() {
     test('tests/errors/dynamic-goto.kni', 'tests/errors/dynamic-goto.log');
     test('tests/errors/dynamic-label.kni', 'tests/errors/dynamic-label.log');
     test('tests/errors/dynamic-parameter.kni', 'tests/errors/dynamic-parameter.log');
-    test('tests/errors/expected-after-brace-paren-expression.kni', 'tests/errors/expected-after-brace-paren-expression.log');
-    test('tests/errors/expected-bracket-to-end-option-after-qa.kni', 'tests/errors/expected-bracket-to-end-option-after-qa.log');
-    test('tests/errors/expected-bracket-to-end-option.kni', 'tests/errors/expected-bracket-to-end-option.log');
-    test('tests/errors/expected-brackets-in-option-but-got-end-of-block.kni', 'tests/errors/expected-brackets-in-option-but-got-end-of-block.log');
+    test(
+        'tests/errors/expected-after-brace-paren-expression.kni',
+        'tests/errors/expected-after-brace-paren-expression.log'
+    );
+    test(
+        'tests/errors/expected-bracket-to-end-option-after-qa.kni',
+        'tests/errors/expected-bracket-to-end-option-after-qa.log'
+    );
+    test(
+        'tests/errors/expected-bracket-to-end-option.kni',
+        'tests/errors/expected-bracket-to-end-option.log'
+    );
+    test(
+        'tests/errors/expected-brackets-in-option-but-got-end-of-block.kni',
+        'tests/errors/expected-brackets-in-option-but-got-end-of-block.log'
+    );
     test('tests/errors/expression-cue.kni', 'tests/errors/expression-cue.log');
     test('tests/errors/invalid-cue.kni', 'tests/errors/invalid-cue.log');
-    test('tests/errors/unterminated-brace-indented.kni', 'tests/errors/unterminated-brace-indented.log');
+    test(
+        'tests/errors/unterminated-brace-indented.kni',
+        'tests/errors/unterminated-brace-indented.log'
+    );
     test('tests/errors/unterminated-brace.kni', 'tests/errors/unterminated-brace.log');
     test('tests/errors/unterminated-bracket.kni', 'tests/errors/unterminated-bracket.log');
 
@@ -95,8 +110,7 @@ function main() {
         set: function set(_name, value) {
             this.moxy = value;
         },
-        goto: function _goto(_label) {
-        },
+        goto: function _goto(_label) {},
         changed: function changed(name, value) {
             process.exitCode |= name !== 'moxy';
             process.exitCode |= value != 42 && value !== 'mox' && value !== 'mux?';
@@ -120,13 +134,12 @@ function main() {
                 process.exitCode = 1;
             }
         },
-        waypoint: function waypoint(_state) {
-        },
+        waypoint: function waypoint(_state) {},
         end: function end(engine) {
             engine.render.paragraph();
             engine.render.write(' ', 'The End.', ' ');
             ended = true;
-        }
+        },
     });
 
     if (!ended) {
@@ -176,10 +189,10 @@ function test(kniscript, transcript, handler) {
     if (!result.pass) {
         process.exitCode |= 1;
         console.log(kniscript, transcript);
-        console.log("FAIL");
-        console.log("expected");
+        console.log('FAIL');
+        console.log('expected');
         console.log(result.expected);
-        console.log("got");
+        console.log('got');
         console.log(result.actual);
     }
 }
