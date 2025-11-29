@@ -6,33 +6,19 @@ const describe = node => {
 
 export default describe;
 
-types.text = node => {
-  return node.text;
-};
+types.text = node => node.text;
 
-types.echo = node => {
-  return S(node.expression);
-};
+types.echo = node => S(node.expression);
 
-types.opt = node => {
-  return `(Q ${node.question.join(' ')}) (A ${node.answer.join(' ')})`;
-};
+types.opt = node => `(Q ${node.question.join(' ')}) (A ${node.answer.join(' ')})`;
 
-types.goto = _node => {
-  return '';
-};
+types.goto = _node => '';
 
-types.call = node => {
-  return `${node.label}(${node.args.map(S).join(' ')}) esc ${node.branch}`;
-};
+types.call = node => `${node.label}(${node.args.map(S).join(' ')}) esc ${node.branch}`;
 
-types.def = node => {
-  return `(${node.locals.join(' ')})`;
-};
+types.def = node => `(${node.locals.join(' ')})`;
 
-types.jump = node => {
-  return `${node.branch} if ${S(node.condition)}`;
-};
+types.jump = node => `${node.branch} if ${S(node.condition)}`;
 
 types.switch = node => {
   let desc = '';
@@ -45,45 +31,25 @@ types.switch = node => {
   return desc;
 };
 
-types.set = node => {
-  return `${node.variable} ${S(node.expression)}`;
-};
+types.set = node => `${node.variable} ${S(node.expression)}`;
 
-types.move = node => {
-  return `${S(node.source)} -> ${S(node.target)}`;
-};
+types.move = node => `${S(node.source)} -> ${S(node.target)}`;
 
-types.cue = node => {
-  return node.cue;
-};
+types.cue = node => node.cue;
 
-types.br = _node => {
-  return '';
-};
+types.br = _node => '';
 
-types.par = _node => {
-  return '';
-};
+types.par = _node => '';
 
-types.rule = _node => {
-  return '';
-};
+types.rule = _node => '';
 
-types.startJoin = _node => {
-  return '';
-};
+types.startJoin = _node => '';
 
-types.stopJoin = _node => {
-  return '';
-};
+types.stopJoin = _node => '';
 
-types.delimit = _node => {
-  return '';
-};
+types.delimit = _node => '';
 
-types.ask = _node => {
-  return '';
-};
+types.ask = _node => '';
 
 types.read = node => {
   let label = node.variable;
