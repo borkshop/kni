@@ -47,7 +47,7 @@ class InlineLexLister {
 }
 
 function enline(line) {
-  return line + '\n';
+  return `${line}\n`;
 }
 
 test(['x', 'y'], ['x', ' ', 'y', ' ', 'STOP', ' ', 'STOP']);

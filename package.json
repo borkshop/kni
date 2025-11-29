@@ -58,6 +58,7 @@
     "format": "prettier --write \"**/*.js\"",
     "format:check": "prettier --check \"**/*.js\"",
     "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
     "test": "node -- test.js",
     "cover": "nyc npm test",
     "check-cover": "nyc check-coverage",

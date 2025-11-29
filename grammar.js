@@ -20,7 +20,7 @@ class Stop {
     // outline lexer, or a bug in the grammar.
     if (type !== 'stop') {
       this.scope.error(
-        scanner.position() + ': Expected end of file, got ' + tokenName(type, text) + '.'
+        `${scanner.position()}: Expected end of file, got ${tokenName(type, text)}.`
       );
     }
     return new End();
@@ -152,16 +152,16 @@ class Text {
       return this;
     } else if (type === 'token') {
       if (text === '{"') {
-        this.text += space + '“';
+        this.text += `${space}“`;
         return this;
       } else if (text === '"}') {
-        this.text += space + '”';
+        this.text += `${space}”`;
         return this;
       } else if (text === "{'") {
-        this.text += space + '‘';
+        this.text += `${space}‘`;
         return this;
       } else if (text === "'}") {
-        this.text += space + '’';
+        this.text += `${space}’`;
         return this;
       } else if ((text === '/' || text === '//') && space === '') {
         // This is an exception to accommodate hyperlinks.
@@ -171,10 +171,10 @@ class Text {
         return this;
       }
     } else if (text === '--') {
-      this.text += space + '–'; // en-dash
+      this.text += `${space}–`; // en-dash
       return this;
     } else if (text === '---') {
-      this.text += space + '—'; // em-dash
+      this.text += `${space}—`; // em-dash
       return this;
     }
     this.scope.tie(this.rets);
@@ -533,10 +533,7 @@ class AfterInitialQA {
       return this.option.thread(scanner, new AfterQorA(this.scope, this, this.rets, this.option));
     } else {
       this.scope.error(
-        scanner.position() +
-          ': Expected "[]" brackets in option but got ' +
-          tokenName(type, text) +
-          '.'
+        `${scanner.position()}: Expected "[]" brackets in option but got ${tokenName(type, text)}.`
       );
       return this.return(this.scope, this.rets, [], scanner);
     }
@@ -600,7 +597,7 @@ class DecideQorA {
       return this.parent.return(this.scope, this.rets, [], scanner);
     } else {
       this.scope.error(
-        scanner.position() + ': Expected "]" to end option but got ' + tokenName(type, text) + '.'
+        `${scanner.position()}: Expected "]" to end option but got ${tokenName(type, text)}.`
       );
       return this.parent.return(this.scope, this.rets, [], scanner);
     }
@@ -640,7 +637,7 @@ class AfterQA {
       return this.parent.return(this.scope, this.rets, [], scanner);
     } else {
       this.scope.error(
-        scanner.position() + ': Expected "]" to end option but got ' + tokenName(type, text) + '.'
+        `${scanner.position()}: Expected "]" to end option but got ${tokenName(type, text)}.`
       );
       return this.parent.return(this.scope, this.rets, [], scanner);
     }
@@ -692,7 +689,7 @@ class ExpectFinalBracket {
 
   next(type, space, text, scanner) {
     if (type !== 'token' || text !== ']') {
-      this.scope.error(scanner.position() + ': Expected "]" to end option.');
+      this.scope.error(`${scanner.position()}: Expected "]" to end option.`);
       return this.parent
         .return(this.scope, this.rets, [], scanner)
         .next('token', space, ']', scanner);
@@ -761,7 +758,7 @@ class Label {
         if (arg[0] === 'get') {
           params.push(arg[1]);
         } else {
-          scope.error(scanner.position() + ': Expected parameter name but got expression.');
+          scope.error(`${scanner.position()}: Expected parameter name but got expression.`);
         }
       }
       node.locals = params;
@@ -772,7 +769,7 @@ class Label {
         []
       );
     } else {
-      scope.error(scanner.position() + ': Expected label after "@".');
+      scope.error(`${scanner.position()}: Expected label after "@".`);
       return new Thread(scope, this.parent, this.rets, []);
     }
   }
@@ -829,7 +826,7 @@ class Goto {
       scope.tie(this.rets);
       return this.parent.return(scope.next(), [node], [new Branch(node)], scanner);
     } else {
-      scope.error(scanner.position() + ': Expected label after goto arrow but got expression.');
+      scope.error(`${scanner.position()}: Expected label after goto arrow but got expression.`);
       return new Thread(scope, this.parent, this.rets, []);
     }
   }
@@ -845,7 +842,7 @@ class Cue {
 
   return(scope, expression, scanner) {
     if (expression.length === 0 || expression[0] !== 'get') {
-      scope.error(scanner.position() + ': Expected cue.');
+      scope.error(`${scanner.position()}: Expected cue.`);
       return this.parent.return(scope, this.rets, this.escs, scanner);
     } else {
       const cue = expression[1];
@@ -1032,10 +1029,10 @@ class AfterExpressionBlock {
         .next(type, space, text, scanner);
     } else {
       this.scope.error(
-        scanner.position() +
-          ': Expected "|", "?", or "}" after expression but got ' +
-          tokenName(type, text) +
-          '.'
+        `${scanner.position()}: Expected "|", "?", or "}" after expression but got ${tokenName(
+          type,
+          text
+        )}.`
       );
       return this.parent.return(this.scope, [], [], scanner);
     }
@@ -1244,10 +1241,7 @@ class Assignment {
       return new ExpectOperator(this.scope, this.parent, this.rets, this.escs, expression);
     } else {
       this.scope.error(
-        scanner.position() +
-          ': Expected variable to assign but got ' +
-          JSON.stringify(expression) +
-          '.'
+        `${scanner.position()}: Expected variable to assign but got ${JSON.stringify(expression)}.`
       );
       return this.parent
         .return(this.scope, this.rets, this.escs, scanner)
@@ -1274,7 +1268,7 @@ class ExpectOperator {
       );
     } else {
       this.scope.error(
-        scanner.position() + ': Expected "=" operator but got ' + tokenName(type, text) + '.'
+        `${scanner.position()}: Expected "=" operator but got ${tokenName(type, text)}.`
       );
       return this.parent.return(this.scope, this.rets, this.escs, scanner);
     }
@@ -1412,10 +1406,10 @@ class Close {
       return this.parent.return(this.scope, this.expression, scanner);
     } else {
       this.scope.error(
-        scanner.position() +
-          ': Expected parenthetical expression to end with ")" or continue with operator but got ' +
-          tokenName(type, text) +
-          '.'
+        `${scanner.position()}: Expected parenthetical expression to end with ")" or continue with operator but got ${tokenName(
+          type,
+          text
+        )}.`
       );
       return this.parent.return(this.scope, this.expression, scanner);
     }
@@ -1440,7 +1434,7 @@ class Value {
       return new GetStaticVariable(this.scope, new AfterVariable(this.parent), [], [], text, false);
     } else {
       this.scope.error(
-        scanner.position() + ': Expected expression but got ' + tokenName(type, text) + '.'
+        `${scanner.position()}: Expected expression but got ${tokenName(type, text)}.`
       );
       return this.parent.return(this.scope, ['val', 0], scanner).next(type, space, text, scanner);
     }
@@ -1512,10 +1506,10 @@ class MaybeArgument {
       return this.parent.next(type, space, text, scanner);
     } else {
       this.scope.error(
-        scanner.position() +
-          ': Expected "," or ")" to end or argument list but got ' +
-          tokenName(type, text) +
-          '.'
+        `${scanner.position()}: Expected "," or ")" to end or argument list but got ${tokenName(
+          type,
+          text
+        )}.`
       );
       return this.parent;
     }
@@ -1685,7 +1679,7 @@ class GetStaticVariable {
     }
 
     if (this.literal === '') {
-      this.scope.error(scanner.position() + ': Expected name but got ' + tokenName(type, text));
+      this.scope.error(`${scanner.position()}: Expected name but got ${tokenName(type, text)}`);
       return this.parent.return(this.scope, [], scanner);
     }
 
@@ -1725,12 +1719,10 @@ class Expect {
   next(type, _space, text, scanner) {
     if (type !== this.expect || text !== this.text) {
       this.scope.error(
-        scanner.position() +
-          ': Expected ' +
-          tokenName(this.expect, this.text) +
-          ' but got ' +
-          tokenName(type, text) +
-          '.'
+        `${scanner.position()}: Expected ${tokenName(this.expect, this.text)} but got ${tokenName(
+          type,
+          text
+        )}.`
       );
     }
     return this.parent.return.apply(this.parent, this.args);
@@ -1741,7 +1733,7 @@ const tokenName = (type, text) => {
   // It might not be possible to provoke an error at the beginning of a new
   // block.
   if (type === 'start') {
-    return 'beginning of a new ' + JSON.stringify(text) + ' block';
+    return `beginning of a new ${JSON.stringify(text)} block`;
   } else if (type === 'stop') {
     return 'to the end of the block';
   } else {

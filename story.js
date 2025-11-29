@@ -11,7 +11,7 @@ export default class Story {
     const name = Path.toName(path);
     const Node = this.constructors[type];
     if (!Node) {
-      throw new Error('No node constructor for type: ' + type);
+      throw new Error(`No node constructor for type: ${type}`);
     }
     const node = new Node(arg);
     node.position = position;

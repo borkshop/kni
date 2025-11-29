@@ -20,6 +20,7 @@
     "rules": {
         "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
         "no-var": "error",
-        "prefer-const": "error"
+        "prefer-const": "error",
+        "prefer-template": "error"
     }
 }

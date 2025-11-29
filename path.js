@@ -6,11 +6,11 @@ export const toName = path => {
   let name = path[0];
   let i;
   for (i = 1; i < path.length - 1; i++) {
-    name += '.' + path[i];
+    name += `.${path[i]}`;
   }
   const last = path[i];
   if (path.length > 1 && last !== 0) {
-    name += '.' + last;
+    name += `.${last}`;
   }
   return name;
 };

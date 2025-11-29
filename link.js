@@ -1,4 +1,4 @@
- const link = story => {
+const link = story => {
   const labels = Object.keys(story.states);
   for (let i = 0; i < labels.length; i++) {
     const label = labels[i];
@@ -48,12 +48,7 @@ const linker = (story, context, state) => {
         }
       }
       story.error(
-        'Could not link ' +
-          role +
-          ' label ' +
-          JSON.stringify(label) +
-          ' at position ' +
-          state.position
+        `Could not link ${role} label ${JSON.stringify(label)} at position ${state.position}`
       );
       return label;
     };

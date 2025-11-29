@@ -62,7 +62,7 @@ export default class Scanner {
       let c = text[i];
       const d = text[i + 1];
       if (this.debug) {
-        console.error('SCN', this.position() + ':' + i, JSON.stringify(c + (d || '')));
+        console.error('SCN', `${this.position()}:${i}`, JSON.stringify(c + (d || '')));
       }
       if (((c === '\t' || c === ' ') && d === '#') || (this.columnNo === 0 && c === '#')) {
         this.newLine(text, i);
@@ -129,6 +129,6 @@ export default class Scanner {
   }
 
   position() {
-    return this.fileName + ':' + (this.lineNo + 1) + ':' + (this.columnStart + 1);
+    return `${this.fileName}:${this.lineNo + 1}:${this.columnStart + 1}`;
   }
 }

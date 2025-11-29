@@ -39,7 +39,7 @@ const verify = (kni, trans, handler, kniscript) => {
   if (story.errors.length) {
     let errors = '';
     for (const err of story.errors) {
-      errors += err + '\n';
+      errors += `${err}\n`;
     }
 
     if (errors === trans) {
@@ -111,7 +111,7 @@ class FakeReadline {
     if (answer == null) {
       return;
     }
-    this.writer.write(('> ' + answer).trim() + '\n');
+    this.writer.write(`${`> ${answer}`.trim()}\n`);
 
     if (answer === 'quit') {
       // noop

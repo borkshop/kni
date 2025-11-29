@@ -15,7 +15,7 @@ types.echo = node => {
 };
 
 types.opt = node => {
-  return '(Q ' + node.question.join(' ') + ') (A ' + node.answer.join(' ') + ')';
+  return `(Q ${node.question.join(' ')}) (A ${node.answer.join(' ')})`;
 };
 
 types.goto = _node => {
@@ -23,34 +23,34 @@ types.goto = _node => {
 };
 
 types.call = node => {
-  return node.label + '(' + node.args.map(S).join(' ') + ') esc ' + node.branch;
+  return `${node.label}(${node.args.map(S).join(' ')}) esc ${node.branch}`;
 };
 
 types.def = node => {
-  return '(' + node.locals.join(' ') + ')';
+  return `(${node.locals.join(' ')})`;
 };
 
 types.jump = node => {
-  return node.branch + ' if ' + S(node.condition);
+  return `${node.branch} if ${S(node.condition)}`;
 };
 
 types.switch = node => {
   let desc = '';
   if (node.variable) {
-    desc += '(' + node.variable + '+' + node.value + ') ' + S(node.expression);
+    desc += `(${node.variable}+${node.value}) ${S(node.expression)}`;
   } else {
     desc += S(node.expression);
   }
-  desc += ' (' + node.branches.join(' ') + ') W(' + node.weights.map(S).join(' ') + ')';
+  desc += ` (${node.branches.join(' ')}) W(${node.weights.map(S).join(' ')})`;
   return desc;
 };
 
 types.set = node => {
-  return node.variable + ' ' + S(node.expression);
+  return `${node.variable} ${S(node.expression)}`;
 };
 
 types.move = node => {
-  return S(node.source) + ' -> ' + S(node.target);
+  return `${S(node.source)} -> ${S(node.target)}`;
 };
 
 types.cue = node => {
@@ -88,7 +88,7 @@ types.ask = _node => {
 types.read = node => {
   let label = node.variable;
   if (node.cue != null) {
-    label += ' ' + node.cue;
+    label += ` ${node.cue}`;
   }
   return label;
 };
@@ -97,9 +97,9 @@ const S = args => {
   if (args[0] === 'val' || args[0] === 'get') {
     return args[1];
   } else if (args[0] === 'var') {
-    return '(' + args[0] + ' ' + V(args[1], args[2]) + ')';
+    return `(${args[0]} ${V(args[1], args[2])})`;
   } else {
-    return '(' + args[0] + ' ' + args.slice(1).map(S).join(' ') + ')';
+    return `(${args[0]} ${args.slice(1).map(S).join(' ')})`;
   }
 };
 
@@ -108,7 +108,7 @@ const V = (source, target) => {
   let i;
   for (i = 0; i < target.length; i++) {
     r += source[i];
-    r += '{' + S(target[i]) + '}';
+    r += `{${S(target[i])}}`;
   }
   r += source[i];
   return r;

@@ -40,7 +40,7 @@ class OutlineLexLister {
 }
 
 function enline(line) {
-  return line + '\n';
+  return `${line}\n`;
 }
 
 test(['a', 'b'], ['a', 'b', 'STOP']);

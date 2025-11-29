@@ -20,7 +20,7 @@ const evaluate = (scope, randomer, args) => {
     const f = functions[func];
     if (!f) {
       // TODO thread line number for containing instruction
-      throw new Error('No function named ' + func);
+      throw new Error(`No function named ${func}`);
     }
     const values = [];
     for (let i = 2; i < args.length; i++) {
@@ -28,7 +28,7 @@ const evaluate = (scope, randomer, args) => {
     }
     return f.apply(null, values);
   } else {
-    throw new Error('Unexpected operator ' + JSON.stringify(args));
+    throw new Error(`Unexpected operator ${JSON.stringify(args)}`);
   }
 };
 

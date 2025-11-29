@@ -234,7 +234,7 @@ const stripe = (index, text) => {
   if (index % 2 === 1) {
     return text;
   } else {
-    return '\x1b[90m' + text + '\x1b[0m';
+    return `\x1b[90m${text}\x1b[0m`;
   }
 };
 
@@ -248,7 +248,7 @@ const describeNext = (jump, next) => {
   } else if (jump == 'ESC') {
     return '<<';
   } else {
-    return '-> ' + jump;
+    return `-> ${jump}`;
   }
 };
 
@@ -303,7 +303,7 @@ const serial = (array, eachback, callback) => {
 
 const dump = (errors, writer) => {
   for (let i = 0; i < errors.length; i++) {
-    writer.write(errors[i] + '\n');
+    writer.write(`${errors[i]}\n`);
   }
 };
 

@@ -58,7 +58,7 @@ export default class Document {
     this.options.appendChild(tr);
     const th = document.createElement('th');
     tr.appendChild(th);
-    th.innerText = this.optionIndex + '.';
+    th.innerText = `${this.optionIndex}.`;
     const td = document.createElement('td');
     td.number = this.optionIndex;
     td.onclick = this.onclick;

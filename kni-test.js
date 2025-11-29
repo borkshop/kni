@@ -29,13 +29,13 @@ function diffFiles(a, b, done) {
 function runArgs(args, outfile, done) {
   const out = fs.createWriteStream(outfile);
   runKni(args, out, function runDone(err) {
-    done(err ? new Error(JSON.stringify(args) + ' failed: ' + err) : null);
+    done(err ? new Error(`${JSON.stringify(args)} failed: ${err}`) : null);
   });
 }
 
 function withTempDir(name, fn, done) {
   const cleaned = name.replace(/[^\w.]+/, '_');
-  fs.mkdtemp(cleaned + '-', function maybeTempDir(err, dir) {
+  fs.mkdtemp(`${cleaned}-`, function maybeTempDir(err, dir) {
     if (err) {
       done(err);
       return;
@@ -52,7 +52,7 @@ function testBasic(kniscript, transcript, done) {
   withTempDir(
     transcript,
     function under(dir, fin) {
-      const outfile = dir + '/out';
+      const outfile = `${dir}/out`;
       runArgs([kniscript, '-v', transcript], outfile, fin);
     },
     done
@@ -63,7 +63,7 @@ function testDescribe(kniscript, descript, done) {
   withTempDir(
     descript,
     function under(dir, fin) {
-      const outfile = dir + '/out';
+      const outfile = `${dir}/out`;
       runArgs([kniscript, '-d'], outfile, function runDone(err) {
         if (err) {
           fin(err);
@@ -109,7 +109,7 @@ function main() {
       if (nom == 'hello') {
         return 'hello.kni';
       }
-      return 'examples/' + nom + '.kni';
+      return `examples/${nom}.kni`;
     }
 
     // description tests
@@ -119,7 +119,7 @@ function main() {
         if (!kniscript || !/\.desc$/.test(file)) {
           return null;
         }
-        return [kniscript, 'tests/' + file];
+        return [kniscript, `tests/${file}`];
       })
       .filter(function (testCase) {
         return testCase != null;

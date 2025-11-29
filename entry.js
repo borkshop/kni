@@ -20,14 +20,14 @@ const handler = {
     const json = window.localStorage.getItem(this.storageKey);
     if (json) {
       const state = JSON.parse(json);
-      window.history.replaceState(state, '', '#' + btoa(json));
+      window.history.replaceState(state, '', `#${btoa(json)}`);
       return state;
     }
     return null;
   },
   waypoint(waypoint) {
     const json = JSON.stringify(waypoint);
-    window.history.pushState(waypoint, '', '#' + btoa(json));
+    window.history.pushState(waypoint, '', `#${btoa(json)}`);
     localStorage.setItem(this.storageKey, json);
   },
   goto(label) {
@@ -77,4 +77,3 @@ try {
   console.error('unable to load prior state, restarting', error);
   engine.resume(null);
 }
-

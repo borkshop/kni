@@ -67,19 +67,19 @@ export default class Engine {
     let _continue;
     do {
       if (this.debug) {
-        console.log(this.label + ' ' + this.instruction.type + ' ' + describe(this.instruction));
+        console.log(`${this.label} ${this.instruction.type} ${describe(this.instruction)}`);
       }
       if (this.instruction == null) {
         // TODO user error for non-console interaction.
-        console.log('The label ' + JSON.stringify(this.label) + ' does not exist in this story');
+        console.log(`The label ${JSON.stringify(this.label)} does not exist in this story`);
         this.end();
         return;
       }
-      if (!this['$' + this.instruction.type]) {
-        console.error('Unexpected instruction type: ' + this.instruction.type, this.instruction);
+      if (!this[`$${this.instruction.type}`]) {
+        console.error(`Unexpected instruction type: ${this.instruction.type}`, this.instruction);
         this.resume();
       }
-      _continue = this['$' + this.instruction.type](this.instruction);
+      _continue = this[`$${this.instruction.type}`](this.instruction);
     } while (_continue);
   }
 
@@ -109,7 +109,7 @@ export default class Engine {
       return this.resume();
     }
     if (!next) {
-      console.error('Story missing instruction for label: ' + label);
+      console.error(`Story missing instruction for label: ${label}`);
       return this.resume();
     }
     if (this.handler && this.handler.goto) {
@@ -339,7 +339,7 @@ export default class Engine {
   }
 
   $echo() {
-    return this.write('' + evaluate(this.top, this.randomer, this.instruction.expression));
+    return this.write(`${evaluate(this.top, this.randomer, this.instruction.expression)}`);
   }
 
   $br() {
@@ -366,15 +366,15 @@ export default class Engine {
     const label = this.instruction.label;
     const def = this.story[label];
     if (!def) {
-      console.error('no such procedure ' + label, this.instruction);
+      console.error(`no such procedure ${label}`, this.instruction);
       return this.resume();
     }
     if (def.type !== 'def') {
-      console.error("Can't call non-procedure " + label, this.instruction);
+      console.error(`Can't call non-procedure ${label}`, this.instruction);
       return this.resume();
     }
     if (def.locals.length !== this.instruction.args.length) {
-      console.error('Argument length mismatch for ' + label, this.instruction);
+      console.error(`Argument length mismatch for ${label}`, this.instruction);
       return this.resume();
     }
     // TODO replace this.global with closure scope if scoped procedures become
@@ -428,7 +428,7 @@ export default class Engine {
     const value = evaluate(this.top, this.randomer, this.instruction.source);
     const name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
     if (this.debug) {
-      console.log(this.top.at() + '/' + this.label + ' ' + name + ' = ' + value);
+      console.log(`${this.top.at()}/${this.label} ${name} = ${value}`);
     }
     this.top.set(name, value);
     return this.goto(this.instruction.next);
@@ -484,7 +484,7 @@ export default class Engine {
       nexts.push(next);
     }
     if (this.debug) {
-      console.log(this.top.at() + '/' + this.label + ' ' + value + ' -> ' + next);
+      console.log(`${this.top.at()}/${this.label} ${value} -> ${next}`);
     }
     return this.gothrough(nexts, this.instruction.next);
   }
@@ -542,7 +542,7 @@ class Global {
     for (let i = 0; i < names.length; i++) {
       const name = names[i];
       const value = this.scope[name];
-      console.log(name + ' = ' + value);
+      console.log(`${name} = ${value}`);
     }
     console.log('');
   }
@@ -617,16 +617,16 @@ class Frame {
 
   log() {
     this.parent.log();
-    console.log('--- ' + this.label + ' -> ' + this.next);
+    console.log(`--- ${this.label} -> ${this.next}`);
     for (let i = 0; i < this.locals.length; i++) {
       const name = this.locals[i];
       const value = this.scope[name];
-      console.log(name + ' = ' + value);
+      console.log(`${name} = ${value}`);
     }
   }
 
   at() {
-    return this.parent.at() + '/' + this.label;
+    return `${this.parent.at()}/${this.label}`;
   }
 
   capture(engine) {

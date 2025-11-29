@@ -44,7 +44,7 @@ export default class Console {
     this.excerpt.write(this.wrapper);
     for (let i = 0; i < this.options.length; i++) {
       const number = i + 1;
-      const lead = (number + '.   ').slice(0, 3) + ' ';
+      const lead = `${`${number}.   `.slice(0, 3)} `;
       this.wrapper.word(lead);
       this.wrapper.flush = true;
       this.wrapper.push('    ', '   ');

@@ -33,7 +33,7 @@ export default class Parser {
         scanner.position(),
         type,
         JSON.stringify(text),
-        prior + '->' + this.generator.constructor.name
+        `${prior}->${this.generator.constructor.name}`
       );
     }
     return this;

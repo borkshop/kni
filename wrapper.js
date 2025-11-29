@@ -46,7 +46,7 @@ export default class Wrapper {
       this.index += word.length;
       this.flush = false;
     } else {
-      this.target.write(' ' + word);
+      this.target.write(` ${word}`);
       this.index += word.length + 1;
       this.flush = false;
     }

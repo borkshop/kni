@@ -19,12 +19,12 @@ export default class Readline {
   }
 
   ask(cue) {
-    this.readline.question((cue || '') + '> ', this.boundAnswer);
+    this.readline.question(`${cue || ''}> `, this.boundAnswer);
   }
 
   answer(text) {
     if (this.transcript) {
-      this.transcript.write('> ' + text + '\n');
+      this.transcript.write(`> ${text}\n`);
     }
     this.state = this.state.answer(text);
   }
@@ -58,11 +58,11 @@ class Play {
       engine.ask();
     } else if (text === 'save') {
       console.log('');
-      engine.dialog.ask('file name [' + this.filename + ']> ');
+      engine.dialog.ask(`file name [${this.filename}]> `);
       return new Save(this, engine.waypoint, this.filename);
     } else if (text === 'load') {
       console.log('');
-      engine.dialog.ask('file name [' + this.filename + ']> ');
+      engine.dialog.ask(`file name [${this.filename}]> `);
       return new Load(this, this.filename);
     } else if (text === 'back') {
       console.log('');
@@ -116,7 +116,7 @@ class Save {
     fs.writeFileSync(filename, waypoint, 'utf8');
 
     console.log('');
-    console.log('Waypoint written to ' + filename);
+    console.log(`Waypoint written to ${filename}`);
     console.log(waypoint);
     console.log('');
     return this.parent.saved(filename);
@@ -134,7 +134,7 @@ class Load {
 
     const waypoint = fs.readFileSync(filename, 'utf8');
     console.log('');
-    console.log('Loaded from ' + filename);
+    console.log(`Loaded from ${filename}`);
     console.log(waypoint);
     console.log('');
 

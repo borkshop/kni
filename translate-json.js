@@ -1,3 +1,3 @@
 export default module => {
-  module.text = 'export default ' + module.text;
+  module.text = `export default ${module.text}`;
 };
