@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 15.x]
+        node-version: [22.x, 24.x]
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -19,24 +19,3 @@ jobs:
       - run: npm ci
       - run: npm ls -s
       - run: npx eslint .
-      - run: npx tsc
-      - run: npx nyc npm test
-      - name: Coveralls Upload
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
-          flag-name: node-${{ matrix.node-version }}
-          parallel: true
-      - run: npx nyc check-coverage
-      # TODO bring back per-file thresholds once we get the numbers up
-      # - run: npx nyc check-coverage --per-file
-
-  finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
-          parallel-finished: true

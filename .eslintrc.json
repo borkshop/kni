@@ -1,23 +1,26 @@
 {
     "env": {
         "browser": true,
-        "commonjs": true,
         "es2021": true,
         "node": true
     },
     "extends": "eslint:recommended",
     "parser": "@babel/eslint-parser",
     "parserOptions": {
-        "ecmaVersion": 12,
+        "ecmaVersion": 2024,
         "requireConfigFile": false,
-        "sourceType": "script",
+        "sourceType": "module",
         "babelOptions": {
             "plugins": [
-                "@babel/plugin-syntax-class-properties"
+                "@babel/plugin-syntax-class-properties",
+                "@babel/plugin-syntax-import-attributes"
             ]
         }
     },
     "rules": {
-        "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}]
+        "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
+        "no-var": "error",
+        "prefer-const": "error",
+        "prefer-template": "error"
     }
 }

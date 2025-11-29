@@ -1,8 +1,6 @@
-'use strict';
-
 Error.stackTraceLimit = 1024;
 
-require('./outline-lexer-test');
-require('./inline-lexer-test');
-require('./engine-test');
-require('./kni-test');
+import './outline-lexer-test.js';
+import './inline-lexer-test.js';
+import './engine-test.js';
+import './kni-test.js';
