@@ -30,29 +30,10 @@
     "typescript": "^4.2.2"
   },
   "files": [
-    "console.js",
-    "describe.js",
-    "document.js",
-    "engine.js",
-    "entry.js",
-    "evaluate.js",
-    "excerpt.js",
-    "grammar.js",
-    "html.js",
-    "inline-lexer.js",
-    "kni.js",
-    "kni.json",
-    "link.js",
-    "outline-lexer.js",
-    "parser.js",
-    "path.js",
-    "readline.js",
-    "scanner.js",
-    "scope.js",
-    "story.js",
-    "translate-json.js",
-    "verify.js",
-    "wrapper.js"
+    "*.js",
+    "!*-test.js",
+    "*.json",
+    "!.*.json"
   ],
   "scripts": {
     "format": "prettier --write \"**/*.js\"",
