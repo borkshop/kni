@@ -34,6 +34,8 @@ export default class Engine {
     this.story = args.story;
     this.labels = Object.keys(this.story);
     this.handler = args.handler;
+    this.meter = 0;
+    this.limit = 10e3; // bottles.kni, for example, runs long
     this.options = [];
     this.keywords = {};
     this.noOption = null;
@@ -47,6 +49,7 @@ export default class Engine {
     this.dialog.engine = this;
     this.randomer = args.randomer || Math;
     this.waypoint = this.capture();
+    this.answerOnClearMeterFault = [];
     Object.seal(this);
   }
 
@@ -63,11 +66,15 @@ export default class Engine {
     this.resume();
   }
 
+  /**
+   * Runs the event loop until it yields.
+   */
   continue() {
-    let _continue;
-    do {
+    this.meter = 0;
+    for (;;) {
       if (this.debug) {
         console.log(`${this.label} ${this.instruction.type} ${describe(this.instruction)}`);
+        console.log(this.top);
       }
       if (this.instruction == null) {
         // TODO user error for non-console interaction.
@@ -79,8 +86,31 @@ export default class Engine {
         console.error(`Unexpected instruction type: ${this.instruction.type}`, this.instruction);
         this.resume();
       }
-      _continue = this[`$${this.instruction.type}`](this.instruction);
-    } while (_continue);
+      const proceed = this[`$${this.instruction.type}`](this.instruction);
+      if (!proceed) {
+        return;
+      }
+      this.meter += 1;
+      if (this.meter >= this.limit) {
+        this.display();
+        this.dialog.meterFault();
+        return;
+      }
+    }
+  }
+
+  clearMeterFault() {
+    if (this.meter >= this.limit) {
+      this.render.clear();
+      this.continue();
+
+      // flush answers posted while faulted
+      const count = this.answerOnClearMeterFault.length;
+      const answers = this.answerOnClearMeterFault.splice(0, count);
+      for (const answer of answers) {
+        this.answer(answer);
+      }
+    }
   }
 
   goto(label) {
@@ -170,6 +200,10 @@ export default class Engine {
   }
 
   answer(text) {
+    if (this.meter >= this.limit) {
+      this.answerOnClearMeterFault.push(text);
+      return;
+    }
     if (this.handler && this.handler.answer) {
       this.handler.answer(text, this);
     }
@@ -256,6 +290,9 @@ export default class Engine {
     ];
   }
 
+  /**
+   * Resumes from a snapshot.
+   */
   resume(snapshot) {
     this.render.clear();
     this.flush();
