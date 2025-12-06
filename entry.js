@@ -38,7 +38,13 @@ const handler = {
   },
 };
 
-const doc = new Document(document.body);
+const meterFaultButton = document.createElement('a');
+meterFaultButton.innerText = 'Continue…';
+meterFaultButton.addEventListener('click', () => {
+  engine.clearMeterFault();
+});
+
+const doc = new Document(document.body, null, meterFaultButton);
 
 const engine = new Engine({
   story: story,

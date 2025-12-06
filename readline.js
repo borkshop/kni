@@ -18,6 +18,16 @@ export default class Readline {
     Object.seal(this);
   }
 
+  meterFault() {
+    this.readline.question(`Enter any command to continue... `, (answer) => {
+      if (answer === 'quit') {
+        this.close();
+      } else {
+        this.engine.clearMeterFault();
+      }
+    });
+  }
+
   ask(cue) {
     this.readline.question(`${cue || ''}> `, this.boundAnswer);
   }
