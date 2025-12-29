@@ -44,7 +44,10 @@ meterFaultButton.addEventListener('click', () => {
   engine.clearMeterFault();
 });
 
-const doc = new Document(document.body, null, meterFaultButton);
+const doc = new Document(document.body, {
+  meterFaultButton,
+  pageTurnBehavior: 'fade',
+});
 
 const engine = new Engine({
   story: story,
