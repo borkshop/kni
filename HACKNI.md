@@ -249,6 +249,19 @@ The Kni document serves as both renderer and dialog controller.
 The web dialog is relatively simple, building a DOM on the fly, with certain CSS
 to allow the containing document to govern its position and animation.
 
+The Document constructor accepts an options object with the following properties:
+
+- `createPage(webDocument, kniDocument)` is a function that creates a new page element.
+- `meterFaultButton` is a button element that the document will use to display
+  meter faults.
+- `pageTurnBehavior` controls how the prior frame is handled when starting a new
+  page. The options are 'log' (default, removes options but keeps narrative),
+  'remove' (removes the entire prior frame), and 'fade' (fades out and removes
+  the prior frame with a CSS transition, which requires a transition style to
+  exist on the frame element).
+
+If a text block like `{Example https://example.com}` ends with a URL, the
+web `Document` renderer will embed a hyperlink instead of the verbatim URL.
 
 ## The Command Line Dialog Renderer
 

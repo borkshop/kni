@@ -1,5 +1,13 @@
+const linkMatcher = /\s*(\w+:\/\/\S+)$/;
+
 export default class Document {
-  constructor(element, createPage, meterFaultButton) {
+  constructor(element, options = {}) {
+    const {
+      createPage = undefined,
+      meterFaultButton = undefined,
+      pageTurnBehavior = 'log',
+    } = options;
+
     const self = this;
     this.document = element.ownerDocument;
     this.parent = element;
@@ -21,6 +29,7 @@ export default class Document {
     };
     this.createPage = createPage || this.createPage;
     this.meterFaultButton = meterFaultButton;
+    this.pageTurnBehavior = pageTurnBehavior;
 
     Object.seal(this);
   }
@@ -40,8 +49,22 @@ export default class Document {
       this.br = false;
       lift = '';
     }
-    // TODO merge with prior text node
-    this.cursor.appendChild(document.createTextNode(lift + text));
+    const match = linkMatcher.exec(text);
+    if (match === null) {
+        // TODO merge with prior text node
+        this.cursor.appendChild(document.createTextNode(lift + text));
+    } else {
+        // Support a hyperlink convention.
+        if (lift !== '') {
+            this.cursor.appendChild(document.createTextNode(lift));
+        }
+        const link = document.createElement('a');
+        link.href = match[1];
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+        link.appendChild(document.createTextNode(text.slice(0, match.index)));
+        this.cursor.appendChild(link);
+    }
     this.carry = drop;
   }
 
@@ -100,9 +123,15 @@ export default class Document {
 
   clear() {
     if (this.frame) {
-      this.frame.style.opacity = 0;
-      this.frame.style.transform = 'translateX(-2ex)';
-      this.frame.addEventListener('transitionend', this);
+      if (this.pageTurnBehavior === 'log') {
+        this.options.remove();
+      } else if (this.pageTurnBehavior === 'remove') {
+        this.frame.remove();
+      } else if (this.pageTurnBehavior === 'fade') {
+        this.frame.style.opacity = 0;
+        this.frame.style.transform = 'translateX(-2ex)';
+        this.frame.addEventListener('transitionend', this);
+      }
     }
     this.createPage(this.document, this);
     this.cursor = null;
@@ -141,9 +170,8 @@ export default class Document {
   }
 
   handleEvent(event) {
-    if (event.target.parentNode === this.parent) {
-      this.parent.removeChild(event.target);
-    }
+    // transitionend on this.frame, only
+    event.target.remove();
   }
 
   meterFault() {
