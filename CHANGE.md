@@ -1,4 +1,4 @@
-# Next release
+# v5.1.0
 
 - Support for `npx kni`.
 
