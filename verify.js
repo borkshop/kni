@@ -74,7 +74,7 @@ const verify = (kni, trans, handler, kniscript) => {
 
   const writer = new StringWriter();
   const render = new Console(writer);
-  const readline = new FakeReadline(writer, answers);
+  const readline = new FakeReadline(writer, answers, kniscript);
   const engine = new Engine({
     story: states,
     start: 'start',
@@ -98,9 +98,10 @@ const verify = (kni, trans, handler, kniscript) => {
 export default verify;
 
 class FakeReadline {
-  constructor(writer, answers) {
+  constructor(writer, answers, kniscript) {
     this.writer = writer;
     this.answers = answers;
+    this.kniscript = kniscript;
     this.engine = null;
     this.history = [];
     Object.seal(this);
@@ -129,6 +130,10 @@ class FakeReadline {
   }
 
   close() {}
+
+  meterFault() {
+    throw new Error(`meter fault in ${this.kniscript}`);
+  }
 }
 
 class StringWriter {

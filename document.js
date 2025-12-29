@@ -1,5 +1,5 @@
 export default class Document {
-  constructor(element, createPage) {
+  constructor(element, createPage, meterFaultButton) {
     const self = this;
     this.document = element.ownerDocument;
     this.parent = element;
@@ -20,6 +20,8 @@ export default class Document {
       self.answer(event.target.number);
     };
     this.createPage = createPage || this.createPage;
+    this.meterFaultButton = meterFaultButton;
+
     Object.seal(this);
   }
 
@@ -141,6 +143,12 @@ export default class Document {
   handleEvent(event) {
     if (event.target.parentNode === this.parent) {
       this.parent.removeChild(event.target);
+    }
+  }
+
+  meterFault() {
+    if (this.meterFaultButton) {
+      this.body.appendChild(this.meterFaultButton);
     }
   }
 
