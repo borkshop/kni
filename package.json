@@ -4,7 +4,7 @@
   "description": "A text adventure language and runtime inspired by inkle/ink",
   "type": "module",
   "bin": {
-    "kni": "./kni.js"
+    "kni": "./cli.cjs"
   },
   "dependencies": {
     "pop-equals": "^1.0.0",

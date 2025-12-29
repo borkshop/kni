@@ -1,3 +1,7 @@
+# Next release
+
+- Support for `npx kni`.
+
 # v5.0.0
 
 - The web Document renderer now supports a `pageTurnBehavior` option with three
