@@ -1,3 +1,5 @@
+const linkMatcher = /\s*(\w+:\/\/\S+)$/;
+
 export default class Document {
   constructor(element, options = {}) {
     const {
@@ -47,8 +49,22 @@ export default class Document {
       this.br = false;
       lift = '';
     }
-    // TODO merge with prior text node
-    this.cursor.appendChild(document.createTextNode(lift + text));
+    const match = linkMatcher.exec(text);
+    if (match === null) {
+        // TODO merge with prior text node
+        this.cursor.appendChild(document.createTextNode(lift + text));
+    } else {
+        // Support a hyperlink convention.
+        if (lift !== '') {
+            this.cursor.appendChild(document.createTextNode(lift));
+        }
+        const link = document.createElement('a');
+        link.href = match[1];
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+        link.appendChild(document.createTextNode(text.slice(0, match.index)));
+        this.cursor.appendChild(link);
+    }
     this.carry = drop;
   }
 
