@@ -163,11 +163,14 @@ export default class Engine {
   }
 
   end() {
-    this.display();
     if (this.handler && this.handler.end) {
       this.handler.end(this);
     }
+    this.display();
     this.dialog.close();
+    if (this.handler && this.handler.close) {
+      this.handler.close(this);
+    }
     return false;
   }
 
