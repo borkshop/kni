@@ -8,7 +8,7 @@ the `kni` command as installed by `npm`.
 
 ```
 npm install kni
-node_modules/.bin/kni --help
+npx kni --help
 ```
 
 Be sure to use a project-local installation of `kni`.
@@ -20,6 +20,9 @@ examples) and opens up an interactive console for the story.
 The `-j` command line flag bypasses the runtime and dumps the compiled JSON
 state machine for the story.
 
+Kni will generate a stand-alone story with `npx kni script.kni --html
+page.html`, which supports flags `--html-background-color skyblue` and
+`--html-title "My Story"`.
 
 ## Text, space, and symbols
 
