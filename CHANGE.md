@@ -1,3 +1,16 @@
+# Next release
+
+- The web Document renderer now supports a `pageTurnBehavior` option with three
+  modes: 'log' (default, removes options but keeps narrative), 'remove' (removes
+  the entire prior frame), and 'fade' (fades out and removes the prior frame,
+  which requires a CSS transition on the frame element).
+- The `end` handler hook is now called after the final display, allowing handlers
+  to act on the fully rendered narrative.
+- Hyperlinks following the Peruácru convention are now rendered as clickable
+  links in the web Document renderer.
+  Text blocks ending with a URL (e.g., `{Example https://example.com}`) render
+  as anchor tags.
+
 # v4.0.3
 
 - Regenerated `package-lock.json`, dropping references to unpm from these packages:

@@ -803,6 +803,19 @@ supports some operators that assist making common typographical niceties.
 - ``--`` is good for an en-dash, suitable for use in number ranges like 1–10.
 - ``---`` is good for em-dash—suitable for parenthetical phrases.
 
+## Hyperlinks
+
+Kni supports hyperlinks in text blocks. The recommended convention is to
+express hyperlinks in stand-alone blocks with the link text followed by a URL:
+
+```
+{Example https://example.com}
+```
+
+The web Document renderer recognizes this pattern and renders it as a clickable
+anchor tag. The link text becomes the visible text, and the URL becomes the
+href. Links open in a new tab with appropriate security attributes.
+
 ## Multiple Files
 
 A Kni story can span multiple files. Pass all of these files to the `kni`
