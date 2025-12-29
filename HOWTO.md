@@ -28,6 +28,24 @@ npx kni hello.kni
 You'll see "Hello, World!" and the story ends. Not very interactive yet.
 
 
+## Making a Stand-Alone Web Page
+
+You can turn any Kni story into a self-contained HTML page:
+
+```
+npx kni hello.kni --html hello.html
+```
+
+Open `hello.html` in a browser and you have a playable story. Customize it with
+flags:
+
+```
+npx kni story.kni --html story.html --html-title "My Adventure" --html-background-color "#1a1a2e"
+```
+
+This is the quickest way to share your stories—just send someone the HTML file.
+
+
 ## Your First Choice
 
 A story becomes interactive when it offers choices. Add options with `+` and
