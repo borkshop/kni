@@ -13,191 +13,155 @@ import stripAnsi from 'strip-ansi';
 /**
  * @param {string} a
  * @param {string} b
- * @param {(err: NodeJS.ErrnoException | null, result?: DiffResult) => void} done
+ * @returns {DiffResult}
  */
-function diffFiles(a, b, done) {
-  fs.readFile(a, 'utf8', function aRead(err, aData) {
-    if (err) {
-      done(err);
-      return;
-    }
-    fs.readFile(b, 'utf8', function bRead(err, bData) {
-      if (err) {
-        done(err);
-        return;
-      }
-      aData = stripAnsi(aData);
-      bData = stripAnsi(bData);
-      done(null, {
-        same: aData == bData,
-        aData: aData,
-        bData: bData,
-      });
-    });
-  });
+function diffFiles(a, b) {
+  const aData = stripAnsi(fs.readFileSync(a, 'utf8'));
+  const bData = stripAnsi(fs.readFileSync(b, 'utf8'));
+  return {
+    same: aData === bData,
+    aData,
+    bData,
+  };
 }
 
 /**
  * @param {string[]} args
  * @param {string} outfile
- * @param {(err: Error | null) => void} done
+ * @returns {Promise<void>}
  */
-function runArgs(args, outfile, done) {
+async function runArgs(args, outfile) {
   const out = fs.createWriteStream(outfile);
-  // @ts-ignore - WriteStream is compatible with Writer
-  runKni(args, out, function runDone(err) {
-    done(err ? new Error(`${JSON.stringify(args)} failed: ${err}`) : null);
+
+  // Wait for the stream to be ready
+  await new Promise((resolve, reject) => {
+    out.on('open', resolve);
+    out.on('error', reject);
   });
+
+  try {
+    // @ts-ignore - WriteStream is compatible with Writer
+    await runKni(args, out);
+  } finally {
+    // Close the stream and wait for it to finish
+    await new Promise((resolve, reject) => {
+      out.on('close', resolve);
+      out.on('error', reject);
+      out.end();
+    });
+  }
 }
 
 /**
+ * @template T
  * @param {string} name
- * @param {(dir: string, done: (err: Error | null) => void) => void} fn
- * @param {(err: Error | null) => void} done
+ * @param {(dir: string) => Promise<T>} fn
+ * @returns {Promise<T>}
  */
-function withTempDir(name, fn, done) {
+async function withTempDir(name, fn) {
   const cleaned = name.replace(/[^\w.]+/, '_');
-  fs.mkdtemp(`${cleaned}-`, function maybeTempDir(err, dir) {
-    if (err) {
-      done(err);
-      return;
-    }
-    fn(dir, function funDone(err) {
-      fs.rm(dir, {recursive: true}, function rmDone(rmErr) {
-        done(err || rmErr);
-      });
-    });
-  });
+  const dir = fs.mkdtempSync(`${cleaned}-`);
+  try {
+    return await fn(dir);
+  } finally {
+    fs.rmSync(dir, {recursive: true});
+  }
 }
 
 /**
  * @param {string} kniscript
  * @param {string} transcript
- * @param {(err: Error | null) => void} done
+ * @returns {Promise<void>}
  */
-function testBasic(kniscript, transcript, done) {
-  withTempDir(
-    transcript,
-    function under(dir, fin) {
-      const outfile = `${dir}/out`;
-      runArgs([kniscript, '-v', transcript], outfile, fin);
-    },
-    done
-  );
+async function testBasic(kniscript, transcript) {
+  await withTempDir(transcript, async dir => {
+    const outfile = `${dir}/out`;
+    await runArgs([kniscript, '-v', transcript], outfile);
+  });
 }
 
 /**
  * @param {string} kniscript
  * @param {string} descript
- * @param {(err: Error | null) => void} done
+ * @returns {Promise<void>}
  */
-function testDescribe(kniscript, descript, done) {
-  withTempDir(
-    descript,
-    function under(dir, fin) {
-      const outfile = `${dir}/out`;
-      runArgs([kniscript, '-d'], outfile, function runDone(err) {
-        if (err) {
-          fin(err);
-          return;
-        }
-        diffFiles(descript, outfile, function diffed(err, res) {
-          if (err) {
-            fin(err);
-            return;
-          }
-          if (!res || !res.same) {
-            console.log('aBytes', res?.aData.length);
-            console.log('bBytes', res?.bData.length);
-
-            console.log('aLines', res?.aData.split(/\n/));
-            console.log('bLines', res?.bData.split(/\n/));
-
-            fin(new Error('output does not match'));
-            return;
-          }
-          fin(null);
-        });
-      });
-    },
-    done
-  );
+async function testDescribe(kniscript, descript) {
+  await withTempDir(descript, async dir => {
+    const outfile = `${dir}/out`;
+    await runArgs([kniscript, '-d'], outfile);
+    const res = diffFiles(descript, outfile);
+    if (!res.same) {
+      console.log('aBytes', res.aData.length);
+      console.log('bBytes', res.bData.length);
+      console.log('aLines', res.aData.split(/\n/));
+      console.log('bLines', res.bData.split(/\n/));
+      throw new Error('output does not match');
+    }
+  });
 }
 
-function main() {
-  fs.readdir('tests', function (err, files) {
-    if (err) {
+async function main() {
+  const files = fs.readdirSync('tests');
+
+  /**
+   * @param {string} somescript
+   * @returns {string}
+   */
+  function kniFor(somescript) {
+    const match = /(.+)\./.exec(somescript);
+    const nom = match && match[1];
+    if (!nom) {
+      return '';
+    }
+    if (nom === 'hello') {
+      return 'hello.kni';
+    }
+    return `examples/${nom}.kni`;
+  }
+
+  // description tests
+  /** @type {[string, string][]} */
+  const describeTests = files
+    .map(file => {
+      const kniscript = kniFor(file);
+      if (!kniscript || !/\.desc$/.test(file)) {
+        return null;
+      }
+      return /** @type {[string, string]} */ ([kniscript, `tests/${file}`]);
+    })
+    .filter(/** @type {(x: [string, string] | null) => x is [string, string]} */ (x => x != null));
+
+  for (const [kniscript, descript] of describeTests) {
+    try {
+      await testDescribe(kniscript, descript);
+    } catch (err) {
       process.exitCode = 1;
-      console.error('unable to read tests dir');
-      return;
+      console.log('FAIL', 'describe', kniscript, descript, err);
     }
+  }
 
-    /**
-     * @param {string} somescript
-     * @returns {string}
-     */
-    function kniFor(somescript) {
-      const match = /(.+)\./.exec(somescript);
-      const nom = match && match[1];
-      if (!nom) {
-        return '';
-      }
-      if (nom == 'hello') {
-        return 'hello.kni';
-      }
-      return `examples/${nom}.kni`;
-    }
+  // verification tests
+  /** @type {[string, typeof testBasic][]} */
+  const testModes = [
+    // TODO also derive from files and/or reconcile with engine-test
+    ['basic', testBasic],
+  ];
 
-    // description tests
-    files
-      .map(function (file) {
-        const kniscript = kniFor(file);
-        if (!kniscript || !/\.desc$/.test(file)) {
-          return null;
-        }
-        return [kniscript, `tests/${file}`];
-      })
-      .filter(function (testCase) {
-        return testCase != null;
-      })
-      .forEach(function eachTestCase(testCase) {
-        if (!testCase) return;
-        const kniscript = testCase[0];
-        const descript = testCase[1];
-        testDescribe(kniscript, descript, function testRunDone(err) {
-          if (err) {
-            process.exitCode = 1;
-            console.log('FAIL', 'describe', kniscript, descript, err);
-          }
-        });
-      });
-
-    // verification tests
-    /** @type {[string, typeof testBasic][]} */
-    const testModes = [
-      // TODO also derive from files and/or reconcile with engine-test
-      ['basic', testBasic],
+  for (const [testModeName, runTest] of testModes) {
+    /** @type {[string, string][]} */
+    const testCases = [
+      // TODO reconcile table with engine-test.js
+      ['hello.kni', 'tests/hello.1'],
     ];
-    testModes.forEach(function eachTestMode(testMode) {
-      const testModeName = testMode[0];
-      const runTest = testMode[1];
-      /** @type {[string, string][]} */
-      const testCases = [
-        // TODO reconcile table with engine-test.js
-        ['hello.kni', 'tests/hello.1'],
-      ];
-      testCases.forEach(function eachTestCase(testCase) {
-        const kniscript = testCase[0];
-        const transcript = testCase[1];
-        runTest(kniscript, transcript, function testRunDone(err) {
-          if (err) {
-            process.exitCode = 1;
-            console.log('FAIL', testModeName, kniscript, transcript, err);
-          }
-        });
-      });
-    });
-  });
+    for (const [kniscript, transcript] of testCases) {
+      try {
+        await runTest(kniscript, transcript);
+      } catch (err) {
+        process.exitCode = 1;
+        console.log('FAIL', testModeName, kniscript, transcript, err);
+      }
+    }
+  }
 }
 
 main();

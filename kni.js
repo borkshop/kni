@@ -66,240 +66,230 @@ const {default: tableDefault, getBorderCharacters} = table;
 /**
  * @param {string[] | null} args
  * @param {Writer} out
- * @param {(err: Error | null) => void} done
+ * @returns {Promise<void>}
  */
-const run = (args, out, done) => {
+const run = async (args, out) => {
   /** @type {KniConfig | null} */
   const config = exec(usage, args);
   if (!config) {
-    done(null);
     return;
   }
 
-  serial(config.scripts, readAndKeep, (err, kniscripts) => {
-    if (err) {
-      done(err);
-      return;
-    }
-    if (!kniscripts) {
-      done(new Error('No scripts'));
-      return;
-    }
+  const kniscripts = await serial(config.scripts, readAndKeep);
+  if (!kniscripts || kniscripts.length === 0) {
+    throw new Error('No scripts');
+  }
 
-    let interactive = true;
+  let interactive = true;
 
-    if (config.transcript === out) {
-      config.transcript = null;
-    }
-    if (config.transcript) {
-      out = tee(config.transcript, out);
-    }
+  if (config.transcript === out) {
+    config.transcript = null;
+  }
+  if (config.transcript) {
+    out = tee(config.transcript, out);
+  }
 
-    /** @type {Record<string, any>} */
-    let states;
-    if (config.fromJson) {
-      states = JSON.parse(kniscripts[0].content); // TODO test needed
-    } else {
-      const story = new Story();
+  /** @type {Record<string, any>} */
+  let states;
+  if (config.fromJson) {
+    states = JSON.parse(kniscripts[0].content); // TODO test needed
+  } else {
+    const story = new Story();
 
-      for (let i = 0; i < kniscripts.length; i++) {
-        const kniscript = kniscripts[i].content;
+    for (let i = 0; i < kniscripts.length; i++) {
+      const kniscript = kniscripts[i].content;
 
-        if (config.debugInput) {
-          console.log(kniscript);
-        }
-
-        /** @type {import('./path.js').Path} */
-        let path = Path.start();
-        /** @type {import('./path.js').Path} */
-        let base = /** @type {import('./path.js').Path} */ (/** @type {unknown} */ ([]));
-        if (kniscripts.length > 1) {
-          /** @type {string} */
-          const streamPath = kniscripts[i].stream.path;
-          const pathPart = streamPath.split('/').pop()?.split('.').shift() || '';
-          path = [pathPart];
-          base = path;
-        }
-
-        const p = new Parser(start(story, path, base));
-        const il = new InlineLexer(p);
-        const ol = new OutlineLexer(il);
-        const s = new Scanner(ol, kniscripts[i].stream.path);
-
-        // Kick off each file with a fresh paragraph.
-        p.next('token', '', '//', s);
-
-        if (config.debugParser) {
-          // @ts-ignore - debug property exists
-          p.debug = true;
-          interactive = false;
-        }
-        if (config.debugInlineLexer) {
-          // @ts-ignore - debug property exists
-          il.debug = true;
-          interactive = false;
-        }
-        if (config.debugOutlineLexer) {
-          // @ts-ignore - debug property exists
-          ol.debug = true;
-          interactive = false;
-        }
-        if (config.debugScanner) {
-          // @ts-ignore - debug property exists
-          s.debug = true;
-          interactive = false;
-        }
-
-        s.next(kniscript);
-        s.return();
+      if (config.debugInput) {
+        console.log(kniscript);
       }
 
-      link(story);
-
-      states = story.states;
-      if (story.errors.length) {
-        if (config.transcript != null) {
-          dump(story.errors, config.transcript);
-        }
-        /** @type {Error & {story?: Story}} */
-        const storyError = new Error('internal story error');
-        storyError.story = story;
-        done(storyError);
-        return;
+      /** @type {import('./path.js').Path} */
+      let path = Path.start();
+      /** @type {import('./path.js').Path} */
+      let base = /** @type {import('./path.js').Path} */ (/** @type {unknown} */ ([]));
+      if (kniscripts.length > 1) {
+        /** @type {string} */
+        const streamPath = kniscripts[i].stream.path;
+        const pathPart = streamPath.split('/').pop()?.split('.').shift() || '';
+        path = [pathPart];
+        base = path;
       }
-    }
 
-    if (config.describe) {
-      describeStory(states, out, done);
-      return;
-    }
+      const p = new Parser(start(story, path, base));
+      const il = new InlineLexer(p);
+      const ol = new OutlineLexer(il);
+      const s = new Scanner(ol, kniscripts[i].stream.path);
 
-    if (config.toJson) {
-      console.log(JSON.stringify(states, null, 4));
-      interactive = false;
-    } else if (config.toHtml) {
-      makeHtml(states, config.toHtml, {
-        title: config.htmlTitle,
-        color: config.htmlColor,
-        backgroundColor: config.htmlBackgroundColor,
-      });
-      interactive = false;
-    }
+      // Kick off each file with a fresh paragraph.
+      p.next('token', '', '//', s);
 
-    let randomer = xorshift;
-
-    if (config.transcript || config.seed) {
-      const seed = config.seed || 0;
-      // I rolled 4d64k this morning.
-      // @ts-ignore - xorshift constructor
-      randomer = new xorshift.constructor([37615 ^ seed, 54552 ^ seed, 59156 ^ seed, 24695 ^ seed]);
-    }
-
-    if (config.expected) {
-      read(config.expected, (err, typescript) => {
-        if (err) {
-          done(err);
-          return;
-        }
-        if (!typescript) {
-          done(new Error('No expected content'));
-          return;
-        }
-
-        const result = verify(kniscripts[0].content, typescript);
-        if (!result.pass) {
-          console.log(result.actual);
-          done(new Error('verification failed'));
-          return;
-        }
-      });
-      done(null);
-      return;
-    }
-
-    if (interactive) {
-      const rl = new Readline(config.transcript);
-      const render = new Console(out);
-      const engine = new Engine({
-        story: states,
-        start: config.start,
-        render: render,
-        // @ts-ignore - Readline implements Dialog partially
-        dialog: rl,
-        randomer: randomer,
-      });
-
-      if (config.debugRuntime) {
+      if (config.debugParser) {
         // @ts-ignore - debug property exists
-        engine.debug = true;
+        p.debug = true;
+        interactive = false;
+      }
+      if (config.debugInlineLexer) {
+        // @ts-ignore - debug property exists
+        il.debug = true;
+        interactive = false;
+      }
+      if (config.debugOutlineLexer) {
+        // @ts-ignore - debug property exists
+        ol.debug = true;
+        interactive = false;
+      }
+      if (config.debugScanner) {
+        // @ts-ignore - debug property exists
+        s.debug = true;
+        interactive = false;
       }
 
-      if (config.waypoint) {
-        read(config.waypoint, (err, waypoint) => {
-          if (err) {
-            done(err);
-            return;
-          }
-          if (waypoint) {
-            const parsed = JSON.parse(waypoint);
-            engine.resume(parsed);
-          }
-        });
-      } else {
-        engine.continue();
-      }
+      s.next(kniscript);
+      s.return();
     }
-  });
 
-  done(null);
+    link(story);
+
+    states = story.states;
+    if (story.errors.length) {
+      if (config.transcript != null) {
+        dump(story.errors, config.transcript);
+      }
+      /** @type {Error & {story?: Story}} */
+      const storyError = new Error('internal story error');
+      storyError.story = story;
+      throw storyError;
+    }
+  }
+
+  if (config.describe) {
+    await describeStory(states, out);
+    return;
+  }
+
+  if (config.toJson) {
+    console.log(JSON.stringify(states, null, 4));
+    interactive = false;
+  } else if (config.toHtml) {
+    makeHtml(states, config.toHtml, {
+      title: config.htmlTitle,
+      color: config.htmlColor,
+      backgroundColor: config.htmlBackgroundColor,
+    });
+    interactive = false;
+  }
+
+  let randomer = xorshift;
+
+  if (config.transcript || config.seed) {
+    const seed = config.seed || 0;
+    // I rolled 4d64k this morning.
+    // @ts-ignore - xorshift constructor
+    randomer = new xorshift.constructor([37615 ^ seed, 54552 ^ seed, 59156 ^ seed, 24695 ^ seed]);
+  }
+
+  if (config.expected) {
+    const typescript = await read(config.expected);
+    if (!typescript) {
+      throw new Error('No expected content');
+    }
+
+    const result = verify(kniscripts[0].content, typescript);
+    if (!result.pass) {
+      console.log(result.actual);
+      throw new Error('verification failed');
+    }
+    return;
+  }
+
+  if (interactive) {
+    const rl = new Readline(config.transcript);
+    const render = new Console(out);
+    const engine = new Engine({
+      story: states,
+      start: config.start,
+      render: render,
+      // @ts-ignore - Readline implements Dialog partially
+      dialog: rl,
+      randomer: randomer,
+    });
+
+    if (config.debugRuntime) {
+      // @ts-ignore - debug property exists
+      engine.debug = true;
+    }
+
+    if (config.waypoint) {
+      const waypoint = await read(config.waypoint);
+      if (waypoint) {
+        const parsed = JSON.parse(waypoint);
+        engine.resume(parsed);
+      }
+    } else {
+      engine.continue();
+    }
+    // Interactive mode - don't resolve, the engine will handle termination
+    return;
+  }
+
+  // Non-interactive, non-describe path (e.g., toJson, toHtml)
 };
 
 /**
  * @param {Record<string, any>} states
  * @param {Writer} out
- * @param {(err: Error | null) => void} done
+ * @returns {Promise<void>}
  */
-const describeStory = (states, out, done) => {
-  const keys = Object.keys(states);
-  /** @type {string[][]} */
-  const cells = [['L:C', 'AT', 'DO', 'S', 'USING', 'S', 'GO']];
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    const node = states[key];
-    /** @type {string | null} */
-    let next;
-    if (i === keys.length - 1) {
-      next = null;
-    } else {
-      next = keys[i + 1];
+const describeStory = (states, out) => {
+  return new Promise((resolve, reject) => {
+    const keys = Object.keys(states);
+    /** @type {string[][]} */
+    const cells = [['L:C', 'AT', 'DO', 'S', 'USING', 'S', 'GO']];
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const node = states[key];
+      /** @type {string | null} */
+      let next;
+      if (i === keys.length - 1) {
+        next = null;
+      } else {
+        next = keys[i + 1];
+      }
+      cells.push([
+        stripe(i, node.position),
+        stripe(i, key),
+        stripe(i, node.mode || node.type),
+        stripe(i, node.lift ? '-' : ' '),
+        stripe(i, describe(node)),
+        stripe(i, node.drop ? '-' : ' '),
+        stripe(i, describeNext(node.next, next)),
+      ]);
     }
-    cells.push([
-      stripe(i, node.position),
-      stripe(i, key),
-      stripe(i, node.mode || node.type),
-      stripe(i, node.lift ? '-' : ' '),
-      stripe(i, describe(node)),
-      stripe(i, node.drop ? '-' : ' '),
-      stripe(i, describeNext(node.next, next)),
-    ]);
-  }
-  out.write(
-    tableDefault(cells, {
-      border: getBorderCharacters('void'),
-      columnDefault: {
-        paddingLeft: 0,
-        paddingRight: 2,
-      },
-      columns: {
-        4: {
-          width: 40,
-          wrapWord: true,
+    out.write(
+      tableDefault(cells, {
+        border: getBorderCharacters('void'),
+        columnDefault: {
+          paddingLeft: 0,
+          paddingRight: 2,
         },
-      },
-      drawHorizontalLine: no,
-    }),
-    done
-  );
+        columns: {
+          4: {
+            width: 40,
+            wrapWord: true,
+          },
+        },
+        drawHorizontalLine: no,
+      }),
+      /** @param {Error | null} err */
+      err => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      }
+    );
+  });
 };
 
 /**
@@ -343,69 +333,55 @@ const no = () => {
 
 /**
  * @param {any} stream
- * @param {(err: Error | null, result?: KniScript) => void} callback
+ * @returns {Promise<KniScript>}
  */
-const readAndKeep = (stream, callback) => {
-  read(stream, (err, content) => {
-    if (err != null) {
-      return callback(err);
-    }
-    callback(null, {stream: stream, content: content || ''});
-  });
+const readAndKeep = async stream => {
+  const content = await read(stream);
+  return {stream, content: content || ''};
 };
 
 /**
  * @param {any} stream
- * @param {(err: Error | null, content?: string) => void} callback
+ * @returns {Promise<string>}
  */
-const read = (stream, callback) => {
-  stream.setEncoding('utf8');
-  let string = '';
-  /** @param {string} chunk */
-  const onData = chunk => {
-    string += chunk;
-  };
-  /** @param {Error | null} [err] */
-  const onEnd = err => {
-    if (err) {
-      callback(err);
-      return;
-    }
-    callback(null, string);
-  };
-  stream.on('data', onData);
-  stream.on('end', onEnd);
-  stream.on('error', onEnd);
+const read = stream => {
+  return new Promise((resolve, reject) => {
+    stream.setEncoding('utf8');
+    let string = '';
+    /** @param {string} chunk */
+    const onData = chunk => {
+      string += chunk;
+    };
+    /** @param {Error | null} [err] */
+    const onEnd = err => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(string);
+    };
+    stream.on('data', onData);
+    stream.on('end', onEnd);
+    stream.on('error', onEnd);
+  });
 };
 
 /**
  * @template T
  * @param {any[]} array
- * @param {(item: any, callback: (err: Error | null, value?: T) => void) => void} eachback
- * @param {(err: Error | null, values?: T[]) => void} callback
+ * @param {(item: any) => Promise<T>} eachback
+ * @returns {Promise<T[]>}
  */
-const serial = (array, eachback, callback) => {
+const serial = async (array, eachback) => {
   /** @type {T[]} */
   const values = [];
-  /**
-   * @param {number} i
-   */
-  const next = i => {
-    if (i >= array.length) {
-      return callback(null, values);
+  for (const item of array) {
+    const value = await eachback(item);
+    if (value !== undefined) {
+      values.push(value);
     }
-
-    eachback(array[i], (err, value) => {
-      if (err != null) {
-        return callback(err, undefined);
-      }
-      if (value !== undefined) {
-        values.push(value);
-      }
-      next(i + 1);
-    });
-  };
-  next(0);
+  }
+  return values;
 };
 
 /**
@@ -419,17 +395,15 @@ const dump = (errors, writer) => {
 };
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  run(null, /** @type {Writer} */ (/** @type {unknown} */ (process.stdout)), err => {
-    if (err) {
-      console.error(typeof err === 'object' && err.message ? err.message : err);
-      /** @type {any} */
-      const errWithStory = err;
-      if (typeof errWithStory.story === 'object' && errWithStory.story) {
-        const story = errWithStory.story;
-        dump(story.errors, /** @type {Writer} */ (/** @type {unknown} */ (process.stderr)));
-      }
-      process.exit(-1);
+  run(null, /** @type {Writer} */ (/** @type {unknown} */ (process.stdout))).catch(err => {
+    console.error(typeof err === 'object' && err.message ? err.message : err);
+    /** @type {any} */
+    const errWithStory = err;
+    if (typeof errWithStory.story === 'object' && errWithStory.story) {
+      const story = errWithStory.story;
+      dump(story.errors, /** @type {Writer} */ (/** @type {unknown} */ (process.stderr)));
     }
+    process.exit(-1);
   });
 }
 
