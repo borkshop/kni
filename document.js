@@ -107,7 +107,9 @@ export default class Document {
 
   clear() {
     if (this.frame) {
-      if (this.pageTurnBehavior === 'remove') {
+      if (this.pageTurnBehavior === 'log') {
+        this.options.remove();
+      } else if (this.pageTurnBehavior === 'remove') {
         this.frame.remove();
       } else if (this.pageTurnBehavior === 'fade') {
         this.frame.style.opacity = 0;
