@@ -1,7 +1,7 @@
 # Kni Manual
 
-The following is an undigestable reference because I don't yet have time to
-write a graduated tutorial.
+This is the language reference manual. For a graduated introduction, see
+[HOWTO.md](HOWTO.md).
 
 Kni is a parser, compiler, and a runtime, all of which are accessible with
 the `kni` command as installed by `npm`.

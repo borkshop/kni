@@ -15,11 +15,13 @@ Kni alsø has significant whitespace.
 [Ink]: https://github.com/inkle/ink
 [1]: http://journey.aelf.land
 
+- [How to Write Kni][HOWTO] - a graduated tutorial
+- [Language Reference Manual][MANUAL]
 - [Differences between Ink and Kni][INKKNI]
 - [The Ink Tutorial][TUTORIAL] that inspired Kni.
-- [Language Reference Manual][MANUAL]
 - [How to hack Kni][HACKNI]
 
+[HOWTO]: HOWTO.md
 [INKKNI]: INKKNI.md
 [TUTORIAL]: https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md
 [MANUAL]: MANUAL.md
