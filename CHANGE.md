@@ -1,4 +1,4 @@
-# Next release
+# v5.0.0
 
 - The web Document renderer now supports a `pageTurnBehavior` option with three
   modes: 'log' (default, removes options but keeps narrative), 'remove' (removes
