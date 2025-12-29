@@ -1,37 +1,71 @@
-import readline from 'readline';
-import fs from 'fs';
+import * as readline from 'readline';
+import * as fs from 'fs';
+
+/** @import { default as Engine } from './engine' */
+
+/**
+ * @typedef {object} Writer
+ * @prop {(text: string) => void} write
+ */
+
+/**
+ * @typedef {object} ReadlineState
+ * @prop {(text: string) => ReadlineState} answer
+ * @prop {(filename: string) => ReadlineState} [saved]
+ * @prop {(waypoint: any) => ReadlineState} [loaded]
+ */
 
 export default class Readline {
+  /**
+   * @param {Writer} [transcript]
+   * @param {string} [filename]
+   */
   constructor(transcript, filename) {
     const self = this;
-    this.readline = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
+    this.readline = /** @type {readline.Interface} */ (
+      readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      })
+    );
+    /** @type {Engine | null} */
     this.engine = null;
+    /** @type {(text: string) => void} */
     this.boundAnswer = text => {
       self.answer(text);
     };
+    /** @type {Writer | undefined} */
     this.transcript = transcript;
+    /** @type {any[]} */
     this.history = [];
+    /** @type {ReadlineState} */
     this.state = new Play(this, filename);
     Object.seal(this);
   }
 
   meterFault() {
-    this.readline.question(`Enter any command to continue... `, (answer) => {
+    this.readline.question(`Enter any command to continue... `, answer => {
       if (answer === 'quit') {
         this.close();
       } else {
+        if (!this.engine) {
+          throw new Error('engine not initialized');
+        }
         this.engine.clearMeterFault();
       }
     });
   }
 
+  /**
+   * @param {string} [cue]
+   */
   ask(cue) {
     this.readline.question(`${cue || ''}> `, this.boundAnswer);
   }
 
+  /**
+   * @param {string} text
+   */
   answer(text) {
     if (this.transcript) {
       this.transcript.write(`> ${text}\n`);
@@ -47,14 +81,35 @@ export default class Readline {
   }
 }
 
+/**
+ * @implements {ReadlineState}
+ */
 class Play {
+  /**
+   * @param {Readline} readline
+   * @param {string} [filename]
+   */
   constructor(readline, filename) {
     this.readline = readline;
     this.filename = filename || 'kni.waypoint';
   }
 
+  /**
+   * @returns {Engine}
+   */
+  get engine() {
+    if (!this.readline.engine) {
+      throw new Error('engine not initialized');
+    }
+    return this.readline.engine;
+  }
+
+  /**
+   * @param {string} text
+   * @returns {ReadlineState}
+   */
   answer(text) {
-    const engine = this.readline.engine;
+    const engine = this.engine;
 
     if (text === 'quit') {
       console.log('');
@@ -97,29 +152,42 @@ class Play {
     return this;
   }
 
+  /**
+   * @param {string} filename
+   * @returns {ReadlineState}
+   */
   saved(filename) {
-    const engine = this.readline.engine;
-
     this.filename = filename;
-    engine.ask();
+    this.engine.ask();
     return this;
   }
 
+  /**
+   * @param {any} waypoint
+   * @returns {ReadlineState}
+   */
   loaded(waypoint) {
-    const engine = this.readline.engine;
-
-    engine.resume(waypoint);
+    this.engine.resume(waypoint);
     return this;
   }
 }
 
 class Save {
+  /**
+   * @param {Play} parent
+   * @param {any} waypoint
+   * @param {string} filename
+   */
   constructor(parent, waypoint, filename) {
     this.parent = parent;
     this.waypoint = waypoint;
     this.filename = filename;
   }
 
+  /**
+   * @param {string} filename
+   * @returns {ReadlineState}
+   */
   answer(filename) {
     const waypoint = JSON.stringify(this.waypoint);
     filename = filename || this.filename;
@@ -129,16 +197,24 @@ class Save {
     console.log(`Waypoint written to ${filename}`);
     console.log(waypoint);
     console.log('');
-    return this.parent.saved(filename);
+    return this.parent.saved ? this.parent.saved(filename) : this.parent;
   }
 }
 
 class Load {
+  /**
+   * @param {Play} parent
+   * @param {string} filename
+   */
   constructor(parent, filename) {
     this.parent = parent;
     this.filename = filename;
   }
 
+  /**
+   * @param {string} filename
+   * @returns {ReadlineState}
+   */
   answer(filename) {
     filename = filename || this.filename;
 
@@ -148,6 +224,6 @@ class Load {
     console.log(waypoint);
     console.log('');
 
-    return this.parent.loaded(JSON.parse(waypoint));
+    return this.parent.loaded ? this.parent.loaded(JSON.parse(waypoint)) : this.parent;
   }
 }

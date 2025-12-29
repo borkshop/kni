@@ -1,6 +1,19 @@
+/** @import { default as Engine } from './engine' */
+
 const linkMatcher = /\s*(\w+:\/\/\S+)$/;
 
+/**
+ * @typedef {object} DocumentOptions
+ * @prop {((doc: globalThis.Document, self: Document) => void)} [createPage]
+ * @prop {HTMLElement} [meterFaultButton]
+ * @prop {'log' | 'remove' | 'fade'} [pageTurnBehavior]
+ */
+
 export default class Document {
+  /**
+   * @param {HTMLElement} element
+   * @param {DocumentOptions} [options]
+   */
   constructor(element, options = {}) {
     const {
       createPage = undefined,
@@ -9,40 +22,62 @@ export default class Document {
     } = options;
 
     const self = this;
-    this.document = element.ownerDocument;
+    this.document = /** @type {globalThis.Document} */ (element.ownerDocument);
     this.parent = element;
+    /** @type {HTMLElement | null} */
     this.frame = null;
+    /** @type {HTMLElement | null} */
     this.body = null;
+    /** @type {HTMLElement | null} */
     this.afterBody = null;
-    this.engine = null;
+    /** @type {Engine | undefined} */
+    this.engine = undefined;
     this.carry = '';
+    /** @type {HTMLElement | null} */
     this.cursor = null;
+    /** @type {HTMLElement | null} */
     this.cursorParent = null;
+    /** @type {HTMLElement | null} */
     this.afterCursor = null;
+    /** @type {string | null} */
     this.next = null;
     this.optionIndex = 0;
+    /** @type {HTMLTableElement | null} */
     this.options = null;
     this.p = false;
     this.br = false;
+    /** @type {(event: MouseEvent) => void} */
     this.onclick = event => {
-      self.answer(event.target.number);
+      const target = /** @type {HTMLElement & {number?: number}} */ (event.target);
+      if (target.number != null) {
+        self.answer(target.number);
+      }
     };
-    this.createPage = createPage || this.createPage;
+    /** @type {((doc: globalThis.Document, self: Document) => void) | undefined} */
+    this.customCreatePage = createPage;
     this.meterFaultButton = meterFaultButton;
     this.pageTurnBehavior = pageTurnBehavior;
 
     Object.seal(this);
   }
 
+  /**
+   * @param {string} lift
+   * @param {string} text
+   * @param {string} drop
+   */
   write(lift, text, drop) {
     const document = this.document;
     lift = this.carry || lift;
-    if (this.p) {
+    if (this.p && this.cursorParent) {
       this.cursor = document.createElement('p');
       this.cursorParent.insertBefore(this.cursor, this.afterCursor);
       this.p = false;
       this.br = false;
       lift = '';
+    }
+    if (!this.cursor) {
+      throw new Error('write called before cursor initialized');
     }
     if (this.br) {
       this.cursor.appendChild(document.createElement('br'));
@@ -51,19 +86,19 @@ export default class Document {
     }
     const match = linkMatcher.exec(text);
     if (match === null) {
-        // TODO merge with prior text node
-        this.cursor.appendChild(document.createTextNode(lift + text));
+      // TODO merge with prior text node
+      this.cursor.appendChild(document.createTextNode(lift + text));
     } else {
-        // Support a hyperlink convention.
-        if (lift !== '') {
-            this.cursor.appendChild(document.createTextNode(lift));
-        }
-        const link = document.createElement('a');
-        link.href = match[1];
-        link.target = '_blank';
-        link.rel = 'noreferrer';
-        link.appendChild(document.createTextNode(text.slice(0, match.index)));
-        this.cursor.appendChild(link);
+      // Support a hyperlink convention.
+      if (lift !== '') {
+        this.cursor.appendChild(document.createTextNode(lift));
+      }
+      const link = document.createElement('a');
+      link.href = match[1];
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      link.appendChild(document.createTextNode(text.slice(0, match.index)));
+      this.cursor.appendChild(link);
     }
     this.carry = drop;
   }
@@ -80,13 +115,17 @@ export default class Document {
     this.optionIndex++;
     const document = this.document;
     const tr = document.createElement('tr');
-    this.options.appendChild(tr);
+    if (this.options) {
+      this.options.appendChild(tr);
+    }
     const th = document.createElement('th');
     tr.appendChild(th);
     th.innerText = `${this.optionIndex}.`;
-    const td = document.createElement('td');
+    const td = /** @type {HTMLTableCellElement & {number?: number}} */ (
+      document.createElement('td')
+    );
     td.number = this.optionIndex;
-    td.onclick = this.onclick;
+    td.onclick = /** @type {(event: MouseEvent) => void} */ (this.onclick);
     td.setAttribute('aria-role', 'button');
     tr.appendChild(td);
     this.cursor = td;
@@ -109,14 +148,17 @@ export default class Document {
   }
 
   display() {
-    this.frame.style.opacity = 0;
+    if (!this.frame) {
+      throw new Error('display called before frame initialized');
+    }
+    this.frame.style.opacity = '0';
     this.frame.style.transform = 'translateX(2ex)';
     this.parent.appendChild(this.frame);
 
     // TODO not this
     const frame = this.frame;
     setTimeout(() => {
-      frame.style.opacity = 1;
+      frame.style.opacity = '1';
       frame.style.transform = 'translateX(0)';
     }, 10);
   }
@@ -124,16 +166,18 @@ export default class Document {
   clear() {
     if (this.frame) {
       if (this.pageTurnBehavior === 'log') {
-        this.options.remove();
+        if (this.options) {
+          this.options.remove();
+        }
       } else if (this.pageTurnBehavior === 'remove') {
         this.frame.remove();
       } else if (this.pageTurnBehavior === 'fade') {
-        this.frame.style.opacity = 0;
+        this.frame.style.opacity = '0';
         this.frame.style.transform = 'translateX(-2ex)';
         this.frame.addEventListener('transitionend', this);
       }
     }
-    this.createPage(this.document, this);
+    (this.customCreatePage || this.createPage)(this.document, this);
     this.cursor = null;
     this.cursorParent = this.body;
     this.afterCursor = this.afterBody;
@@ -143,14 +187,18 @@ export default class Document {
     this.optionIndex = 0;
   }
 
-  createPage(document) {
-    this.frame = document.createElement('div');
-    this.frame.classList.add('kni-frame');
-    this.frame.style.opacity = 0;
+  /**
+   * @param {globalThis.Document} document
+   * @param {Document} self
+   */
+  createPage(document, self) {
+    self.frame = document.createElement('div');
+    self.frame.classList.add('kni-frame');
+    self.frame.style.opacity = '0';
 
     const A = document.createElement('div');
     A.classList.add('kni-frame-a');
-    this.frame.appendChild(A);
+    self.frame.appendChild(A);
 
     const B = document.createElement('div');
     B.classList.add('kni-frame-b');
@@ -160,30 +208,42 @@ export default class Document {
     C.classList.add('kni-frame-c');
     B.appendChild(C);
 
-    this.body = document.createElement('div');
-    this.body.classList.add('kni-body');
-    C.appendChild(this.body);
+    self.body = document.createElement('div');
+    self.body.classList.add('kni-body');
+    C.appendChild(self.body);
 
-    this.options = document.createElement('table');
-    this.body.appendChild(this.options);
-    this.afterBody = this.options;
+    self.options = document.createElement('table');
+    self.body.appendChild(self.options);
+    self.afterBody = self.options;
   }
 
+  /**
+   * @param {Event} event
+   */
   handleEvent(event) {
     // transitionend on this.frame, only
-    event.target.remove();
+    const target = /** @type {HTMLElement} */ (event.target);
+    target.remove();
   }
 
   meterFault() {
-    if (this.meterFaultButton) {
+    if (this.meterFaultButton && this.body) {
       this.body.appendChild(this.meterFaultButton);
     }
   }
 
+  /**
+   * @param {string} [_cue]
+   */
   ask(_cue) {}
 
+  /**
+   * @param {string | number} text
+   */
   answer(text) {
-    this.engine.answer(text);
+    if (this.engine) {
+      this.engine.answer(text);
+    }
   }
 
   close() {}

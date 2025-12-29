@@ -1,17 +1,25 @@
 import Engine from './engine.js';
 import Document from './document.js';
+// @ts-ignore - virtual module provided by rollup
 import story from 'virtual:story';
 
+/** @type {Record<string, any>} */
 const handler = {
   storageKey: 'kni',
 
   shouldLog: true,
+  /**
+   * @param {...any} args
+   */
   log(...args) {
     if (this.shouldLog) {
       console.log(...args);
     }
   },
 
+  /**
+   * @returns {any}
+   */
   load() {
     if (window.location.hash.length > 1) {
       const json = atob(window.location.hash.slice(1));
@@ -25,14 +33,23 @@ const handler = {
     }
     return null;
   },
+  /**
+   * @param {any} waypoint
+   */
   waypoint(waypoint) {
     const json = JSON.stringify(waypoint);
     window.history.pushState(waypoint, '', `#${btoa(json)}`);
     localStorage.setItem(this.storageKey, json);
   },
+  /**
+   * @param {string} label
+   */
   goto(label) {
     this.log(label);
   },
+  /**
+   * @param {string} text
+   */
   answer(text) {
     this.log('>', text);
   },
@@ -52,6 +69,7 @@ const doc = new Document(document.body, {
 const engine = new Engine({
   story: story,
   render: doc,
+
   dialog: doc,
   handler,
 });
@@ -73,7 +91,7 @@ window.onkeypress = event => {
 
 const reset = document.querySelector('.reset');
 if (reset) {
-  reset.onclick = () => {
+  /** @type {HTMLElement} */ (reset).onclick = () => {
     engine.reset();
   };
 }

@@ -1,5 +1,13 @@
+/** @import { Expression } from './grammar-types' */
+
+/** @type {Record<string, (node: any) => string>} */
 const types = {};
 
+/**
+ * Describes a story node for debugging output.
+ * @param {any} node
+ * @returns {string}
+ */
 const describe = node => {
   return types[node.type](node);
 };
@@ -59,16 +67,30 @@ types.read = node => {
   return label;
 };
 
+/**
+ * Converts an expression to S-expression string.
+ * @param {Expression} args
+ * @returns {string}
+ */
 const S = args => {
   if (args[0] === 'val' || args[0] === 'get') {
-    return args[1];
+    return String(args[1]);
   } else if (args[0] === 'var') {
-    return `(${args[0]} ${V(args[1], args[2])})`;
+    return `(${args[0]} ${V(/** @type {string[]} */ (args[1]), /** @type {Expression[]} */ (args[2]))})`;
   } else {
-    return `(${args[0]} ${args.slice(1).map(S).join(' ')})`;
+    return `(${args[0]} ${args
+      .slice(1)
+      .map(a => S(/** @type {Expression} */ (a)))
+      .join(' ')})`;
   }
 };
 
+/**
+ * Formats a var expression with interpolations.
+ * @param {string[]} source
+ * @param {Expression[]} target
+ * @returns {string}
+ */
 const V = (source, target) => {
   let r = '';
   let i;

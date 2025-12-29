@@ -1,5 +1,3 @@
-// @ts-check
-
 // Receives a stream of start, stop, and text tokens from an outline lexer and
 // produces a more comprehensive stream of tokens by breaking text tokens into
 // constituent text and operator tokens.
@@ -11,6 +9,8 @@
 // states.
 // The final parse state captures the entire syntax tree.
 
+/** @import { default as Scanner } from './scanner' */
+
 const L1 = '@[]{}|/<>';
 const L2 = ['->', '<-', '==', '<>', '>=', '<=', '{"', '"}', "{'", "'}", '//', '**'];
 const num = /\d/;
@@ -18,8 +18,24 @@ const num = /\d/;
 // alphanumerics including non-english
 const alpha = /[\w\u00C0-\u1FFF\u2C00-\uD7FF\d_]/;
 
-/** Receives outline tokens, passing through inter-line structure tokens, and
- * decomposing line tokens along with interstitial space tracking.
+/**
+ * Inline lexer state object, which receives typed text tokens along with
+ * any preceding collapsed space, and the current scanner.
+ *
+ * NOTE: unlike the upstream OutlineLexer.State monad, which
+ * InlineLexer.next implements, this is not quite a state monad, as it does
+ * not support subsequent state chaining; in practice, that is implemented
+ * by Parser. This curious decoupling stands in interesting contrast to the
+ * outline layer having coupled together the iterator callback interface
+ * with state retention and chaining.
+ *
+ * @typedef {object} State
+ * @prop {(type: string, space: string, text: string, sc: Scanner) => void} next
+ */
+
+/**
+ * InlineLexer receives outline tokens, passing through inter-line structure tokens,
+ * and decomposing line tokens along with interstitial space tracking.
  */
 export default class InlineLexer {
   debug = typeof process === 'object' && process.env.DEBUG_INLINE_LEXER;
@@ -27,22 +43,6 @@ export default class InlineLexer {
   space = '';
   accumulator = '';
   type = 'symbol';
-
-  /** @typedef {import('./scanner')} Scanner */
-
-  /** Inline lexer state object, which receives typed text tokens along with
-   * any preceding collapsed space, and the current scanner.
-   *
-   * NOTE: unlike the upstream OutlineLexer.State monad, which
-   * InlineLexer.next implements, this is not quite a state monad, as it does
-   * not support subsequent state chaining; in practice, that is implemented
-   * by Parser. This curious decoupling stands in interesting contrast to the
-   * outline layer having coupled together the iterator callback interface
-   * with state retention and chaining.
-   *
-   * @typedef {object} State
-   * @prop {(type: string, space: string, text: string, sc: Scanner) => void} next
-   */
 
   /**
    * @param {State} generator

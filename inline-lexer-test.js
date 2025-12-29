@@ -1,14 +1,19 @@
+// @ts-ignore - no types
 import equals from 'pop-equals';
 import Scanner from './scanner.js';
 import OutlineLexer from './outline-lexer.js';
 import InlineLexer from './inline-lexer.js';
 
+/**
+ * @param {string[]} input
+ * @param {string[]} output
+ */
 function test(input, output) {
   const text = input.map(enline).join('');
   const ll = new InlineLexLister();
   const il = new InlineLexer(ll);
   const ol = new OutlineLexer(il);
-  const scanner = new Scanner(ol);
+  const scanner = new Scanner(ol, 'test');
   scanner.next(text);
   scanner.return();
   il.next('stop', '', scanner); // induce second flush for coverage
@@ -18,7 +23,7 @@ function test(input, output) {
     console.error(input);
     console.error('expected', output);
     console.error('actual  ', ll.list);
-    process.exitCode |= 1;
+    process.exitCode = 1;
   }
 }
 
@@ -26,9 +31,17 @@ class InlineLexLister {
   debug = process.env.DEBUG_INLINE_LEXER;
 
   constructor() {
+    /** @type {string[]} */
     this.list = [];
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {this}
+   */
   next(type, space, text, scanner) {
     if (this.debug) {
       console.log('LL', scanner.position(), type, JSON.stringify(space), JSON.stringify(text));
@@ -46,6 +59,10 @@ class InlineLexLister {
   }
 }
 
+/**
+ * @param {string} line
+ * @returns {string}
+ */
 function enline(line) {
   return `${line}\n`;
 }

@@ -1,3 +1,4 @@
+// @ts-ignore - no types
 import xorshift from 'xorshift';
 import Engine from './engine.js';
 import Console from './console.js';
@@ -10,10 +11,26 @@ import * as Path from './path.js';
 import start from './grammar.js';
 import link from './link.js';
 
+/**
+ * @typedef {object} VerifyResult
+ * @prop {boolean} pass
+ * @prop {string} expected
+ * @prop {string} actual
+ */
+
+/**
+ * Verifies a kni script against an expected transcript.
+ * @param {string} kni
+ * @param {string} trans
+ * @param {any} [handler]
+ * @param {string} [kniscript]
+ * @returns {VerifyResult}
+ */
 const verify = (kni, trans, handler, kniscript) => {
   const lines = trans.split('\n');
 
   // filter the transcript for given answers
+  /** @type {string[]} */
   const answers = [];
   for (const line of lines) {
     if (line.lastIndexOf('>', 0) === 0) {
@@ -22,14 +39,15 @@ const verify = (kni, trans, handler, kniscript) => {
   }
 
   const path = Path.start();
-  const base = [];
+  /** @type {import('./path.js').Path} */
+  const base = /** @type {import('./path.js').Path} */ (/** @type {unknown} */ ([]));
 
   // build a story from the kni
   const story = new Story();
   const p = new Parser(start(story, path, base));
   const il = new InlineLexer(p);
   const ol = new OutlineLexer(il);
-  const s = new Scanner(ol, kniscript);
+  const s = new Scanner(ol, kniscript || '-');
 
   s.next(kni);
   s.return();
@@ -65,6 +83,7 @@ const verify = (kni, trans, handler, kniscript) => {
   // TODO support alternate seeds
   const seed = 0;
   // I rolled 4d64k this morning, for kni.js
+  // @ts-ignore - xorshift constructor
   const randomer = new xorshift.constructor([
     37615 ^ seed,
     54552 ^ seed,
@@ -74,12 +93,13 @@ const verify = (kni, trans, handler, kniscript) => {
 
   const writer = new StringWriter();
   const render = new Console(writer);
-  const readline = new FakeReadline(writer, answers, kniscript);
+  const readline = new FakeReadline(writer, answers, kniscript || '-');
   const engine = new Engine({
     story: states,
     start: 'start',
     handler: handler,
     render: render,
+    // @ts-ignore - FakeReadline implements Dialog partially
     dialog: readline,
     randomer: randomer,
   });
@@ -98,21 +118,33 @@ const verify = (kni, trans, handler, kniscript) => {
 export default verify;
 
 class FakeReadline {
+  /**
+   * @param {StringWriter} writer
+   * @param {string[]} answers
+   * @param {string} kniscript
+   */
   constructor(writer, answers, kniscript) {
     this.writer = writer;
     this.answers = answers;
     this.kniscript = kniscript;
+    /** @type {Engine | null} */
     this.engine = null;
+    /** @type {any[]} */
     this.history = [];
     Object.seal(this);
   }
 
+  /**
+   * @param {string} [_question]
+   */
   ask(_question) {
     const answer = this.answers.shift();
     if (answer == null) {
       return;
     }
     this.writer.write(`${`> ${answer}`.trim()}\n`);
+
+    if (!this.engine) return;
 
     if (answer === 'quit') {
       // noop
@@ -141,6 +173,9 @@ class StringWriter {
     this.string = '';
   }
 
+  /**
+   * @param {string} string
+   */
   write(string) {
     this.string += string;
   }

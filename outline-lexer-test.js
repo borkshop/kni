@@ -1,12 +1,17 @@
 import Scanner from './scanner.js';
 import OutlineLexer from './outline-lexer.js';
+// @ts-ignore - no types
 import equals from 'pop-equals';
 
+/**
+ * @param {string[]} input
+ * @param {string[]} output
+ */
 function test(input, output) {
   const text = input.map(enline).join('');
   const lister = new OutlineLexLister();
   const lexer = new OutlineLexer(lister);
-  const scanner = new Scanner(lexer);
+  const scanner = new Scanner(lexer, 'test');
   scanner.next(text);
   scanner.return();
   if (!equals(lister.list, output)) {
@@ -14,7 +19,7 @@ function test(input, output) {
     process.stderr.write(text);
     console.error('expected', output);
     console.error('actual  ', lister.list);
-    process.exitCode |= 1;
+    process.exitCode = 1;
   }
 }
 
@@ -22,9 +27,16 @@ class OutlineLexLister {
   debug = process.env.DEBUG_OUTLINE_LEXER;
 
   constructor() {
+    /** @type {string[]} */
     this.list = [];
   }
 
+  /**
+   * @param {string} type
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {this}
+   */
   next(type, text, scanner) {
     if (this.debug) {
       console.log('OLL', scanner.position(), type, JSON.stringify(text));
@@ -39,6 +51,10 @@ class OutlineLexLister {
   }
 }
 
+/**
+ * @param {string} line
+ * @returns {string}
+ */
 function enline(line) {
   return `${line}\n`;
 }

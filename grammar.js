@@ -1,5 +1,19 @@
 import Scope from './scope.js';
 
+/** @import { TokenType, TokenState, ThreadContinuation, ExpressionContinuation, LabelContinuation, Expression, Linkable, StoryNode, BranchWrapper, SwitchMode, OptionLeader, ComparisonOp } from './grammar-types' */
+/** @import { default as Scanner } from './scanner' */
+
+/** @import { default as Story } from './story' */
+
+/** @import { Path } from './path.js' */
+
+/**
+ * Creates the initial parser state for a story.
+ * @param {Story} story - The story being constructed
+ * @param {Path} path - Initial path in the story graph
+ * @param {Path} base - Base path for label resolution
+ * @returns {TokenState}
+ */
 const start = (story, path, base) => {
   const scope = new Scope(story, path, base);
   const stop = new Stop(scope);
@@ -9,12 +23,27 @@ const start = (story, path, base) => {
 
 export default start;
 
+/**
+ * Terminal state that expects end-of-file and ties off remaining rets/escs.
+ * @implements {TokenState}
+ * @implements {ThreadContinuation}
+ */
 class Stop {
+  /**
+   * @param {Scope} scope
+   */
   constructor(scope) {
     this.scope = scope;
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} _space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, _space, text, scanner) {
     // The only way to reach this method is for there to be a bug in the
     // outline lexer, or a bug in the grammar.
@@ -26,6 +55,14 @@ class Stop {
     return new End();
   }
 
+  /**
+   * Receives thread completion and ties off rets/escs to their respective labels.
+   * @param {Scope} _scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(_scope, rets, escs, _scanner) {
     Scope.tie(rets, 'RET');
     Scope.tie(escs, 'ESC');
@@ -33,19 +70,44 @@ class Stop {
   }
 }
 
+/**
+ * Final state after end-of-file. Absorbs all further tokens.
+ * @implements {TokenState}
+ */
 class End {
   constructor() {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} _type
+   * @param {string} _space
+   * @param {string} _text
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   next(_type, _space, _text, _scanner) {
     return this;
   }
 }
 
-// rets are tied to the next instruction
-// escs are tied off after the next encountered prompt
+/**
+ * Main parsing state for a sequence of instructions.
+ *
+ * Thread maintains two arrays of nodes that need to be linked:
+ * - rets: Nodes to tie to the next instruction (return path)
+ * - escs: Nodes to tie off after the next encountered prompt (escape path)
+ *
+ * @implements {TokenState}
+ * @implements {ThreadContinuation}
+ */
 class Thread {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   */
   constructor(scope, parent, rets, escs) {
     this.scope = scope;
     this.parent = parent;
@@ -54,6 +116,13 @@ class Thread {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (
       type === 'symbol' ||
@@ -128,6 +197,13 @@ class Thread {
     return new Text(this.scope, space, text, this, this.rets);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} _scanner
+   * @returns {Thread}
+   */
   return(scope, rets, escs, _scanner) {
     // All rules above (in next) guarantee that this.rets has been passed to
     // any rule that might use them. If the rule fails to use them, they must
@@ -136,7 +212,19 @@ class Thread {
   }
 }
 
+/**
+ * Accumulates text content until a non-text token is encountered.
+ * Handles special cases like smart quotes, dashes, and hyperlinks.
+ * @implements {TokenState}
+ */
 class Text {
+  /**
+   * @param {Scope} scope
+   * @param {string} lift - Leading whitespace
+   * @param {string} text - Initial text content
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   */
   constructor(scope, lift, text, parent, rets) {
     this.scope = scope;
     this.lift = lift;
@@ -146,6 +234,13 @@ class Text {
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type === 'alphanum' || type === 'number' || type === 'symbol' || type === 'literal') {
       this.text += space + text;
@@ -187,7 +282,21 @@ class Text {
   }
 }
 
+/**
+ * Parses a conditional thread (- {condition} content).
+ * If the condition is false, the thread is skipped.
+ * @implements {TokenState}
+ * @implements {ThreadContinuation}
+ */
 class MaybeThread {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Linkable[]} skips - Nodes to skip to if condition is false
+   * @param {string} [space]
+   */
   constructor(scope, parent, rets, escs, skips, space) {
     this.scope = scope;
     this.parent = parent;
@@ -198,6 +307,13 @@ class MaybeThread {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type === 'token') {
       if (text === '{') {
@@ -219,12 +335,29 @@ class MaybeThread {
     );
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, rets, escs, scanner) {
     return this.parent.return(scope, rets.concat(this.skips), escs, scanner);
   }
 }
 
+/**
+ * Receives a condition expression and creates a conditional jump.
+ * @implements {ExpressionContinuation}
+ */
 class ThreadCondition {
+  /**
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Linkable[]} skips
+   */
   constructor(parent, rets, escs, skips) {
     this.parent = parent;
     this.rets = rets;
@@ -233,6 +366,12 @@ class ThreadCondition {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} args - The condition expression
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, args, scanner) {
     const node = scope.create('jump', invertExpression(args), scanner.position());
     const branch = new Branch(node);
@@ -247,7 +386,19 @@ class ThreadCondition {
   }
 }
 
+/**
+ * Parses an option line (+ or *), collecting annotations before the brackets.
+ * Handles {+x}, {-x}, {!x}, {?x}, {=x} annotations and <keyword> markers.
+ * @implements {TokenState}
+ */
 class MaybeOption {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {OptionLeader} leader - '+' or '*'
+   */
   constructor(scope, parent, rets, escs, leader) {
     this.scope = scope;
     this.at = scope;
@@ -255,13 +406,23 @@ class MaybeOption {
     this.rets = rets;
     this.escs = escs;
     this.leader = leader;
+    /** @type {any[]} */
     this.conditions = [];
+    /** @type {any[]} */
     this.consequences = [];
+    /** @type {Record<string, boolean>} */
     this.keywords = {};
     this.descended = false;
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type === 'token') {
       if (text === '{') {
@@ -270,7 +431,7 @@ class MaybeOption {
       // Recognize the inequality token as individual keyword tokens with an
       // empty string amid them in this context.
       if (text === '<>') {
-        return this.return(this.scope, 'keyword', '');
+        return this.return(this.scope, 'keyword', '', undefined);
       }
       if (text === '<') {
         return new Keyword(this.scope, this);
@@ -279,6 +440,15 @@ class MaybeOption {
     return this.option(scanner).next(type, space, text, scanner);
   }
 
+  /**
+   * Receives an option annotation.
+   * @param {Scope} _scope
+   * @param {string} operator - '+', '-', '!', '?', '=', 'keyword', or ''
+   * @param {Expression | string} expression
+   * @param {Expression | undefined} modifier
+   * @param {Scanner} [_scanner]
+   * @returns {MaybeOption}
+   */
   return(_scope, operator, expression, modifier, _scanner) {
     if (operator === '+' || operator === '-' || operator === '!') {
       modifier = modifier || ['val', 1];
@@ -300,7 +470,7 @@ class MaybeOption {
       this.consequences.push([expression, modifier]);
     }
     if (operator === 'keyword') {
-      this.keywords[expression] = true;
+      this.keywords[/** @type {string} */ (expression)] = true;
     }
     return this;
   }
@@ -314,6 +484,9 @@ class MaybeOption {
     }
   }
 
+  /**
+   * @param {Scanner} scanner
+   */
   option(scanner) {
     const variable = this.scope.name();
     const rets = [];
@@ -364,8 +537,16 @@ class MaybeOption {
   }
 }
 
-// Captures <keyword> annotations on options.
+/**
+ * Captures <keyword> annotations on options.
+ * Accumulates text until closing '>'.
+ * @implements {TokenState}
+ */
 class Keyword {
+  /**
+   * @param {Scope} scope
+   * @param {MaybeOption} parent
+   */
   constructor(scope, parent) {
     this.scope = scope;
     this.parent = parent;
@@ -374,9 +555,16 @@ class Keyword {
     Object.seal(this);
   }
 
+  /**
+   * @param {string} _type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   next(_type, space, text, _scanner) {
     if (text === '>') {
-      return this.parent.return(this.scope, 'keyword', this.keyword);
+      return this.parent.return(this.scope, 'keyword', this.keyword, undefined);
     }
     this.keyword += (this.space && space) + text;
     this.space = ' ';
@@ -384,14 +572,29 @@ class Keyword {
   }
 }
 
-// {+x}, {-x}, {!x}, {+n x}, {-n x}, {=n x} or simply {x}
+/**
+ * Parses option annotations: {+x}, {-x}, {!x}, {+n x}, {-n x}, {=n x} or simply {x}.
+ * Determines the operator and delegates to OptionArgument.
+ * @implements {TokenState}
+ */
 class OptionOperator {
+  /**
+   * @param {Scope} scope
+   * @param {ThenExpect} parent - Expects closing '}'
+   */
   constructor(scope, parent) {
     this.scope = scope;
     this.parent = parent;
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (text === '+' || text === '-' || text === '=' || text === '!' || text === '?') {
       return expression(this.scope, new OptionArgument(this.parent, text));
@@ -406,23 +609,48 @@ class OptionOperator {
   }
 }
 
+/**
+ * Receives the first expression after an option operator.
+ * If it's a variable, that's the target. Otherwise, it's the modifier.
+ * @implements {ExpressionContinuation}
+ */
 class OptionArgument {
+  /**
+   * @param {ThenExpect} parent
+   * @param {string} operator
+   */
   constructor(parent, operator) {
     this.parent = parent;
     this.operator = operator;
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} args
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, args, scanner) {
     if (args[0] === 'get' || args[0] === 'var') {
-      return this.parent.return(scope, this.operator, args, this.args, scanner);
+      // No modifier when the expression is a simple variable reference
+      return this.parent.return(scope, this.operator, args, undefined, scanner);
     } else {
       return expression(scope, new OptionArgument2(this.parent, this.operator, args));
     }
   }
 }
 
+/**
+ * Receives the second expression (the target variable) after a modifier.
+ * @implements {ExpressionContinuation}
+ */
 class OptionArgument2 {
+  /**
+   * @param {ThenExpect} parent
+   * @param {string} operator
+   * @param {Expression} [args] - The modifier expression
+   */
   constructor(parent, operator, args) {
     this.parent = parent;
     this.operator = operator;
@@ -430,26 +658,54 @@ class OptionArgument2 {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} args - The target variable
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, args, scanner) {
     return this.parent.return(scope, this.operator, args, this.args, scanner);
   }
 }
 
+/**
+ * Represents an option being parsed, tracking its question/answer arcs.
+ * @implements {ThreadContinuation}
+ */
 class Option {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets - Nodes to tie off to the next option
+   * @param {Linkable[]} escs - Nodes to tie off after the next prompt
+   * @param {OptionLeader} leader
+   * @param {Array<[Expression, Expression]>} consequences
+   */
   constructor(scope, parent, rets, escs, leader, consequences) {
     this.scope = scope;
     this.parent = parent;
-    this.rets = rets; // to tie off to the next option
-    this.escs = escs; // to tie off to the next node after the next prompt
+    this.rets = rets;
+    this.escs = escs;
+    /** @type {any} */
     this.node = null;
     this.leader = leader;
     this.consequences = consequences;
+    /** @type {Scope} */
     this.next = scope.next();
+    /** @type {string} */
     this.mode = '';
     this.branch = null;
     Object.seal(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, rets, escs, scanner) {
     // Create a jump from the end of the answer.
     if (this.mode !== 'a') {
@@ -468,6 +724,11 @@ class Option {
     );
   }
 
+  /**
+   * @param {Scanner} scanner
+   * @param {ThreadContinuation} parent
+   * @returns {Thread}
+   */
   thread(scanner, parent) {
     // Creat a dummy node, to replace if necessary, for arcs that begin with a
     // goto/divert arrow that otherwise would have loose rets to forward.
@@ -475,6 +736,10 @@ class Option {
     return new Thread(this.next, parent, [placeholder], []);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {string} mode
+   */
   push(scope, mode) {
     const next = this.next.name();
     const end = scope.name();
@@ -491,10 +756,21 @@ class Option {
   }
 }
 
-// An option thread captures the end of an arc, and if the path has advanced,
-// adds that arc to the option's questions and/or answer depending on the
-// "mode" ("q", "a", or "qa") and proceeds to the following state.
+/**
+ * Captures the end of an arc within an option.
+ * If the path has advanced, adds that arc to the option's question and/or answer
+ * depending on the mode ("q", "a", or "qa") and proceeds to the following state.
+ * @implements {ThreadContinuation}
+ */
 class OptionThread {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Option} option
+   * @param {string} mode - 'q', 'a', or 'qa'
+   * @param {new (scope: Scope, parent: ThreadContinuation, rets: Linkable[], option: Option) => TokenState} Next
+   */
   constructor(scope, parent, rets, option, mode, Next) {
     this.scope = scope;
     this.parent = parent;
@@ -505,6 +781,13 @@ class OptionThread {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(scope, rets, escs, _scanner) {
     this.option.push(scope, this.mode);
     // TODO investigate whether we can consistently tie off received rets
@@ -517,9 +800,19 @@ class OptionThread {
   }
 }
 
-// Every option begins with a (potentially empty) thread before the first open
-// backet that will contribute both to the question and the answer.
+/**
+ * Every option begins with a (potentially empty) thread before the first open
+ * bracket that will contribute both to the question and the answer.
+ * @implements {TokenState}
+ * @implements {ThreadContinuation}
+ */
 class AfterInitialQA {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Option} option
+   */
   constructor(scope, parent, rets, option) {
     this.scope = scope;
     this.parent = parent;
@@ -528,6 +821,13 @@ class AfterInitialQA {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} _space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, _space, text, scanner) {
     if (type === 'token' && text === '[') {
       return this.option.thread(scanner, new AfterQorA(this.scope, this, this.rets, this.option));
@@ -539,9 +839,16 @@ class AfterInitialQA {
     }
   }
 
-  // The thread returns to this level after capturing the bracketed terms,
-  // after which anything and everything to the end of the block contributes
-  // to the answer.
+  /**
+   * The thread returns to this level after capturing the bracketed terms,
+   * after which anything and everything to the end of the block contributes
+   * to the answer.
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, rets, escs, scanner) {
     Scope.tie(rets, 'RET');
     // TODO no test exercises these escs.
@@ -571,10 +878,20 @@ class AfterInitialQA {
   }
 }
 
-// After capturing the first arc within brackets, which may either contribute
-// to the question or the answer, we decide which based on whether there is a
-// following bracket.
+/**
+ * After capturing the first arc within brackets, which may either contribute
+ * to the question or the answer, we decide which based on whether there is a
+ * following bracket.
+ * @implements {TokenState}
+ * @implements {ThreadContinuation}
+ */
 class DecideQorA {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Option} option
+   */
   constructor(scope, parent, rets, option) {
     this.scope = scope;
     this.parent = parent;
@@ -583,6 +900,13 @@ class DecideQorA {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} _space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, _space, text, scanner) {
     if (type === 'token' && text === '[') {
       // A
@@ -603,8 +927,15 @@ class DecideQorA {
     }
   }
 
-  // If the brackets contain a sequence of question thread like [A [Q] QA [Q]
-  // QA...], then after each [question], we return here for continuing QA arcs.
+  /**
+   * If the brackets contain a sequence of question thread like [A [Q] QA [Q]
+   * QA...], then after each [question], we return here for continuing QA arcs.
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, rets, escs, scanner) {
     // TODO no test exercises these escs.
     Scope.tie(escs, 'ESC');
@@ -615,10 +946,20 @@ class DecideQorA {
   }
 }
 
-// After a Question/Answer thread, there can always be another [Q] thread
-// ad nauseam. Here we check whether this is the end of the bracketed
-// expression or continue after a [Question].
+/**
+ * After a Question/Answer thread, there can always be another [Q] thread
+ * ad nauseam. Here we check whether this is the end of the bracketed
+ * expression or continue after a [Question].
+ * @implements {TokenState}
+ * @implements {ThreadContinuation}
+ */
 class AfterQA {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Option} option
+   */
   constructor(scope, parent, rets, option) {
     this.scope = scope;
     this.parent = parent;
@@ -627,6 +968,13 @@ class AfterQA {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} _space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, _space, text, scanner) {
     if (type === 'token' && text === '[') {
       return this.option.thread(
@@ -643,6 +991,13 @@ class AfterQA {
     }
   }
 
+  /**
+   * @param {Scope} _scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(_scope, rets, escs, scanner) {
     // TODO terminate returned scope
     // TODO no test exercises these escapes.
@@ -654,10 +1009,19 @@ class AfterQA {
   }
 }
 
-// The bracketed terms may either take the form [Q] or [A, ([Q] QA)*].
-// This captures the first arc without committing to either Q or A until we
-// know whether it is followed by a bracketed term.
+/**
+ * The bracketed terms may either take the form [Q] or [A, ([Q] QA)*].
+ * This captures the first arc without committing to either Q or A until we
+ * know whether it is followed by a bracketed term.
+ * @implements {ThreadContinuation}
+ */
 class AfterQorA {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Option} option
+   */
   constructor(scope, parent, rets, option) {
     this.scope = scope;
     this.parent = parent;
@@ -666,7 +1030,14 @@ class AfterQorA {
     Object.freeze(this);
   }
 
-  // Just capture the path and proceed.
+  /**
+   * Just capture the path and proceed.
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(scope, rets, escs, _scanner) {
     // TODO consider whether this could have been done earlier.
     Scope.tie(this.rets, 'RET');
@@ -676,9 +1047,18 @@ class AfterQorA {
   }
 }
 
-// After a [Q] or [A [Q] QA...] block, there must be a closing bracket and we
-// return to the parent arc of the option.
+/**
+ * After a [Q] or [A [Q] QA...] block, there must be a closing bracket and we
+ * return to the parent arc of the option.
+ * @implements {TokenState}
+ */
 class ExpectFinalBracket {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Option} option
+   */
   constructor(scope, parent, rets, option) {
     this.scope = scope;
     this.parent = parent;
@@ -687,6 +1067,13 @@ class ExpectFinalBracket {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type !== 'token' || text !== ']') {
       this.scope.error(`${scanner.position()}: Expected "]" to end option.`);
@@ -698,10 +1085,19 @@ class ExpectFinalBracket {
   }
 }
 
-// After the closing bracket in an option], everything that remains is the last
-// node of the answer. After that thread has been submitted, we expect the
-// block to end.
+/**
+ * After the closing bracket in an option], everything that remains is the last
+ * node of the answer. After that thread has been submitted, we expect the
+ * block to end.
+ * @implements {TokenState}
+ */
 class AfterFinalA {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Option} _option
+   */
   constructor(scope, parent, rets, _option) {
     this.scope = scope;
     this.parent = parent;
@@ -709,6 +1105,13 @@ class AfterFinalA {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     return this.parent.return(this.scope, this.rets, [], scanner).next(type, space, text, scanner);
   }
@@ -716,23 +1119,47 @@ class AfterFinalA {
 
 // This concludes the portion dedicated to parsing options
 
-// Branch is a fake story node. It serves to mark that the wrapped node's
-// "branch" label should be tied instead of its "next" label.
+/**
+ * Branch is a wrapper that marks that the wrapped node's "branch" label
+ * should be tied instead of its "next" label.
+ *
+ * This is used for conditional jumps and calls where the branch path
+ * needs to be connected differently than the normal flow.
+ * @implements {BranchWrapper}
+ */
 class Branch {
+  /**
+   * @param {StoryNode & { branch: string }} node
+   */
   constructor(node) {
+    /** @type {'branch'} */
     this.type = 'branch';
     this.node = node;
     Object.freeze(this);
   }
 }
 
+/**
+ * Parses a label definition (@label) or procedure definition (@proc(params)).
+ * @implements {LabelContinuation}
+ */
 class Label {
+  /**
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   */
   constructor(parent, rets) {
     this.parent = parent;
     this.rets = rets;
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, scanner) {
     const [head, ...tail] = expression;
     if (head === 'get') {
@@ -742,7 +1169,7 @@ class Label {
         scope.tie(this.rets);
         return new Thread(scope, new Loop(scope, this.parent), [node], []);
       } else {
-        const labelScope = scope.label(label);
+        const labelScope = scope.label(/** @type {string} */ (label));
         // place-holder goto thunk
         const node = labelScope.create('goto', 'RET', scanner.position());
         scope.tie(this.rets);
@@ -751,12 +1178,12 @@ class Label {
       }
     } else if (head === 'call') {
       const [label, ...args] = tail;
-      const labelScope = scope.label(label[1]);
+      const labelScope = scope.label(/** @type {string} */ (/** @type {Expression} */ (label)[1]));
       const node = labelScope.create('def', null, scanner.position());
       const params = [];
       for (const arg of args) {
-        if (arg[0] === 'get') {
-          params.push(arg[1]);
+        if (/** @type {Expression} */ (arg)[0] === 'get') {
+          params.push(/** @type {Expression} */ (arg)[1]);
         } else {
           scope.error(`${scanner.position()}: Expected parameter name but got expression.`);
         }
@@ -775,7 +1202,16 @@ class Label {
   }
 }
 
+/**
+ * Creates a loop by tying the end back to the beginning.
+ * Used for the `@...` (infinite loop) construct.
+ * @implements {ThreadContinuation}
+ */
 class Loop {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   */
   constructor(scope, parent) {
     this.scope = scope;
     this.parent = parent;
@@ -783,6 +1219,13 @@ class Loop {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} _escs
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, rets, _escs, scanner) {
     // tie back rets
     this.scope.tie(rets);
@@ -791,7 +1234,16 @@ class Loop {
   }
 }
 
+/**
+ * Concludes a procedure definition, tying off rets and escs appropriately.
+ * @implements {ThreadContinuation}
+ */
 class ConcludeProcedure {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   */
   constructor(scope, parent, rets) {
     this.scope = scope;
     this.parent = parent;
@@ -799,6 +1251,13 @@ class ConcludeProcedure {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} _scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(_scope, rets, escs, scanner) {
     // After a procedure, connect prior rets.
     Scope.tie(rets, 'RET');
@@ -809,18 +1268,32 @@ class ConcludeProcedure {
   }
 }
 
+/**
+ * Parses a goto arrow (->label or ->proc(args)).
+ * @implements {LabelContinuation}
+ */
 class Goto {
+  /**
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   */
   constructor(parent, rets) {
     this.parent = parent;
     this.rets = rets;
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} args
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, args, scanner) {
     if (args[0] === 'get') {
-      Scope.tie(this.rets, args[1]);
+      Scope.tie(this.rets, /** @type {string} */ (args[1]));
       return this.parent.return(scope.next(), [], [], scanner);
     } else if (args[0] === 'call') {
-      const label = args[1][1];
+      const label = /** @type {Expression} */ (args[1])[1];
       const node = scope.create('call', label, scanner.position());
       node.args = args.slice(2);
       scope.tie(this.rets);
@@ -832,7 +1305,16 @@ class Goto {
   }
 }
 
+/**
+ * Parses a cue (<name>).
+ * @implements {LabelContinuation}
+ */
 class Cue {
+  /**
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   */
   constructor(parent, rets, escs) {
     this.parent = parent;
     this.rets = rets;
@@ -840,6 +1322,12 @@ class Cue {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, scanner) {
     if (expression.length === 0 || expression[0] !== 'get') {
       scope.error(`${scanner.position()}: Expected cue.`);
@@ -853,6 +1341,7 @@ class Cue {
   }
 }
 
+/** @type {Record<string, boolean>} */
 const mutators = {
   '=': true,
   '+': true,
@@ -861,23 +1350,36 @@ const mutators = {
   '/': true,
 };
 
+/** @type {Record<string, Expression>} */
 const toggles = {
   '!': ['val', 1],
   '?': ['val', 0],
 };
 
+/** @type {Record<string, SwitchMode>} */
 const variables = {
   '@': 'loop',
   '#': 'hash',
   '^': 'pick',
 };
 
+/** @type {Record<string, SwitchMode>} */
 const switches = {
   '&': 'loop',
   '~': 'rand',
 };
 
+/**
+ * Parses the content of a brace block {}.
+ * Determines whether it's an assignment, toggle, switch, or expression echo.
+ * @implements {TokenState}
+ */
 class Block {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   */
   constructor(scope, parent, rets) {
     this.scope = scope;
     this.parent = parent;
@@ -885,6 +1387,13 @@ class Block {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type !== 'start') {
       if (text === '(') {
@@ -916,7 +1425,16 @@ class Block {
   }
 }
 
+/**
+ * Parses an assignment block like {=x}, {+x}, {-x}.
+ * @implements {ExpressionContinuation}
+ */
 class SetBlock {
+  /**
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {string} op - '=', '+', '-', '*', '/'
+   */
   constructor(parent, rets, op) {
     this.op = op;
     this.parent = parent;
@@ -924,12 +1442,30 @@ class SetBlock {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, _scanner) {
     return new MaybeSetVariable(scope, this.parent, this.rets, this.op, expression);
   }
 }
 
+/**
+ * After parsing the first expression, determines if there's a target variable.
+ * @implements {TokenState}
+ * @implements {ExpressionContinuation}
+ */
 class MaybeSetVariable {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {string} op
+   * @param {Expression} expression
+   */
   constructor(scope, parent, rets, op, expression) {
     this.scope = scope;
     this.parent = parent;
@@ -939,6 +1475,13 @@ class MaybeSetVariable {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type === 'token' && text === '}') {
       return this.set(['val', 1], this.expression, scanner).next(type, space, text, scanner);
@@ -946,6 +1489,12 @@ class MaybeSetVariable {
     return expression(this.scope, this).next(type, space, text, scanner);
   }
 
+  /**
+   * @param {Expression} source
+   * @param {Expression} target
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   set(source, target, scanner) {
     const node = this.scope.create('move', null, scanner.position());
     if (this.op === '=') {
@@ -958,12 +1507,27 @@ class MaybeSetVariable {
     return this.parent.return(this.scope.next(), [node], [], scanner);
   }
 
+  /**
+   * @param {Scope} _scope
+   * @param {Expression} target
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(_scope, target, scanner) {
     return this.set(this.expression, target, scanner);
   }
 }
 
+/**
+ * Parses a toggle block like {!x} or {?x}.
+ * @implements {ExpressionContinuation}
+ */
 class ToggleBlock {
+  /**
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Expression} source - The value to set (1 for !, 0 for ?)
+   */
   constructor(parent, rets, source) {
     this.parent = parent;
     this.rets = rets;
@@ -971,6 +1535,12 @@ class ToggleBlock {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, scanner) {
     const node = scope.create('move', null, scanner.position());
     node.source = this.source;
@@ -980,7 +1550,16 @@ class ToggleBlock {
   }
 }
 
+/**
+ * Parses an expression block for echo or switch.
+ * @implements {ExpressionContinuation}
+ */
 class ExpressionBlock {
+  /**
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {SwitchMode} mode
+   */
   constructor(parent, rets, mode) {
     this.parent = parent;
     this.rets = rets;
@@ -988,12 +1567,29 @@ class ExpressionBlock {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, _scanner) {
     return new AfterExpressionBlock(scope, this.parent, this.rets, this.mode, expression);
   }
 }
 
+/**
+ * After parsing the expression, determines whether to echo or start a switch.
+ * @implements {TokenState}
+ */
 class AfterExpressionBlock {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {SwitchMode} mode
+   * @param {Expression} expression
+   */
   constructor(scope, parent, rets, mode, expression) {
     this.scope = scope;
     this.parent = parent;
@@ -1003,6 +1599,13 @@ class AfterExpressionBlock {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (text === '|') {
       return new SwitchBlock(this.scope, this.parent, this.rets).start(
@@ -1039,17 +1642,38 @@ class AfterExpressionBlock {
   }
 }
 
+/**
+ * Parses a switch block with multiple cases separated by |.
+ * @implements {ThreadContinuation}
+ */
 class SwitchBlock {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   */
   constructor(scope, parent, rets) {
     this.scope = scope;
     this.parent = parent;
     this.rets = rets;
+    /** @type {any} */
     this.node = null;
+    /** @type {string[]} */
     this.branches = [];
+    /** @type {Expression[]} */
     this.weights = [];
     Object.seal(this);
   }
 
+  /**
+   * @param {Scanner} scanner
+   * @param {Expression | null} expression
+   * @param {string | null} variable
+   * @param {number | null} value
+   * @param {SwitchMode} mode
+   * @param {number} [min]
+   * @returns {TokenState}
+   */
   start(scanner, expression, variable, value, mode, min) {
     value = value || 0;
     if (mode === 'loop' && !expression) {
@@ -1070,6 +1694,13 @@ class SwitchBlock {
     );
   }
 
+  /**
+   * @param {Scope} _scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(_scope, rets, escs, scanner) {
     if (this.node.mode === 'pick') {
       Scope.tie(rets, 'RET');
@@ -1082,7 +1713,19 @@ class SwitchBlock {
   }
 }
 
+/**
+ * Parses individual cases within a switch block.
+ * @implements {TokenState}
+ * @implements {ThreadContinuation}
+ */
 class Case {
+  /**
+   * @param {Scope} scope
+   * @param {SwitchBlock} parent
+   * @param {Linkable[]} rets
+   * @param {string[]} branches
+   * @param {number} min
+   */
   constructor(scope, parent, rets, branches, min) {
     this.scope = scope;
     this.parent = parent;
@@ -1092,6 +1735,13 @@ class Case {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (text === '|') {
       return new MaybeWeightedCase(this.scope, this);
@@ -1107,6 +1757,11 @@ class Case {
     }
   }
 
+  /**
+   * @param {Expression | null} args
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   case(args, scanner) {
     this.parent.weights.push(args || ['val', 1]);
     const scope = this.scope.zerothChild();
@@ -1115,6 +1770,13 @@ class Case {
     return new Thread(scope, this, [node], []);
   }
 
+  /**
+   * @param {Scope} _scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} _scanner
+   * @returns {Case}
+   */
   return(_scope, rets, escs, _scanner) {
     return new Case(
       this.scope.next(),
@@ -1126,13 +1788,29 @@ class Case {
   }
 }
 
+/**
+ * Checks if a case has an optional weight expression in parentheses.
+ * @implements {TokenState}
+ * @implements {ExpressionContinuation}
+ */
 class MaybeWeightedCase {
+  /**
+   * @param {Scope} scope
+   * @param {Case} parent
+   */
   constructor(scope, parent) {
     this.scope = scope;
     this.parent = parent;
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (text === '(') {
       return expression(this.scope, this).next(type, space, text, scanner);
@@ -1141,12 +1819,28 @@ class MaybeWeightedCase {
     }
   }
 
+  /**
+   * @param {Scope} _scope
+   * @param {Expression} args
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(_scope, args, scanner) {
     return this.parent.case(args, scanner);
   }
 }
 
+/**
+ * Parses a prompt block (> ...).
+ * @implements {TokenState}
+ */
 class Ask {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   */
   constructor(scope, parent, rets, escs) {
     this.scope = scope;
     this.parent = parent;
@@ -1155,6 +1849,13 @@ class Ask {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type == 'alphanum') {
       return new Read(text, this.scope, this.parent, this.rets, this.escs);
@@ -1169,7 +1870,18 @@ class Ask {
   }
 }
 
+/**
+ * Parses a read instruction (> variable [cue]).
+ * @implements {TokenState}
+ */
 class Read {
+  /**
+   * @param {string} variable
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   */
   constructor(variable, scope, parent, rets, escs) {
     this.variable = variable;
     this.scope = scope;
@@ -1179,6 +1891,13 @@ class Read {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type == 'alphanum') {
       return this.return(text, scanner);
@@ -1186,6 +1905,11 @@ class Read {
     return this.return(null, scanner).next(type, space, text, scanner);
   }
 
+  /**
+   * @param {string | null} cue
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(cue, scanner) {
     const node = this.scope.create('read', this.variable, scanner.position());
     node.cue = cue;
@@ -1193,7 +1917,18 @@ class Read {
   }
 }
 
+/**
+ * Parses a program block (! ...) containing assignments.
+ * @implements {TokenState}
+ * @implements {ThreadContinuation}
+ */
 class Program {
+  /**
+   * @param {Scope} scope
+   * @param {ThreadContinuation} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   */
   constructor(scope, parent, rets, escs) {
     this.scope = scope;
     this.parent = parent;
@@ -1202,6 +1937,13 @@ class Program {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type === 'stop' || text === '}') {
       return this.parent
@@ -1222,12 +1964,29 @@ class Program {
     }
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Scanner} _scanner
+   * @returns {Program}
+   */
   return(scope, rets, escs, _scanner) {
     return new Program(scope, this.parent, rets, escs);
   }
 }
 
+/**
+ * Receives a variable expression for assignment in a program block.
+ * @implements {ExpressionContinuation}
+ */
 class Assignment {
+  /**
+   * @param {Scope} scope
+   * @param {Program} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   */
   constructor(scope, parent, rets, escs) {
     this.scope = scope;
     this.parent = parent;
@@ -1236,6 +1995,12 @@ class Assignment {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} _scope
+   * @param {Expression} expression
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(_scope, expression, scanner) {
     if (expression[0] === 'get' || expression[0] === 'var') {
       return new ExpectOperator(this.scope, this.parent, this.rets, this.escs, expression);
@@ -1250,7 +2015,18 @@ class Assignment {
   }
 }
 
+/**
+ * Expects an '=' operator after the variable in an assignment.
+ * @implements {TokenState}
+ */
 class ExpectOperator {
+  /**
+   * @param {Scope} scope
+   * @param {Program} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Expression} left
+   */
   constructor(scope, parent, rets, escs, left) {
     this.scope = scope;
     this.parent = parent;
@@ -1260,6 +2036,13 @@ class ExpectOperator {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} _space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, _space, text, scanner) {
     if (text === '=') {
       return expression(
@@ -1275,7 +2058,19 @@ class ExpectOperator {
   }
 }
 
+/**
+ * Receives the right-hand side expression for an assignment.
+ * @implements {ExpressionContinuation}
+ */
 class ExpectExpression {
+  /**
+   * @param {Scope} scope
+   * @param {Program} parent
+   * @param {Linkable[]} rets
+   * @param {Linkable[]} escs
+   * @param {Expression} left
+   * @param {string} operator
+   */
   constructor(scope, parent, rets, escs, left, operator) {
     this.scope = scope;
     this.parent = parent;
@@ -1286,6 +2081,12 @@ class ExpectExpression {
     Object.freeze(this);
   }
 
+  /**
+   * @param {Scope} _scope
+   * @param {Expression} right
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(_scope, right, scanner) {
     // TODO validate this.left as a valid move target
     this.scope.tie(this.rets);
@@ -1296,6 +2097,7 @@ class ExpectExpression {
   }
 }
 
+/** @type {Record<string, boolean>} */
 const unary = {
   not: true,
   '-': true,
@@ -1338,6 +2140,7 @@ const union = {
   or: true,
 };
 
+/** @type {Record<string, boolean>[]} */
 const precedence = [
   // from low to high
   union,
@@ -1348,21 +2151,42 @@ const precedence = [
   exponential,
 ];
 
+/**
+ * Creates an expression parser chain with proper precedence.
+ * @param {Scope} scope
+ * @param {ExpressionContinuation} parent
+ * @returns {TokenState}
+ */
 const expression = (scope, parent) => {
+  /** @type {ExpressionContinuation} */
+  let current = parent;
   for (const operators of precedence) {
-    parent = new BinaryExpression(operators, parent);
+    current = new BinaryExpression(operators, current);
   }
-  return new Unary(scope, parent);
+  return new Unary(scope, current);
 };
 
+/**
+ * Creates a variable parser.
+ * @param {Scope} scope
+ * @param {ExpressionContinuation} parent
+ * @returns {TokenState}
+ */
 const variable = (scope, parent) => {
   return new GetStaticVariable(scope, parent, [], [], '', true);
 };
 
+/**
+ * Creates a label parser.
+ * @param {Scope} scope
+ * @param {LabelContinuation} parent
+ * @returns {TokenState}
+ */
 const label = (scope, parent) => {
   return new GetStaticVariable(scope, new AfterVariable(parent), [], [], '', true);
 };
 
+/** @type {Record<ComparisonOp, ComparisonOp>} */
 const inversions = {
   '==': '<>',
   '<>': '==',
@@ -1372,28 +2196,56 @@ const inversions = {
   '<=': '>',
 };
 
+/**
+ * Inverts a boolean expression.
+ * @param {Expression} expression
+ * @returns {Expression}
+ */
 const invertExpression = expression => {
   if (expression[0] === 'not') {
-    return expression[1];
-  } else if (inversions[expression[0]]) {
-    return [inversions[expression[0]], expression[1], expression[2]];
-  } else {
-    return ['not', expression];
+    return /** @type {Expression} */ (expression[1]);
   }
+  const op = /** @type {ComparisonOp} */ (expression[0]);
+  if (op in inversions) {
+    return /** @type {Expression} */ ([inversions[op], expression[1], expression[2]]);
+  }
+  return ['not', expression];
 };
 
+/**
+ * Receives a parenthesized expression and waits for closing paren.
+ * @implements {ExpressionContinuation}
+ */
 class Open {
+  /**
+   * @param {ExpressionContinuation} parent
+   */
   constructor(parent) {
     this.parent = parent;
     Object.seal(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, _scanner) {
     return new Close(scope, this.parent, expression);
   }
 }
 
+/**
+ * Expects closing parenthesis.
+ * @implements {TokenState}
+ */
 class Close {
+  /**
+   * @param {Scope} scope
+   * @param {ExpressionContinuation} parent
+   * @param {Expression} expression
+   */
   constructor(scope, parent, expression) {
     this.scope = scope;
     this.parent = parent;
@@ -1401,6 +2253,13 @@ class Close {
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} _space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, _space, text, scanner) {
     if (type === 'symbol' && text === ')') {
       return this.parent.return(this.scope, this.expression, scanner);
@@ -1416,13 +2275,28 @@ class Close {
   }
 }
 
+/**
+ * Parses a value: number, parenthesized expression, dynamic variable, or static variable.
+ * @implements {TokenState}
+ */
 class Value {
+  /**
+   * @param {Scope} scope
+   * @param {ExpressionContinuation} parent
+   */
   constructor(scope, parent) {
     this.scope = scope;
     this.parent = parent;
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type === 'number') {
       return this.parent.return(this.scope, ['val', +text], scanner);
@@ -1441,18 +2315,40 @@ class Value {
   }
 }
 
+/**
+ * After parsing a variable, checks for function call syntax.
+ * @implements {ExpressionContinuation}
+ */
 class AfterVariable {
+  /**
+   * @param {ExpressionContinuation} parent
+   */
   constructor(parent) {
     this.parent = parent;
     Object.seal(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, _scanner) {
     return new MaybeCall(scope, this.parent, expression);
   }
 }
 
+/**
+ * Checks if a variable is followed by '(' indicating a function call.
+ * @implements {TokenState}
+ */
 class MaybeCall {
+  /**
+   * @param {Scope} scope
+   * @param {ExpressionContinuation} parent
+   * @param {Expression} expression
+   */
   constructor(scope, parent, expression) {
     this.scope = scope;
     this.parent = parent;
@@ -1460,6 +2356,13 @@ class MaybeCall {
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (space === '' && text === '(') {
       return new Arguments(this.scope, this.parent, this.expression);
@@ -1471,34 +2374,73 @@ class MaybeCall {
   }
 }
 
+/**
+ * Parses function call arguments.
+ * @implements {TokenState}
+ * @implements {ExpressionContinuation}
+ */
 class Arguments {
+  /**
+   * @param {Scope} scope
+   * @param {ExpressionContinuation} parent
+   * @param {Expression} expression
+   */
   constructor(scope, parent, expression) {
     this.scope = scope;
     this.parent = parent;
+    /** @type {any[]} */
     this.args = ['call', expression];
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (text === ')') {
-      return this.parent.return(this.scope, this.args, scanner);
+      return this.parent.return(this.scope, /** @type {Expression} */ (this.args), scanner);
     } else {
       return expression(this.scope, this).next(type, space, text, scanner);
     }
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, _scanner) {
     this.args.push(expression);
     return new MaybeArgument(scope, this);
   }
 }
 
+/**
+ * After an argument, expects ',' for more or ')' to close.
+ * @implements {TokenState}
+ */
 class MaybeArgument {
+  /**
+   * @param {Scope} scope
+   * @param {Arguments} parent
+   */
   constructor(scope, parent) {
     this.scope = scope;
     this.parent = parent;
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (text === ',') {
       return expression(this.scope, this.parent);
@@ -1516,13 +2458,28 @@ class MaybeArgument {
   }
 }
 
+/**
+ * Parses unary operators (not, -, ~, #).
+ * @implements {TokenState}
+ */
 class Unary {
+  /**
+   * @param {Scope} scope
+   * @param {ExpressionContinuation} parent
+   */
   constructor(scope, parent) {
     this.scope = scope;
     this.parent = parent;
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (unary[text] === true) {
       return new Unary(this.scope, new UnaryOperator(this.parent, text));
@@ -1532,18 +2489,42 @@ class Unary {
   }
 }
 
+/**
+ * Applies a unary operator to an expression.
+ * @implements {ExpressionContinuation}
+ */
 class UnaryOperator {
+  /**
+   * @param {ExpressionContinuation} parent
+   * @param {string} op
+   */
   constructor(parent, op) {
     this.parent = parent;
     this.op = op;
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, scanner) {
-    return this.parent.return(scope, [this.op, expression], scanner);
+    return this.parent.return(scope, /** @type {Expression} */ ([this.op, expression]), scanner);
   }
 }
 
+/**
+ * After an expression, checks for binary operators at the current precedence level.
+ * @implements {TokenState}
+ */
 class MaybeOperator {
+  /**
+   * @param {Scope} scope
+   * @param {ExpressionContinuation} parent
+   * @param {Expression} expression
+   * @param {Record<string, boolean>} operators
+   */
   constructor(scope, parent, expression, operators) {
     this.scope = scope;
     this.parent = parent;
@@ -1552,8 +2533,16 @@ class MaybeOperator {
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (this.operators[text] === true) {
+      /** @type {ExpressionContinuation} */
       let parent = new MaybeExpression(this.parent, this.operators);
       parent = new PartialExpression(parent, text, this.expression);
       for (let i = precedence.indexOf(this.operators) + 1; i < precedence.length; i++) {
@@ -1568,43 +2557,99 @@ class MaybeOperator {
   }
 }
 
+/**
+ * Wraps a parent to check for operators after receiving an expression.
+ * @implements {ExpressionContinuation}
+ */
 class MaybeExpression {
+  /**
+   * @param {ExpressionContinuation} parent
+   * @param {Record<string, boolean>} operators
+   */
   constructor(parent, operators) {
     this.parent = parent;
     this.operators = operators;
     Object.seal(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} _scanner
+   * @returns {MaybeOperator}
+   */
   return(scope, expression, _scanner) {
     return new MaybeOperator(scope, this.parent, expression, this.operators);
   }
 }
 
+/**
+ * Holds the left side of a binary expression while parsing the right side.
+ * @implements {ExpressionContinuation}
+ */
 class PartialExpression {
+  /**
+   * @param {ExpressionContinuation} parent
+   * @param {string} operator
+   * @param {Expression} expression
+   */
   constructor(parent, operator, expression) {
     this.parent = parent;
     this.operator = operator;
     this.expression = expression;
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, scanner) {
-    return this.parent.return(scope, [this.operator, this.expression, expression], scanner);
+    return this.parent.return(
+      scope,
+      /** @type {Expression} */ ([this.operator, this.expression, expression]),
+      scanner
+    );
   }
 }
 
+/**
+ * Entry point for parsing binary expressions at a given precedence level.
+ * @implements {ExpressionContinuation}
+ */
 class BinaryExpression {
+  /**
+   * @param {Record<string, boolean>} operators
+   * @param {ExpressionContinuation} parent
+   */
   constructor(operators, parent) {
     this.parent = parent;
     this.operators = operators;
     Object.seal(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} _scanner
+   * @returns {MaybeOperator}
+   */
   return(scope, expression, _scanner) {
     return new MaybeOperator(scope, this.parent, expression, this.operators);
   }
 }
 
+/**
+ * Parses a dynamic variable with interpolated expressions like name{expr}more.
+ * @implements {ExpressionContinuation}
+ */
 class GetDynamicVariable {
+  /**
+   * @param {ExpressionContinuation} parent
+   * @param {string[]} literals
+   * @param {Expression[]} expressions
+   */
   constructor(parent, literals, expressions) {
     this.parent = parent;
     this.literals = literals;
@@ -1612,6 +2657,12 @@ class GetDynamicVariable {
     Object.seal(this);
   }
 
+  /**
+   * @param {Scope} scope
+   * @param {Expression} expression
+   * @param {Scanner} _scanner
+   * @returns {TokenState}
+   */
   return(scope, expression, _scanner) {
     return new Expect(
       'token',
@@ -1622,7 +2673,16 @@ class GetDynamicVariable {
   }
 }
 
+/**
+ * Continues parsing a variable after a dynamic segment.
+ */
 class ContinueVariable {
+  /**
+   * @param {Scope} scope
+   * @param {ExpressionContinuation} parent
+   * @param {string[]} literals
+   * @param {Expression[]} expressions
+   */
   constructor(scope, parent, literals, expressions) {
     this.scope = scope;
     this.parent = parent;
@@ -1631,12 +2691,27 @@ class ContinueVariable {
     Object.freeze(this);
   }
 
+  /**
+   * @returns {GetStaticVariable}
+   */
   return() {
     return new GetStaticVariable(this.scope, this.parent, this.literals, this.expressions, '');
   }
 }
 
+/**
+ * Parses a static variable name, possibly with dynamic segments.
+ * @implements {TokenState}
+ */
 class GetStaticVariable {
+  /**
+   * @param {Scope} scope
+   * @param {ExpressionContinuation} parent
+   * @param {string[]} literals
+   * @param {Expression[]} expressions
+   * @param {string} literal
+   * @param {boolean} [fresh]
+   */
   constructor(scope, parent, literals, expressions, literal, fresh) {
     this.scope = scope;
     this.parent = parent;
@@ -1647,6 +2722,13 @@ class GetStaticVariable {
     Object.seal(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, space, text, scanner) {
     if (type !== 'literal' && (space === '' || this.fresh)) {
       this.fresh = false;
@@ -1680,7 +2762,11 @@ class GetStaticVariable {
 
     if (this.literal === '') {
       this.scope.error(`${scanner.position()}: Expected name but got ${tokenName(type, text)}`);
-      return this.parent.return(this.scope, [], scanner);
+      return this.parent.return(
+        this.scope,
+        /** @type {Expression} */ (/** @type {unknown} */ ([])),
+        scanner
+      );
     }
 
     return this.parent
@@ -1689,7 +2775,16 @@ class GetStaticVariable {
   }
 }
 
+/**
+ * Captures return arguments and expects a specific token before continuing.
+ * Used to bridge expression parsing to token expectation.
+ */
 class ThenExpect {
+  /**
+   * @param {string} expect - Expected token type
+   * @param {string} text - Expected token text
+   * @param {any} parent - The continuation to call after the expected token
+   */
   constructor(expect, text, parent) {
     this.expect = expect;
     this.text = text;
@@ -1697,16 +2792,28 @@ class ThenExpect {
     Object.freeze(this);
   }
 
-  return(scope) {
-    const args = [];
-    for (const arg of arguments) {
-      args.push(arg);
-    }
-    return new Expect(this.expect, this.text, scope, this.parent, args);
+  /**
+   * @param {Scope} scope
+   * @param {...any} rest
+   * @returns {Expect}
+   */
+  return(scope, ...rest) {
+    return new Expect(this.expect, this.text, scope, this.parent, [scope, ...rest]);
   }
 }
 
+/**
+ * Expects a specific token and then calls the parent's return with captured args.
+ * @implements {TokenState}
+ */
 class Expect {
+  /**
+   * @param {string} expect - Expected token type
+   * @param {string} text - Expected token text
+   * @param {Scope} scope
+   * @param {any} parent - The continuation to call
+   * @param {any[]} [args] - Arguments to pass to parent.return
+   */
   constructor(expect, text, scope, parent, args) {
     this.expect = expect;
     this.text = text;
@@ -1716,6 +2823,13 @@ class Expect {
     Object.freeze(this);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} _space
+   * @param {string} text
+   * @param {Scanner} scanner
+   * @returns {TokenState}
+   */
   next(type, _space, text, scanner) {
     if (type !== this.expect || text !== this.text) {
       this.scope.error(
@@ -1729,6 +2843,12 @@ class Expect {
   }
 }
 
+/**
+ * Formats a token type and text for error messages.
+ * @param {string} type
+ * @param {string} text
+ * @returns {string}
+ */
 const tokenName = (type, text) => {
   // It might not be possible to provoke an error at the beginning of a new
   // block.

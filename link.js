@@ -1,33 +1,47 @@
+/** @import { default as Story } from './story' */
+
+/**
+ * Links all story nodes, resolving relative label references.
+ * @param {Story} story
+ */
 const link = story => {
   const labels = Object.keys(story.states);
   for (let i = 0; i < labels.length; i++) {
     const label = labels[i];
     const state = story.states[label];
 
-    const link = linker(story, label, state);
+    const linkFn = linker(story, label, state);
 
     if (state.label != null) {
-      state.label = link('label')(state.label);
+      state.label = linkFn('label')(state.label);
     }
     if (state.next != null) {
-      state.next = link('next')(state.next);
+      state.next = linkFn('next')(state.next);
     }
     if (state.branch != null) {
-      state.branch = link('branch')(state.branch);
+      state.branch = linkFn('branch')(state.branch);
     }
     if (state.question != null) {
-      state.question = state.question.map(link('question'));
+      state.question = state.question.map(linkFn('question'));
     }
     if (state.answer != null) {
-      state.answer = state.answer.map(link('answer'));
+      state.answer = state.answer.map(linkFn('answer'));
     }
   }
 };
 
 export default link;
 
+/**
+ * Creates a linker for a specific context.
+ * @param {Story} story
+ * @param {string} context
+ * @param {any} state
+ * @returns {(role: string) => (label: string) => string}
+ */
 const linker = (story, context, state) => {
   const parts = context.split('.');
+  /** @type {string[][]} */
   const ancestry = [];
   while (parts.length > 0) {
     ancestry.push(parts.slice());
@@ -42,9 +56,9 @@ const linker = (story, context, state) => {
       for (let i = 0; i < ancestry.length; i++) {
         let candidate = ancestry[i].slice();
         candidate.push(label);
-        candidate = candidate.join('.');
-        if (story.states[candidate] != null) {
-          return candidate;
+        const candidateStr = candidate.join('.');
+        if (story.states[candidateStr] != null) {
+          return candidateStr;
         }
       }
       story.error(

@@ -1,5 +1,3 @@
-// @ts-check
-
 // Transforms a stream of lines with known indentation levels and leaders like
 // bullets, and transforms these into a stream of lines with start and stop
 // tokens around changes in indentation depth.
@@ -9,22 +7,27 @@
 
 // TODO remove the break emission feature
 
+/** @import { default as Scanner } from './scanner' */
+
+/**
+ * Outline lexer state object, which receives typed text tokens, along
+ * with the current scanner. It is expected to return a subsequent state
+ * object, which will be retained by the lexer, and receive the subsequent
+ * token.
+ *
+ * @typedef {object} State
+ * @prop {(type: string, text: string, sc: Scanner) => State} next
+ */
+
+/**
+ * OutlineLexer transforms indented lines into a stream with start/stop tokens
+ * around changes in indentation depth.
+ */
 export default class OutlineLexer {
   debug = typeof process === 'object' && process.env.DEBUG_OUTLINE_LEXER;
 
   top = 0;
   broken = false;
-
-  /** @typedef {import('./scanner')} Scanner */
-
-  /** Outline lexer state object, which receives typed text tokens, along
-   * with the current scanner. It is expected to return a subsequent state
-   * object, which will be retained by the lexer, and receive the subsequent
-   * token.
-   *
-   * @typedef {object} State
-   * @prop {(type: string, text: string, sc: Scanner) => State} next
-   */
 
   /**
    * @param {State} generator

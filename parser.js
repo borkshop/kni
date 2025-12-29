@@ -1,14 +1,19 @@
-// @ts-check
+/** @import { default as Scanner } from './scanner' */
 
+/**
+ * State interface for the parser trampoline.
+ * Each state must return the next state when given a token.
+ *
+ * @typedef {object} State
+ * @prop {(type: string, space: string, text: string, sc: Scanner) => State} next
+ */
+
+/**
+ * Parser is a trampoline that advances a state machine with tokens.
+ * It delegates to InlineLexer for tokenization.
+ */
 export default class Parser {
   debug = typeof process === 'object' && process.env.DEBUG_PARSER;
-
-  /** @typedef {import('./scanner')} Scanner */
-
-  /**
-   * @typedef {object} State
-   * @prop {(type: string, space: string, text: string, sc: Scanner) => State} next
-   */
 
   /**
    * @param {State} generator
