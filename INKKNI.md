@@ -26,7 +26,7 @@ glaring ways, particularly the letters are in the wrong order, and it has
 
 - Kni does not have the `<>` operator for joining lines.
   Instead, Kni allows lines to wrap and requires an express solidus ``/``
-  for line breaks or horizontal rule ``---`` for paragraph breaks.
+  for line breaks or double-virgule ``//`` for paragraph breaks.
 
 - Kni does not have `=== title ===` notation and does not infer the `title.` prefix
   for `= subtitle` markers. Kni only has `@label` notation which must state
@@ -116,7 +116,7 @@ glaring ways, particularly the letters are in the wrong order, and it has
 Kni is missing many things available to Ink.
 
 - Kni does not have enumerations or other typed variable declarations.
-  In only supports 32 bit integers.
+  In only supports 32 bit integers and very limited support for strings.
 
 - Labels are not variables. You can’t write a label to a variable and divert to
   it by that variable name.
@@ -125,8 +125,7 @@ Kni is missing many things available to Ink.
 
 - Kni does not support defining functions for use in expressions.
 
-- Kni does not support calling out to game logic. This is not likely to
-  change. Games should bind to Ink narrative by watching the variable bag.
+- Kni can trigger arbitrary game-specific hooks with `<hook>` notation.
 
 Yet Kni has some features that Ink leaves out.
 Ink’s smallness is a virtue for keeping the language easy to pick up for
