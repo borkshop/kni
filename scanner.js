@@ -1,5 +1,3 @@
-// @ts-check
-
 // Transforms a stream of text into a sequence of 'lines', tracking each line's
 // level of indentation.
 // Trims lines.
@@ -20,6 +18,20 @@ const nextTabStop = columnNo => {
 
 const leaders = '-+*!>';
 
+/**
+ * An Iterator-like object that has text pushed into it by a Scanner.
+ * Its biggest difference from an Iterator<string> is that the Scanner
+ * object itself is passed along as an additional next argument.
+ *
+ * @typedef {object} ScanIt
+ * @prop {(text: string, sc: Scanner) => void} next
+ * @prop {(sc: Scanner) => void} return
+ */
+
+/**
+ * Scanner transforms a stream of text into a sequence of lines,
+ * tracking each line's level of indentation.
+ */
 export default class Scanner {
   debug = typeof process === 'object' && process.env.DEBUG_SCANNER;
 
@@ -32,16 +44,6 @@ export default class Scanner {
   columnStart = 0;
   leading = true;
   leader = '';
-
-  /** An Iterator-like object that has text pushed into it by a Scanner.
-   *
-   * Its biggest difference from an Iterator<string> is that the Scanner
-   * object itself is passed along as an additional next agument
-   *
-   * @typedef {object} ScanIt
-   * @prop {(text: string, sc: Scanner) => void} next
-   * @prop {(sc: Scanner) => void} return
-   */
 
   /**
    * @param {ScanIt} generator
@@ -128,6 +130,10 @@ export default class Scanner {
     this.generator.return(this);
   }
 
+  /**
+   * Returns a string representing the current position in the source file.
+   * @returns {string}
+   */
   position() {
     return `${this.fileName}:${this.lineNo + 1}:${this.columnStart + 1}`;
   }

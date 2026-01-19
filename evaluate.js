@@ -1,30 +1,55 @@
+/** @import { Expression } from './grammar-types' */
+
+/**
+ * Scope interface for variable lookup.
+ * @typedef {object} Scope
+ * @prop {(name: string) => number} get
+ */
+
+/**
+ * Randomer interface for random number generation.
+ * @typedef {object} Randomer
+ * @prop {() => number} random
+ */
+
+/**
+ * Evaluates an expression AST node.
+ * @param {Scope} scope
+ * @param {Randomer} randomer
+ * @param {Expression} args
+ * @returns {number}
+ */
 const evaluate = (scope, randomer, args) => {
-  const name = args[0];
+  const name = /** @type {string} */ (args[0]);
   if (unary[name] && args.length === 2) {
-    return unary[name](evaluate(scope, randomer, args[1]), scope, randomer);
+    return unary[name](
+      evaluate(scope, randomer, /** @type {Expression} */ (args[1])),
+      scope,
+      randomer
+    );
   } else if (binary[name] && args.length === 3) {
     return binary[name](
-      evaluate(scope, randomer, args[1]),
-      evaluate(scope, randomer, args[2]),
+      evaluate(scope, randomer, /** @type {Expression} */ (args[1])),
+      evaluate(scope, randomer, /** @type {Expression} */ (args[2])),
       scope,
       randomer
     );
   } else if (name === 'val') {
-    return args[1];
+    return /** @type {number} */ (args[1]);
   } else if (name === 'get') {
-    return scope.get(args[1]);
+    return scope.get(/** @type {string} */ (args[1]));
   } else if (name === 'var') {
     return scope.get(nominate(scope, randomer, args));
   } else if (name === 'call') {
-    const func = args[1][1];
-    const f = functions[func];
+    const func = /** @type {Expression} */ (args[1])[1];
+    const f = functions[/** @type {string} */ (func)];
     if (!f) {
       // TODO thread line number for containing instruction
       throw new Error(`No function named ${func}`);
     }
     const values = [];
     for (let i = 2; i < args.length; i++) {
-      values.push(evaluate(scope, randomer, args[i]));
+      values.push(evaluate(scope, randomer, /** @type {Expression} */ (args[i])));
     }
     return f.apply(null, values);
   } else {
@@ -32,12 +57,19 @@ const evaluate = (scope, randomer, args) => {
   }
 };
 
+/**
+ * Builds a variable name from a var expression with interpolation.
+ * @param {Scope} scope
+ * @param {Randomer} randomer
+ * @param {Expression} args
+ * @returns {string}
+ */
 const nominate = (scope, randomer, args) => {
   if (args[0] === 'get') {
-    return args[1];
+    return /** @type {string} */ (args[1]);
   }
-  const literals = args[1];
-  const variables = args[2];
+  const literals = /** @type {string[]} */ (args[1]);
+  const variables = /** @type {Expression[]} */ (args[2]);
   let name = '';
   let i;
   for (i = 0; i < variables.length; i++) {
@@ -48,6 +80,7 @@ const nominate = (scope, randomer, args) => {
 };
 evaluate.nominate = nominate;
 
+/** @type {Record<string, (...args: number[]) => number>} */
 const functions = {
   abs: Math.abs,
   acos: Math.acos,
@@ -76,13 +109,12 @@ const functions = {
     return 0;
   },
 
-  mean: function () {
+  mean: function (...args) {
     let mean = 0;
-    let i;
-    for (i = 0; i < arguments.length; i++) {
-      mean += arguments[i];
+    for (let i = 0; i < args.length; i++) {
+      mean += args[i];
     }
-    return mean / i;
+    return mean / args.length;
   },
 
   root: (x, y) => {
@@ -99,33 +131,9 @@ const functions = {
   manhattan: (x1, y1, x2, y2) => {
     return Math.abs(x2 - x1) + Math.abs(y2 - y1);
   },
-
-  // TODO parameterize these functions in terms of the expected turns to
-  // go from 25% to 75% of capacity, to adjust the rate. This will maybe
-  // almost make them understandable.
-  //
-  // sigmoid: (steps, cap) => {
-  //     if (steps === -Infinity) {
-  //         return 0;
-  //     } else if (steps === Infinity) {
-  //         return cap;
-  //     } else {
-  //         return cap / (1 + Math.pow(Math.E, -steps));
-  //     }
-  // },
-
-  // diomgis: (pop, cap) => {
-  //     if (pop <= 0) {
-  //         return -Infinity;
-  //     }
-  //     const ratio = cap / pop - 1;
-  //     if (ratio === 0) {
-  //         return Infinity;
-  //     }
-  //     return -Math.log(ratio, Math.E);
-  // },
 };
 
+/** @type {Record<string, (x: number, y: number, scope: Scope, randomer: Randomer) => number>} */
 const binary = {
   '+': (x, y) => {
     return x + y;
@@ -181,6 +189,7 @@ const binary = {
   },
 };
 
+/** @type {Record<string, (x: number, scope: Scope, randomer: Randomer) => number>} */
 const unary = {
   not: x => {
     return x ? 0 : 1;
@@ -196,8 +205,12 @@ const unary = {
   },
 };
 
-// Robert Jenkins's 32 bit hash function
-// https://gist.github.com/badboy/6267743
+/**
+ * Robert Jenkins's 32 bit hash function
+ * https://gist.github.com/badboy/6267743
+ * @param {number} a
+ * @returns {number}
+ */
 const hash = a => {
   a = a + 0x7ed55d16 + (a << 12);
   a = a ^ 0xc761c23c ^ (a >>> 19);
@@ -214,6 +227,13 @@ evaluate.hash = hash;
 // each dimension has origin at 2^15
 const dimensionWidth = (-1 >>> 16) + 1;
 const halfDimensionWidth = dimensionWidth / 2;
+
+/**
+ * Computes hilbert curve index for coordinates.
+ * @param {number} x
+ * @param {number} y
+ * @returns {number}
+ */
 const hilbert = (x, y) => {
   x += halfDimensionWidth;
   y += halfDimensionWidth;

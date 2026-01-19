@@ -1,4 +1,4 @@
-import fs from 'fs';
+import * as fs from 'fs';
 import verify from './verify.js';
 
 function main() {
@@ -54,6 +54,7 @@ function main() {
   test('tests/math.kni', 'tests/math.1');
   test('tests/no-option.kni', 'tests/no-option.1');
   test('tests/number.kni', 'tests/number.1');
+  test('tests/option-annotation.kni', 'tests/option-annotation.1');
   test('tests/procedure.kni', 'tests/procedure.1');
   test('tests/program.kni', 'tests/program.1');
   test('tests/program.kni', 'tests/program.1');
@@ -99,20 +100,42 @@ function main() {
   let ended = false;
   test('tests/handler.kni', 'tests/handler.1', {
     moxy: 41,
+    /**
+     * @param {string} name
+     * @returns {boolean}
+     */
     has: function has(name) {
       return name === 'moxy';
     },
+    /**
+     * @param {string} _name
+     * @returns {number}
+     */
     get: function get(_name) {
       return this.moxy;
     },
+    /**
+     * @param {string} _name
+     * @param {number} value
+     */
     set: function set(_name, value) {
       this.moxy = value;
     },
+    /**
+     * @param {string} _label
+     */
     goto: function _goto(_label) {},
+    /**
+     * @param {string} name
+     * @param {any} value
+     */
     changed: function changed(name, value) {
-      process.exitCode |= name !== 'moxy';
-      process.exitCode |= value != 42 && value !== 'mox' && value !== 'mux?';
+      if (name !== 'moxy') process.exitCode = 1;
+      if (value != 42 && value !== 'mox' && value !== 'mux?') process.exitCode = 1;
     },
+    /**
+     * @param {import('./engine').default} engine
+     */
     ask: function ask(engine) {
       if (engine.instruction.cue === 'moxy') {
         askedWithCue = true;
@@ -120,19 +143,31 @@ function main() {
         asked = true;
       }
     },
+    /**
+     * @param {string} text
+     */
     answer: function answer(text) {
       if (text !== '1' && text !== 'mox' && text !== 'mux?') {
         console.error('Handler test failed with unexpected answer: ', text);
         process.exitCode = 1;
       }
     },
+    /**
+     * @param {any} choice
+     */
     choice: function _choice(choice) {
       if (choice.keywords[0] !== 'moxy') {
         console.error('Handler test failed to call choice with moxy keyword');
         process.exitCode = 1;
       }
     },
+    /**
+     * @param {any} _state
+     */
     waypoint: function waypoint(_state) {},
+    /**
+     * @param {import('./engine').default} engine
+     */
     end: function end(engine) {
       engine.render.paragraph();
       engine.render.write(' ', 'The End.', ' ');
@@ -153,8 +188,15 @@ function main() {
     process.exitCode = 1;
   }
 
+  /** @type {string | undefined} */
   let cued;
   test('tests/cues.kni', 'tests/cues.1', {
+    /**
+     * @param {string} cue
+     * @param {string} next
+     * @param {import('./engine').default} engine
+     * @returns {boolean}
+     */
     cue: function (cue, next, engine) {
       cued = cue;
       return engine.goto(next);
@@ -166,6 +208,12 @@ function main() {
   }
 
   test('tests/cues.kni', 'tests/cues.2', {
+    /**
+     * @param {string} _cue
+     * @param {string} next
+     * @param {import('./engine').default} engine
+     * @returns {boolean}
+     */
     cue: function (_cue, next, engine) {
       engine.render.paragraph();
       engine.render.write('', 'Then there was a cue.', '');
@@ -179,13 +227,18 @@ function main() {
   }
 }
 
+/**
+ * @param {string} kniscript
+ * @param {string} transcript
+ * @param {any} [handler]
+ */
 function test(kniscript, transcript, handler) {
   const kni = fs.readFileSync(kniscript, 'utf8');
   const trans = fs.readFileSync(transcript, 'utf8');
   const result = verify(kni, trans, handler, kniscript);
 
   if (!result.pass) {
-    process.exitCode |= 1;
+    process.exitCode = 1;
     console.log(kniscript, transcript);
     console.log('FAIL');
     console.log('expected');

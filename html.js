@@ -6,9 +6,28 @@ import {dirname, join} from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+/**
+ * @typedef {object} TemplateArgs
+ * @prop {string} [title]
+ * @prop {string} [color]
+ * @prop {string} [backgroundColor]
+ */
+
+/**
+ * @typedef {object} Output
+ * @prop {(html: string) => void} end
+ */
+
+/**
+ * Generates an HTML file with bundled story.
+ * @param {Record<string, any>} story
+ * @param {Output} output
+ * @param {TemplateArgs} templateArgs
+ */
 const makeHtml = async (story, output, templateArgs) => {
   try {
     // Create a virtual story module plugin
+    /** @type {import('rollup').Plugin} */
     const virtualStoryPlugin = {
       name: 'virtual-story',
       resolveId(id) {
@@ -56,6 +75,11 @@ const makeHtml = async (story, output, templateArgs) => {
 
 export default makeHtml;
 
+/**
+ * @param {string} bundle
+ * @param {TemplateArgs} args
+ * @returns {string}
+ */
 const template = (bundle, args) => {
   const title = args.title != null ? `<title>${args.title}</title>` : '';
   const bgcolor = args.backgroundColor ?? 'hsla(60, 42.00%, 66.00%, 1)';

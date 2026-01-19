@@ -1,16 +1,33 @@
 // Wraps text at word boundaries for output to columnar displays.
 // Manages levels of indentation, bullets, and margin text.
 
+/**
+ * @typedef {object} Writer
+ * @prop {(text: string) => void} write
+ */
+
+/**
+ * Wraps text at word boundaries for columnar output.
+ */
 export default class Wrapper {
+  /**
+   * @param {Writer} target
+   * @param {number} [width]
+   */
   constructor(target, width) {
     this.target = target;
     this.width = width || 60;
+    /** @type {string[]} */
     this.indents = [''];
+    /** @type {string[]} */
     this.leads = [''];
     this.index = 0;
     this.flush = false;
   }
 
+  /**
+   * @param {string} words
+   */
   words(words) {
     const array = words.split(' ');
     for (let i = 0; i < array.length; i++) {
@@ -18,6 +35,10 @@ export default class Wrapper {
     }
   }
 
+  /**
+   * @param {string} indent
+   * @param {string} lead
+   */
   push(indent, lead) {
     const prefix = this.indents[this.indents.length - 1];
     this.indents.push(prefix + indent);
@@ -29,6 +50,9 @@ export default class Wrapper {
     this.leads.pop();
   }
 
+  /**
+   * @param {string} word
+   */
   word(word) {
     const indent = this.indents[this.indents.length - 1];
     if (this.index === 0) {

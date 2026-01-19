@@ -1,15 +1,33 @@
 import Excerpt from './excerpt.js';
 import Wrapper from './wrapper.js';
 
+/**
+ * @typedef {object} Writer
+ * @prop {(text: string) => void} write
+ */
+
+/**
+ * Console renderer for terminal output.
+ */
 export default class Console {
+  /**
+   * @param {Writer} writer
+   */
   constructor(writer) {
     this.writer = writer;
     this.wrapper = new Wrapper(writer);
     this.excerpt = new Excerpt();
+    /** @type {Excerpt[]} */
     this.options = [];
+    /** @type {Excerpt} */
     this.cursor = this.excerpt;
   }
 
+  /**
+   * @param {string} lift
+   * @param {string} text
+   * @param {string} drop
+   */
   write(lift, text, drop) {
     this.cursor.digest(lift, text, drop);
   }

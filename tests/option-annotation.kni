@@ -1,0 +1,18 @@
+# Tests option annotations like {+x}, {-x}, {!x}, {?x}
+# These use OptionArgument.return() which passes options to MaybeOption.
+# A latent type error (this.args being undefined) was discovered and fixed
+# during TypeScript annotation work - this test exercises that code path.
+
+# Test {+x} - increment counter
++ {+count} [Add one. ]
+# Test {-x} - decrement with threshold
++ {-count} [Remove one. ]
+# Test {!x} - set to 1 (toggle on)
++ {!flag} [Set flag. ]
+# Test {?x} - set to 0 (toggle off)
++ {?flag} [Clear flag. ]
+>
+
+Count is {(count)}, flag is {(flag)|off|on}.
+->start
+

@@ -1,15 +1,31 @@
 import evaluate from './evaluate.js';
 import describe from './describe.js';
 
+/** @import { Expression } from './grammar-types' */
+/** @import { StoryState, States, Randomer, Render, Dialog, Handler, EngineArgs } from './engine-types' */
+
+/**
+ * @param {Scope} scope
+ * @param {Randomer} randomer
+ * @param {Expression[]} expressions
+ * @param {number[]} weights
+ * @returns {number}
+ */
 const weigh = (scope, randomer, expressions, weights) => {
   let weight = 0;
   for (let i = 0; i < expressions.length; i++) {
-    weights[i] = evaluate(scope, randomer, expressions[i]);
+    weights[i] = /** @type {number} */ (evaluate(scope, randomer, expressions[i]));
     weight += weights[i];
   }
   return weight;
 };
 
+/**
+ * @param {number[]} weights
+ * @param {number} weight
+ * @param {Randomer} randomer
+ * @returns {number | null}
+ */
 const pick = (weights, weight, randomer) => {
   const offset = Math.floor(randomer.random() * weight);
   let passed = 0;
@@ -22,33 +38,54 @@ const pick = (weights, weight, randomer) => {
   return null;
 };
 
+/**
+ * @template T
+ * @param {T[]} array
+ * @param {number} index
+ */
 const pop = (array, index) => {
   array[index] = array[array.length - 1];
   array.length--;
 };
 
+/**
+ * @typedef {Global | Frame} Scope
+ */
+
 export default class Engine {
   debug = typeof process === 'object' && process.env.DEBUG_ENGINE;
 
+  /**
+   * @param {EngineArgs} args
+   */
   constructor(args) {
     this.story = args.story;
     this.labels = Object.keys(this.story);
+    /** @type {Handler | undefined} */
     this.handler = args.handler;
     this.meter = 0;
     this.limit = 10e3; // bottles.kni, for example, runs long
+    /** @type {Closure[]} */
     this.options = [];
+    /** @type {Record<string, Closure>} */
     this.keywords = {};
+    /** @type {Closure | null} */
     this.noOption = null;
     this.global = new Global(this.handler);
+    /** @type {Global | Frame} */
     this.top = this.global;
     this.start = args.start || 'start';
     this.label = this.start;
+    /** @type {StoryState} */
     this.instruction = {type: 'goto', next: this.start};
     this.render = args.render;
     this.dialog = args.dialog;
     this.dialog.engine = this;
+    /** @type {Randomer} */
     this.randomer = args.randomer || Math;
+    /** @type {any} */
     this.waypoint = this.capture();
+    /** @type {string[]} */
     this.answerOnClearMeterFault = [];
     Object.seal(this);
   }
@@ -68,6 +105,7 @@ export default class Engine {
 
   /**
    * Runs the event loop until it yields.
+   * @returns {void}
    */
   continue() {
     this.meter = 0;
@@ -82,11 +120,13 @@ export default class Engine {
         this.end();
         return;
       }
-      if (!this[`$${this.instruction.type}`]) {
+      const methodName = /** @type {keyof this} */ (`$${this.instruction.type}`);
+      if (!this[methodName]) {
         console.error(`Unexpected instruction type: ${this.instruction.type}`, this.instruction);
         this.resume();
       }
-      const proceed = this[`$${this.instruction.type}`](this.instruction);
+      const method = /** @type {() => boolean} */ (this[methodName]);
+      const proceed = method.call(this);
       if (!proceed) {
         return;
       }
@@ -113,6 +153,10 @@ export default class Engine {
     }
   }
 
+  /**
+   * @param {string} label
+   * @returns {boolean}
+   */
   goto(label) {
     while (this.top != null && (label == 'ESC' || label === 'RET')) {
       if (this.debug) {
@@ -126,7 +170,7 @@ export default class Engine {
       } else {
         label = this.top.next;
       }
-      this.top = this.top.parent;
+      this.top = /** @type {Global | Frame} */ (this.top.parent);
     }
 
     if (label === 'RET') {
@@ -150,6 +194,11 @@ export default class Engine {
     return true;
   }
 
+  /**
+   * @param {string[]} sequence
+   * @param {string} next
+   * @returns {boolean}
+   */
   gothrough(sequence, next) {
     let prev = this.label;
     for (let i = sequence.length - 1; i >= 0; i--) {
@@ -162,15 +211,24 @@ export default class Engine {
     return this.goto(next);
   }
 
+  /**
+   * @returns {boolean}
+   */
   end() {
-    this.display();
     if (this.handler && this.handler.end) {
       this.handler.end(this);
     }
+    this.display();
     this.dialog.close();
+    if (this.handler && this.handler.close) {
+      this.handler.close(this);
+    }
     return false;
   }
 
+  /**
+   * @returns {boolean | void}
+   */
   ask() {
     if (this.options.length) {
       this.display();
@@ -184,7 +242,9 @@ export default class Engine {
       this.top = closure.scope;
       const answer = option.answer;
       this.flush();
-      this.gothrough(answer, 'RET');
+      if (answer) {
+        this.gothrough(answer, 'RET');
+      }
       this.continue();
     } else {
       return this.goto('RET');
@@ -199,34 +259,42 @@ export default class Engine {
     this.dialog.ask(this.instruction.cue);
   }
 
+  /**
+   * @param {string | number} text
+   */
   answer(text) {
     if (this.meter >= this.limit) {
-      this.answerOnClearMeterFault.push(text);
+      this.answerOnClearMeterFault.push(String(text));
       return;
     }
     if (this.handler && this.handler.answer) {
-      this.handler.answer(text, this);
+      this.handler.answer(String(text), this);
     }
     this.render.flush();
     if (this.instruction.type === 'read') {
-      this.top.set(this.instruction.variable, text);
+      if (this.instruction.variable) {
+        this.top.set(this.instruction.variable, text);
+      }
       this.render.clear();
-      if (this.goto(this.instruction.next)) {
+      if (this.instruction.next && this.goto(this.instruction.next)) {
         this.continue();
       }
       return;
     }
-    const choice = text - 1;
+    const choice = Number(text) - 1;
     if (choice >= 0 && choice < this.options.length) {
       return this.choice(this.options[choice]);
-    } else if (this.keywords[text]) {
-      return this.choice(this.keywords[text]);
+    } else if (this.keywords[String(text)]) {
+      return this.choice(this.keywords[String(text)]);
     } else {
       this.render.pardon();
       this.ask();
     }
   }
 
+  /**
+   * @param {Closure} closure
+   */
   choice(closure) {
     const option = this.story[closure.label];
     if (this.handler && this.handler.choice) {
@@ -241,7 +309,7 @@ export default class Engine {
     this.top = closure.scope;
     // There is no known case where gothrough would immediately exit for
     // lack of further instructions, so
-    if (this.gothrough(option.answer, 'RET')) {
+    if (option.answer && this.gothrough(option.answer, 'RET')) {
       this.flush();
       this.continue();
     }
@@ -257,11 +325,19 @@ export default class Engine {
     this.keywords = {};
   }
 
+  /**
+   * @param {string} text
+   * @returns {boolean}
+   */
   write(text) {
-    this.render.write(this.instruction.lift, text, this.instruction.drop);
-    return this.goto(this.instruction.next);
+    this.render.write(this.instruction.lift || '', text, this.instruction.drop || '');
+    return this.goto(this.instruction.next || 'RET');
   }
 
+  /**
+   * @param {Closure} [closure]
+   * @returns {any}
+   */
   capture(closure) {
     let label, top;
     if (closure != null) {
@@ -272,9 +348,10 @@ export default class Engine {
       top = this.top;
     }
 
+    /** @type {any[]} */
     const stack = [];
-    for (; top != this.global; top = top.parent) {
-      stack.push(top.capture(this));
+    for (; top != this.global; top = /** @type {Frame} */ (top).parent) {
+      stack.push(/** @type {Frame} */ (top).capture(this));
     }
 
     return [
@@ -282,16 +359,18 @@ export default class Engine {
       stack,
       this.global.capture(),
       [
-        this.randomer._state0U | 0,
-        this.randomer._state0L | 0,
-        this.randomer._state1U | 0,
-        this.randomer._state1L | 0,
+        this.randomer._state0U || 0,
+        this.randomer._state0L || 0,
+        this.randomer._state1U || 0,
+        this.randomer._state1L || 0,
       ],
     ];
   }
 
   /**
    * Resumes from a snapshot.
+   * @param {any} [snapshot]
+   * @returns {boolean}
    */
   resume(snapshot) {
     this.render.clear();
@@ -305,7 +384,7 @@ export default class Engine {
         this.handler.waypoint(null, this);
       }
       this.continue();
-      return;
+      return true;
     }
 
     // Destructure snapshot
@@ -323,9 +402,17 @@ export default class Engine {
 
     // Restore stack
     const engine = this;
-    this.top = stack.reduceRight(function (parent, snapshot) {
-      return Frame.restore(engine, snapshot, parent);
-    }, this.global);
+    this.top = stack.reduceRight(
+      /**
+       * @param {Global | Frame} parent
+       * @param {any} snapshotFrame
+       * @returns {Frame}
+       */
+      function (parent, snapshotFrame) {
+        return Frame.restore(engine, snapshotFrame, parent);
+      },
+      this.global
+    );
 
     // Restore prng
     this.randomer._state0U = random[0];
@@ -335,7 +422,7 @@ export default class Engine {
 
     const instruction = this.story[label];
     if (instruction.type === 'opt') {
-      if (this.gothrough(instruction.answer, 'RET')) {
+      if (instruction.answer && this.gothrough(instruction.answer, 'RET')) {
         this.flush();
         this.continue();
       }
@@ -344,6 +431,7 @@ export default class Engine {
       this.flush();
       this.continue();
     }
+    return true;
   }
 
   log() {
@@ -351,6 +439,10 @@ export default class Engine {
     console.log('');
   }
 
+  /**
+   * @param {number} index
+   * @returns {string}
+   */
   labelOfIndex(index) {
     if (index == -2) {
       return 'RET';
@@ -360,6 +452,10 @@ export default class Engine {
     return this.labels[index];
   }
 
+  /**
+   * @param {string} label
+   * @returns {number}
+   */
   indexOfLabel(label) {
     if (label === 'RET') {
       return -2;
@@ -371,36 +467,63 @@ export default class Engine {
 
   // Here begin the instructions
 
+  /**
+   * @returns {boolean}
+   */
   $text() {
-    return this.write(this.instruction.text);
+    return this.write(this.instruction.text || '');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $echo() {
-    return this.write(`${evaluate(this.top, this.randomer, this.instruction.expression)}`);
+    return this.write(
+      `${evaluate(this.top, this.randomer, this.instruction.expression || ['val', 0])}`
+    );
   }
 
+  /**
+   * @returns {boolean}
+   */
   $br() {
     this.render.break();
-    return this.goto(this.instruction.next);
+    return this.goto(this.instruction.next || 'RET');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $par() {
     this.render.paragraph();
-    return this.goto(this.instruction.next);
+    return this.goto(this.instruction.next || 'RET');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $rule() {
     // TODO
     this.render.paragraph();
-    return this.goto(this.instruction.next);
+    return this.goto(this.instruction.next || 'RET');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $goto() {
-    return this.goto(this.instruction.next);
+    return this.goto(this.instruction.next || 'RET');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $call() {
     const label = this.instruction.label;
+    if (!label) {
+      console.error(`no label for call`, this.instruction);
+      return this.resume();
+    }
     const def = this.story[label];
     if (!def) {
       console.error(`no such procedure ${label}`, this.instruction);
@@ -410,7 +533,9 @@ export default class Engine {
       console.error(`Can't call non-procedure ${label}`, this.instruction);
       return this.resume();
     }
-    if (def.locals.length !== this.instruction.args.length) {
+    const defLocals = def.locals || [];
+    const instrArgs = this.instruction.args || [];
+    if (defLocals.length !== instrArgs.length) {
       console.error(`Argument length mismatch for ${label}`, this.instruction);
       return this.resume();
     }
@@ -422,89 +547,121 @@ export default class Engine {
     // encountered.
     this.top = new Frame(
       this.top,
-      def.locals,
-      this.instruction.next,
-      this.instruction.branch,
+      defLocals,
+      this.instruction.next || 'RET',
+      this.instruction.branch || 'RET',
       this.label
     );
-    for (let i = 0; i < this.instruction.args.length; i++) {
-      const arg = this.instruction.args[i];
-      const value = evaluate(this.top.parent, this.randomer, arg);
-      this.top.set(def.locals[i], value);
+    const parent = /** @type {Frame} */ (this.top).parent;
+    for (let i = 0; i < instrArgs.length; i++) {
+      const arg = instrArgs[i];
+      const value = evaluate(parent, this.randomer, arg);
+      this.top.set(defLocals[i], value);
     }
     return this.goto(label);
   }
 
+  /**
+   * @returns {boolean}
+   */
   $def() {
     // Procedure argument instructions exist as targets for labels as well as
     // for reference to locals in calls.
-    return this.goto(this.instruction.next);
+    return this.goto(this.instruction.next || 'RET');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $opt() {
     const closure = new Closure(this.top, this.label);
-    for (let i = 0; i < this.instruction.keywords.length; i++) {
-      const keyword = this.instruction.keywords[i];
+    const keywords = this.instruction.keywords || [];
+    for (let i = 0; i < keywords.length; i++) {
+      const keyword = keywords[i];
       // The first option to introduce a keyword wins, not the last.
       if (!this.keywords[keyword]) {
         this.keywords[keyword] = closure;
       }
     }
-    if (this.instruction.question.length > 0) {
+    const question = this.instruction.question || [];
+    if (question.length > 0) {
       this.options.push(closure);
       this.render.startOption();
-      this.top = new Frame(this.top, [], this.instruction.next, 'RET', this.label, true);
-      return this.gothrough(this.instruction.question, 'RET');
+      this.top = new Frame(this.top, [], this.instruction.next || 'RET', 'RET', this.label, true);
+      return this.gothrough(question, 'RET');
     } else if (this.noOption == null) {
       this.noOption = closure;
     }
-    return this.goto(this.instruction.next);
+    return this.goto(this.instruction.next || 'RET');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $move() {
-    const value = evaluate(this.top, this.randomer, this.instruction.source);
-    const name = evaluate.nominate(this.top, this.randomer, this.instruction.target);
+    const value = evaluate(this.top, this.randomer, this.instruction.source || ['val', 0]);
+    const name = evaluate.nominate(
+      this.top,
+      this.randomer,
+      /** @type {Expression} */ (this.instruction.target || ['val', ''])
+    );
     if (this.debug) {
       console.log(`${this.top.at()}/${this.label} ${name} = ${value}`);
     }
     this.top.set(name, value);
-    return this.goto(this.instruction.next);
+    return this.goto(this.instruction.next || 'RET');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $jump() {
     const j = this.instruction;
-    if (evaluate(this.top, this.randomer, j.condition)) {
-      return this.goto(this.instruction.branch);
+    if (evaluate(this.top, this.randomer, j.condition || ['val', 0])) {
+      return this.goto(this.instruction.branch || 'RET');
     } else {
-      return this.goto(this.instruction.next);
+      return this.goto(this.instruction.next || 'RET');
     }
   }
 
+  /**
+   * @returns {boolean}
+   */
   $switch() {
-    const branches = this.instruction.branches.slice();
-    const weightExpressions = this.instruction.weights.slice();
+    const branches = (this.instruction.branches || []).slice();
+    const weightExpressions = (this.instruction.weights || []).slice();
     let samples = 1;
+    /** @type {string[]} */
     const nexts = [];
     if (this.instruction.mode === 'pick') {
-      samples = evaluate(this.top, this.randomer, this.instruction.expression);
+      samples = /** @type {number} */ (
+        evaluate(this.top, this.randomer, this.instruction.expression || ['val', 1])
+      );
     }
-    let value, next;
+    /** @type {number} */
+    let value = 0;
+    /** @type {string} */
+    let next = '';
     for (let i = 0; i < samples; i++) {
+      /** @type {number[]} */
       const weights = [];
       const weight = weigh(this.top, this.randomer, weightExpressions, weights);
       if (this.instruction.mode === 'rand' || this.instruction.mode === 'pick') {
         if (weights.length === weight) {
           value = Math.floor(this.randomer.random() * branches.length);
         } else {
-          value = pick(weights, weight, this.randomer);
-          if (value == null) {
+          const picked = pick(weights, weight, this.randomer);
+          if (picked == null) {
             break;
           }
+          value = picked;
         }
       } else {
-        value = evaluate(this.top, this.randomer, this.instruction.expression);
+        value = /** @type {number} */ (
+          evaluate(this.top, this.randomer, this.instruction.expression || ['val', 0])
+        );
         if (this.instruction.variable != null) {
-          this.top.set(this.instruction.variable, value + this.instruction.value);
+          this.top.set(this.instruction.variable, value + (this.instruction.value || 0));
         }
       }
       if (this.instruction.mode === 'loop') {
@@ -523,22 +680,31 @@ export default class Engine {
     if (this.debug) {
       console.log(`${this.top.at()}/${this.label} ${value} -> ${next}`);
     }
-    return this.gothrough(nexts, this.instruction.next);
+    return this.gothrough(nexts, this.instruction.next || 'RET');
   }
 
+  /**
+   * @returns {boolean}
+   */
   $cue() {
     if (this.handler != null && this.handler.cue != null) {
-      return this.handler.cue(this.instruction.cue, this.instruction.next, this);
+      return this.handler.cue(this.instruction.cue || '', this.instruction.next || 'RET', this);
     } else {
-      return this.goto(this.instruction.next);
+      return this.goto(this.instruction.next || 'RET');
     }
   }
 
+  /**
+   * @returns {boolean}
+   */
   $ask() {
     this.ask();
     return false;
   }
 
+  /**
+   * @returns {boolean}
+   */
   $read() {
     this.read();
     return false;
@@ -546,7 +712,15 @@ export default class Engine {
 }
 
 class Global {
+  /** @type {undefined} */
+  parent = undefined;
+  stopOption = false;
+
+  /**
+   * @param {Handler | undefined} handler
+   */
   constructor(handler) {
+    /** @type {Record<string, any>} */
     this.scope = Object.create(null);
     this.handler = handler;
     this.next = 'RET';
@@ -554,17 +728,27 @@ class Global {
     Object.seal(this);
   }
 
+  /**
+   * @param {string} name
+   * @returns {any}
+   */
   get(name) {
     if (this.handler && this.handler.has && this.handler.has(name)) {
-      return this.handler.get(name);
+      return this.handler.get ? this.handler.get(name) : 0;
     } else {
       return this.scope[name] || 0;
     }
   }
 
+  /**
+   * @param {string} name
+   * @param {any} value
+   */
   set(name, value) {
     if (this.handler && this.handler.has && this.handler.has(name)) {
-      this.handler.set(name, value);
+      if (this.handler.set) {
+        this.handler.set(name, value);
+      }
     } else {
       this.scope[name] = value;
     }
@@ -584,12 +768,19 @@ class Global {
     console.log('');
   }
 
+  /**
+   * @returns {string}
+   */
   at() {
     return '';
   }
 
+  /**
+   * @returns {[string[], any[]]}
+   */
   capture() {
     const names = Object.keys(this.scope);
+    /** @type {any[]} */
     const values = [];
     for (let i = 0; i < names.length; i++) {
       values[i] = this.scope[names[i]] || 0;
@@ -599,6 +790,12 @@ class Global {
 }
 
 class Frame {
+  /**
+   * @param {Engine} engine
+   * @param {any} snapshot
+   * @param {Global | Frame} parent
+   * @returns {Frame}
+   */
   static restore(engine, snapshot, parent) {
     const label = engine.labelOfIndex(snapshot[0]);
     const next = engine.labelOfIndex(snapshot[1]);
@@ -613,18 +810,31 @@ class Frame {
     // The exceptions would be interstitial frames generated by gothrough,
     // but all of these are exhausted before the engine stops to ask a prompt.
     const call = engine.story[label];
-    const def = engine.story[call.label];
-    frame.locals = def.locals;
-    for (let i = 0; i < values.length; i++) {
-      const name = def.locals[i];
-      frame.scope[name] = values[i];
+    if (call && call.label) {
+      const def = engine.story[call.label];
+      if (def && def.locals) {
+        frame.locals = def.locals;
+        for (let i = 0; i < values.length; i++) {
+          const name = def.locals[i];
+          frame.scope[name] = values[i];
+        }
+      }
     }
 
     return frame;
   }
 
+  /**
+   * @param {Global | Frame} parent
+   * @param {string[]} locals
+   * @param {string} next
+   * @param {string} branch
+   * @param {string} label
+   * @param {boolean} [stopOption]
+   */
   constructor(parent, locals, next, branch, label, stopOption) {
     this.locals = locals;
+    /** @type {Record<string, any>} */
     this.scope = Object.create(null);
     for (let i = 0; i < locals.length; i++) {
       this.scope[locals[i]] = 0;
@@ -637,6 +847,10 @@ class Frame {
     Object.seal(this);
   }
 
+  /**
+   * @param {string} name
+   * @returns {any}
+   */
   get(name) {
     if (this.locals.indexOf(name) >= 0) {
       return this.scope[name];
@@ -644,6 +858,10 @@ class Frame {
     return this.parent.get(name);
   }
 
+  /**
+   * @param {string} name
+   * @param {any} value
+   */
   set(name, value) {
     if (this.locals.indexOf(name) >= 0) {
       this.scope[name] = value;
@@ -662,11 +880,19 @@ class Frame {
     }
   }
 
+  /**
+   * @returns {string}
+   */
   at() {
     return `${this.parent.at()}/${this.label}`;
   }
 
+  /**
+   * @param {Engine} engine
+   * @returns {any[]}
+   */
   capture(engine) {
+    /** @type {any[]} */
     const values = [];
     for (let i = 0; i < this.locals.length; i++) {
       const local = this.locals[i];
@@ -684,6 +910,10 @@ class Frame {
 }
 
 class Closure {
+  /**
+   * @param {Global | Frame} scope
+   * @param {string} label
+   */
   constructor(scope, label) {
     this.scope = scope;
     this.label = label;
